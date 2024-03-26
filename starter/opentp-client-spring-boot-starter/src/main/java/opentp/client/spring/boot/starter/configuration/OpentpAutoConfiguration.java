@@ -7,6 +7,9 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * 通过注解 @EnableOpentp 开始获取对象。
+ */
 @Configuration
 @ConditionalOnBean(OpentpAutoConfigurationMarker.Marker.class)
 public class OpentpAutoConfiguration implements InitializingBean, BeanNameAware {
