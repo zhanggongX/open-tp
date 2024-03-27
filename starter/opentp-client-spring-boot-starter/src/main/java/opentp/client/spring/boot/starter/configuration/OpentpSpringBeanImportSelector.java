@@ -7,7 +7,7 @@ import org.springframework.core.type.AnnotationMetadata;
 /**
  * load opentp OpentpSpringBeanRegister bean
  */
-public class OpentpAutoConfigurationSelector implements DeferredImportSelector, Ordered {
+public class OpentpSpringBeanImportSelector implements DeferredImportSelector, Ordered {
 
     @Override
     public String[] selectImports(AnnotationMetadata importingClassMetadata) {

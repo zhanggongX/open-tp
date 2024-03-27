@@ -13,9 +13,9 @@ import org.springframework.core.PriorityOrdered;
 
 import java.util.concurrent.ThreadPoolExecutor;
 
-public class OpentpThreadPoolScan implements BeanPostProcessor, BeanFactoryAware, PriorityOrdered {
+public class OpentpSpringBeanProcessor implements BeanPostProcessor, BeanFactoryAware, PriorityOrdered {
 
-    private final static Logger log = LoggerFactory.getLogger(OpentpThreadPoolScan.class);
+    private final static Logger log = LoggerFactory.getLogger(OpentpSpringBeanProcessor.class);
 
     private DefaultListableBeanFactory beanFactory;
 
@@ -36,7 +36,7 @@ public class OpentpThreadPoolScan implements BeanPostProcessor, BeanFactoryAware
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        if(!(bean instanceof ThreadPoolExecutor)){
+        if (!(bean instanceof ThreadPoolExecutor)) {
             return bean;
         }
         Opentp opentp = beanFactory.findAnnotationOnBean(beanName, Opentp.class);
