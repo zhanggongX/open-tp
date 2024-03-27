@@ -1,14 +1,12 @@
 package opentp.client.spring.boot.starter.configuration;
 
-import opentp.client.spring.boot.starter.annotation.EnableOpentp;
-import opentp.client.spring.boot.starter.annotation.OpentpAutoConfigurationMarker;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * 通过注解 @EnableOpentp 开始获取对象。
+ * open auto configuration
  */
 @Configuration
 @ConditionalOnBean(OpentpAutoConfigurationMarker.Marker.class)
