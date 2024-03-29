@@ -1,6 +1,7 @@
 package opentp.client.spring.boot.starter.configuration;
 
 import cn.opentp.client.core.annotation.Opentp;
+import cn.opentp.client.core.context.OpentpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -13,9 +14,9 @@ import org.springframework.core.PriorityOrdered;
 
 import java.util.concurrent.ThreadPoolExecutor;
 
-public class OpentpSpringBeanProcessor implements BeanPostProcessor, BeanFactoryAware, PriorityOrdered {
+public class OpentpSpringBeanPostProcessor implements BeanPostProcessor, BeanFactoryAware, PriorityOrdered {
 
-    private final static Logger log = LoggerFactory.getLogger(OpentpSpringBeanProcessor.class);
+    private final static Logger log = LoggerFactory.getLogger(OpentpSpringBeanPostProcessor.class);
 
     private DefaultListableBeanFactory beanFactory;
 
@@ -40,12 +41,14 @@ public class OpentpSpringBeanProcessor implements BeanPostProcessor, BeanFactory
             return bean;
         }
         Opentp opentp = beanFactory.findAnnotationOnBean(beanName, Opentp.class);
-//        if(opentp == null){
-//            return bean;
-//        }
+        if (opentp == null) {
+            return bean;
+        }
 
-        log.info("OpentpThreadPoolScan find @Opentp bean name: {}, annotation value: {}", beanName, 1);
+        log.debug("OpentpThreadPoolScan find @Opentp bean name: {}, annotation value: {}", beanName, opentp.value());
 
-        return null;
+        OpentpContext.addTp(opentp.value(), (ThreadPoolExecutor) bean);
+
+        return bean;
     }
 }

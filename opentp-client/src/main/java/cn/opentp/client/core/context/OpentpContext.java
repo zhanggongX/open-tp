@@ -6,16 +6,22 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 public class OpentpContext {
 
-    private final Map<String, ThreadPoolExecutor> tps = new ConcurrentHashMap<>();
+    private static final Map<String, ThreadPoolExecutor> tps = new ConcurrentHashMap<>();
 
-    public void addTp(String key, ThreadPoolExecutor tp) {
+    public static void addTp(String key, ThreadPoolExecutor tp) {
         if (tps.containsKey(key)) {
             throw new IllegalArgumentException("thread pool key define dup");
         }
         tps.putIfAbsent(key, tp);
     }
 
-    public ThreadPoolExecutor getTp(String key) {
+    public static ThreadPoolExecutor getTp(String key) {
         return tps.get(key);
+    }
+
+    public static String tps() {
+        StringBuilder stringBuilder = new StringBuilder();
+        tps.values().forEach(e -> stringBuilder.append(e.toString()));
+        return stringBuilder.toString();
     }
 }

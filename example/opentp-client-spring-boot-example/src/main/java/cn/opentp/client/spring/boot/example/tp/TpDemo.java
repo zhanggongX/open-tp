@@ -15,7 +15,12 @@ public class TpDemo {
     @Opentp("demoExecutor")
     @Bean
     public ThreadPoolExecutor threadPoolExecutor() {
-        System.out.println(ThreadPoolExecutor.class.getSimpleName() + "1");
+        return new ThreadPoolExecutor(10, 200, 100, TimeUnit.SECONDS, new ArrayBlockingQueue(1024));
+    }
+
+    @Opentp("demoExecutor1")
+    @Bean
+    public ThreadPoolExecutor threadPoolExecutor1() {
         return new ThreadPoolExecutor(10, 200, 100, TimeUnit.SECONDS, new ArrayBlockingQueue(1024));
     }
 }
