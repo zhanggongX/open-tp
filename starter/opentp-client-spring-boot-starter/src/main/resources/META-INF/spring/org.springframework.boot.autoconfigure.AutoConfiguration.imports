@@ -1,1 +1,2 @@
 opentp.client.spring.boot.starter.configuration.OpentpAutoConfiguration
+opentp.client.spring.boot.starter.configuration.SpringReadyListener

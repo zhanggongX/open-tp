@@ -1,5 +1,6 @@
 package opentp.client.spring.boot.starter.configuration;
 
+import cn.opentp.client.core.OpentpClientBootstrap;
 import cn.opentp.client.core.context.OpentpContext;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.RootBeanDefinition;
@@ -12,6 +13,7 @@ public class OpentpSpringBeanRegister implements ImportBeanDefinitionRegistrar {
         boolean hadRegister = registry.containsBeanDefinition(OpentpSpringBeanPostProcessor.class.getSimpleName());
         if (!hadRegister) {
 //            registry.registerBeanDefinition(OpentpContext.class.getSimpleName(), new RootBeanDefinition(OpentpContext.class));
+            registry.registerBeanDefinition(OpentpClientBootstrap.class.getSimpleName(), new RootBeanDefinition(OpentpClientBootstrap.class));
             registry.registerBeanDefinition(OpentpSpringBeanPostProcessor.class.getSimpleName(), new RootBeanDefinition(OpentpSpringBeanPostProcessor.class));
         }
     }

@@ -1,6 +1,5 @@
 package cn.opentp.client.spring.boot.example.tp;
 
-import ch.qos.logback.core.util.TimeUtil;
 import cn.opentp.client.core.annotation.Opentp;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
