@@ -1,16 +1,13 @@
-package cn.opentp.client.core.net.handler;
+package cn.opentp.client.net.handler;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Date;
 
 @ChannelHandler.Sharable
 public class DemoHandler extends SimpleChannelInboundHandler<ByteBuf> {

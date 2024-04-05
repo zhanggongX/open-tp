@@ -1,4 +1,4 @@
-package cn.opentp.client.core.annotation;
+package cn.opentp.client.annotation;
 
 import java.lang.annotation.*;
 

@@ -1,7 +1,7 @@
-package cn.opentp.client.core;
+package cn.opentp.client.bootstrap;
 
-import cn.opentp.client.core.net.NettyClient;
-import cn.opentp.client.core.report.ReportTask;
+import cn.opentp.client.net.NettyClient;
+import cn.opentp.client.report.ReportTask;
 
 public class OpentpClientBootstrap {
 

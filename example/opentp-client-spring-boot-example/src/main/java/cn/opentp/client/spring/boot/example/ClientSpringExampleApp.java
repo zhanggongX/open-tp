@@ -6,9 +6,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @EnableOpentp
 @SpringBootApplication
-public class App {
+public class ClientSpringExampleApp {
     public static void main(String[] args) {
 
-        SpringApplication.run(App.class, args);
+        SpringApplication.run(ClientSpringExampleApp.class, args);
     }
 }

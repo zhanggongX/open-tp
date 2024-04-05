@@ -18,6 +18,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>cn.opentp</groupId>
+            <artifactId>opentp-core</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
         <!-- log start -->
         <dependency>
             <groupId>org.slf4j</groupId>

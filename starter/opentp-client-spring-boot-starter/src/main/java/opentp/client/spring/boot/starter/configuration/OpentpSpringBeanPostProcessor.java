@@ -1,7 +1,8 @@
 package opentp.client.spring.boot.starter.configuration;
 
-import cn.opentp.client.core.annotation.Opentp;
-import cn.opentp.client.core.context.OpentpContext;
+import cn.opentp.client.annotation.Opentp;
+import cn.opentp.client.context.OpentpContext;
+import cn.opentp.core.tp.ThreadPoolWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -47,7 +48,8 @@ public class OpentpSpringBeanPostProcessor implements BeanPostProcessor, BeanFac
 
         log.debug("OpentpThreadPoolScan find @Opentp bean name: {}, annotation value: {}", beanName, opentp.value());
 
-        OpentpContext.addTp(opentp.value(), (ThreadPoolExecutor) bean);
+        ThreadPoolWrapper threadPoolWrapper = new ThreadPoolWrapper((ThreadPoolExecutor) bean);
+        OpentpContext.cache(opentp.value(), threadPoolWrapper);
 
         return bean;
     }

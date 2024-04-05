@@ -1,6 +1,6 @@
-package cn.opentp.client.core.net;
+package cn.opentp.client.net;
 
-import cn.opentp.client.core.net.handler.DemoHandler;
+import cn.opentp.client.net.handler.DemoHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
@@ -11,17 +11,21 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.SQLOutput;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 public class NettyClient {
     private final static Logger log = LoggerFactory.getLogger(NettyClient.class);
     private static final List<ChannelFuture> channelFutures = new ArrayList<>();
 
     public static void send(ByteBuf msg) {
+        if(channelFutures.isEmpty()){
+            return;
+        }
+        channelFutures.get(0).channel().writeAndFlush(msg);
+    }
+
+    public static void send(byte[] msg) {
         if(channelFutures.isEmpty()){
             return;
         }

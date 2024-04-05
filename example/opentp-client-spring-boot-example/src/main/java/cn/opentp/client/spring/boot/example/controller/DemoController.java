@@ -1,6 +1,7 @@
 package cn.opentp.client.spring.boot.example.controller;
 
-import cn.opentp.client.core.context.OpentpContext;
+import cn.opentp.client.context.OpentpContext;
+import cn.opentp.core.tp.ThreadPoolWrapper;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.concurrent.ThreadPoolExecutor;
@@ -16,13 +17,13 @@ public class DemoController {
 
     @GetMapping("tps")
     public String tps() {
-        return OpentpContext.tps();
+        return OpentpContext.all();
     }
 
     @GetMapping("tp/{tpName}/{coreSize}")
     public String tpCoreSize(@PathVariable String tpName, @PathVariable Integer coreSize) {
-        ThreadPoolExecutor tp = OpentpContext.getTp(tpName);
-        tp.setCorePoolSize(coreSize);
+        ThreadPoolWrapper threadPoolWrapper = OpentpContext.get(tpName);
+        threadPoolWrapper.getTarget().setCorePoolSize(coreSize);
         return "success";
     }
 }
