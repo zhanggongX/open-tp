@@ -40,13 +40,6 @@
             <version>2.20.0</version>
         </dependency>
         <!-- log end -->
-        <!-- netty start -->
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-            <version>4.1.101.Final</version>
-        </dependency>
-        <!-- netty end -->
     </dependencies>
 
 </project>

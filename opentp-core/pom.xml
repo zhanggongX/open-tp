@@ -23,5 +23,12 @@
             <artifactId>kryo</artifactId>
             <version>5.5.0</version>
         </dependency>
+        <!-- netty start -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.1.101.Final</version>
+        </dependency>
+        <!-- netty end -->
     </dependencies>
 </project>

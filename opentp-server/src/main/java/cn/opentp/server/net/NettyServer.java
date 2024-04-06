@@ -1,8 +1,11 @@
 package cn.opentp.server.net;
 
-import cn.opentp.server.net.handler.DemoHandler;
+import cn.opentp.core.tp.net.handler.ThreadPoolWrapperDecoder;
+import cn.opentp.core.tp.net.handler.ThreadPoolWrapperEncoder;
+import cn.opentp.server.net.handler.DefaultServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -18,11 +21,15 @@ public class NettyServer {
             public void run() {
                 ServerBootstrap serverBootstrap = new ServerBootstrap();
                 serverBootstrap.group(new NioEventLoopGroup(10), new NioEventLoopGroup(10))
+                        .option(ChannelOption.SO_BACKLOG, 1024)
+                        .option(ChannelOption.SO_KEEPALIVE, true)
                         .channel(NioServerSocketChannel.class)
                         .childHandler(new ChannelInitializer<SocketChannel>() {
                             @Override
                             protected void initChannel(SocketChannel socketChannel) throws Exception {
-                                socketChannel.pipeline().addLast(new DemoHandler());
+                                socketChannel.pipeline().addLast(new ThreadPoolWrapperEncoder());
+                                socketChannel.pipeline().addLast(new ThreadPoolWrapperDecoder());
+                                socketChannel.pipeline().addLast(new DefaultServerHandler());
                             }
                         });
                 serverBootstrap.bind(9527);

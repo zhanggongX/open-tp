@@ -40,30 +40,30 @@ public class ThreadPoolWrapper {
     /**
      * 线程池
      */
-    private transient ThreadPoolExecutor target;
+//    private transient ThreadPoolExecutor target;
 
     public ThreadPoolWrapper() {
     }
 
-    public ThreadPoolWrapper(ThreadPoolExecutor target) {
-        this.target = target;
-    }
+//    public ThreadPoolWrapper(ThreadPoolExecutor target) {
+//        this.target = target;
+//    }
+//
+//    public void flush() {
+//        if (target == null) {
+//            setDefault();
+//        }
+//        this.coreSize = target.getCorePoolSize();
+//        this.maxSize = target.getMaximumPoolSize();
+//        this.poolSize = target.getPoolSize();
+//        this.activeCount = target.getActiveCount();
+//        this.completedCount = target.getCompletedTaskCount();
+//        this.queueSize = target.getQueue().size();
+//        this.queueLength = target.getQueue().remainingCapacity();
+//        this.largestPoolSize = target.getLargestPoolSize();
+//    }
 
-    public void flush() {
-        if (target == null) {
-            setDefault();
-        }
-        this.coreSize = target.getCorePoolSize();
-        this.maxSize = target.getMaximumPoolSize();
-        this.poolSize = target.getPoolSize();
-        this.activeCount = target.getActiveCount();
-        this.completedCount = target.getCompletedTaskCount();
-        this.queueSize = target.getQueue().size();
-        this.queueLength = target.getQueue().remainingCapacity();
-        this.largestPoolSize = target.getLargestPoolSize();
-    }
-
-    private void setDefault() {
+    public void setDefault() {
         this.coreSize = -1;
         this.maxSize = -1;
         this.poolSize = -1;
@@ -138,11 +138,11 @@ public class ThreadPoolWrapper {
         this.largestPoolSize = largestPoolSize;
     }
 
-    public ThreadPoolExecutor getTarget() {
-        return target;
-    }
-
-    public void setTarget(ThreadPoolExecutor target) {
-        this.target = target;
-    }
+//    public ThreadPoolExecutor getTarget() {
+//        return target;
+//    }
+//
+//    public void setTarget(ThreadPoolExecutor target) {
+//        this.target = target;
+//    }
 }

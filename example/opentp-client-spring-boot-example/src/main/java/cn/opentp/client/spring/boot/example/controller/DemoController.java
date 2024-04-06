@@ -1,9 +1,11 @@
 package cn.opentp.client.spring.boot.example.controller;
 
 import cn.opentp.client.context.OpentpContext;
+import cn.opentp.client.net.NettyClient;
 import cn.opentp.core.tp.ThreadPoolWrapper;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
 @RestController
@@ -23,7 +25,18 @@ public class DemoController {
     @GetMapping("tp/{tpName}/{coreSize}")
     public String tpCoreSize(@PathVariable String tpName, @PathVariable Integer coreSize) {
         ThreadPoolWrapper threadPoolWrapper = OpentpContext.get(tpName);
-        threadPoolWrapper.getTarget().setCorePoolSize(coreSize);
+//        threadPoolWrapper.getTarget().setCorePoolSize(coreSize);
         return "success";
+    }
+
+    @GetMapping("report")
+    public String report() {
+        List<ThreadPoolWrapper> threadPoolWrappers = OpentpContext.allTps();
+        for (ThreadPoolWrapper tpw : threadPoolWrappers) {
+//            tpw.flush();
+            tpw.setDefault();
+            NettyClient.send(tpw);
+        }
+        return "ok";
     }
 }

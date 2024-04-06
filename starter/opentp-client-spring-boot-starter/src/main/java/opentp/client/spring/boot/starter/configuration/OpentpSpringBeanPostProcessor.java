@@ -48,7 +48,8 @@ public class OpentpSpringBeanPostProcessor implements BeanPostProcessor, BeanFac
 
         log.debug("OpentpThreadPoolScan find @Opentp bean name: {}, annotation value: {}", beanName, opentp.value());
 
-        ThreadPoolWrapper threadPoolWrapper = new ThreadPoolWrapper((ThreadPoolExecutor) bean);
+//        ThreadPoolWrapper threadPoolWrapper = new ThreadPoolWrapper((ThreadPoolExecutor) bean);
+        ThreadPoolWrapper threadPoolWrapper = new ThreadPoolWrapper();
         OpentpContext.cache(opentp.value(), threadPoolWrapper);
 
         return bean;

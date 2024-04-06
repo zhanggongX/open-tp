@@ -1,6 +1,8 @@
 package cn.opentp.client.net;
 
-import cn.opentp.client.net.handler.DemoHandler;
+import cn.opentp.client.net.handler.DefaultClientHandler;
+import cn.opentp.core.tp.net.handler.ThreadPoolWrapperDecoder;
+import cn.opentp.core.tp.net.handler.ThreadPoolWrapperEncoder;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
@@ -25,6 +27,13 @@ public class NettyClient {
         channelFutures.get(0).channel().writeAndFlush(msg);
     }
 
+    public static void send(Object o) {
+        if(channelFutures.isEmpty()){
+            return;
+        }
+        channelFutures.get(0).channel().writeAndFlush(o);
+    }
+
     public static void send(byte[] msg) {
         if(channelFutures.isEmpty()){
             return;
@@ -42,7 +51,9 @@ public class NettyClient {
                         .handler(new ChannelInitializer<SocketChannel>() {
                             @Override
                             protected void initChannel(SocketChannel socketChannel) throws Exception {
-                                socketChannel.pipeline().addLast(new DemoHandler());
+                                socketChannel.pipeline().addLast(new ThreadPoolWrapperEncoder());
+                                socketChannel.pipeline().addLast(new ThreadPoolWrapperDecoder());
+                                socketChannel.pipeline().addLast(new DefaultClientHandler());
                             }
                         });
                 ChannelFuture channelFuture = null;
