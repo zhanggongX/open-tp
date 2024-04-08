@@ -49,20 +49,20 @@ public class ThreadPoolWrapper implements Serializable {
     public ThreadPoolWrapper(ThreadPoolExecutor target) {
         this.target = target;
     }
-//
-//    public void flush() {
-//        if (target == null) {
-//            setDefault();
-//        }
-//        this.coreSize = target.getCorePoolSize();
-//        this.maxSize = target.getMaximumPoolSize();
-//        this.poolSize = target.getPoolSize();
-//        this.activeCount = target.getActiveCount();
-//        this.completedCount = target.getCompletedTaskCount();
-//        this.queueSize = target.getQueue().size();
-//        this.queueLength = target.getQueue().remainingCapacity();
-//        this.largestPoolSize = target.getLargestPoolSize();
-//    }
+
+    public void flush() {
+        if (target == null) {
+            setDefault();
+        }
+        this.coreSize = target.getCorePoolSize();
+        this.maxSize = target.getMaximumPoolSize();
+        this.poolSize = target.getPoolSize();
+        this.activeCount = target.getActiveCount();
+        this.completedCount = target.getCompletedTaskCount();
+        this.queueSize = target.getQueue().size();
+        this.queueLength = target.getQueue().remainingCapacity();
+        this.largestPoolSize = target.getLargestPoolSize();
+    }
 
     public void setDefault() {
         this.coreSize = -1;

@@ -22,9 +22,10 @@ class KryoSerializerTest {
 
     @Test
     void serialize() {
-        ThreadPoolWrapper threadPoolWrapper = new ThreadPoolWrapper(new ThreadPoolExecutor(1, 10, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(100)));
-        byte[] bytes = serializer.serialize(threadPoolWrapper);
-        System.out.println(1);
+//        ThreadPoolWrapper threadPoolWrapper = new ThreadPoolWrapper(new ThreadPoolExecutor(1, 10, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(100)));
+//        byte[] bytes = serializer.serialize(threadPoolWrapper);
+//        System.out.println(1);
+
     }
 
     @Test

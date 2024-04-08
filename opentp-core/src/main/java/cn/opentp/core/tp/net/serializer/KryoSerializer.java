@@ -8,6 +8,7 @@ import com.esotericsoftware.kryo.serializers.BeanSerializer;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * 基于kryo的序列化/反序列化工具
@@ -21,8 +22,9 @@ public class KryoSerializer implements Serializer {
         @Override
         protected Kryo initialValue() {
             Kryo kryo = new Kryo();
+//            kryo.setRegistrationRequired(false);
             kryo.register(ct, new BeanSerializer(kryo, ct));
-//            kryo.register(java.util.concurrent.ThreadPoolExecutor.class);
+            kryo.register(ThreadPoolExecutor.class);
 //            kryo.register(ct, new BeanSerializer(kryo, ThreadPoolExecutor.class));
             return kryo;
         }
