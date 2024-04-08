@@ -1,9 +1,10 @@
 package cn.opentp.core.tp;
 
 import java.beans.Transient;
+import java.io.Serializable;
 import java.util.concurrent.ThreadPoolExecutor;
 
-public class ThreadPoolWrapper {
+public class ThreadPoolWrapper implements Serializable {
 
     /**
      * 核心线程数
@@ -40,14 +41,14 @@ public class ThreadPoolWrapper {
     /**
      * 线程池
      */
-//    private transient ThreadPoolExecutor target;
+    private transient ThreadPoolExecutor target;
 
     public ThreadPoolWrapper() {
     }
 
-//    public ThreadPoolWrapper(ThreadPoolExecutor target) {
-//        this.target = target;
-//    }
+    public ThreadPoolWrapper(ThreadPoolExecutor target) {
+        this.target = target;
+    }
 //
 //    public void flush() {
 //        if (target == null) {
@@ -138,11 +139,11 @@ public class ThreadPoolWrapper {
         this.largestPoolSize = largestPoolSize;
     }
 
-//    public ThreadPoolExecutor getTarget() {
-//        return target;
-//    }
-//
-//    public void setTarget(ThreadPoolExecutor target) {
-//        this.target = target;
-//    }
+    public ThreadPoolExecutor getTarget() {
+        return target;
+    }
+
+    public void setTarget(ThreadPoolExecutor target) {
+        this.target = target;
+    }
 }
