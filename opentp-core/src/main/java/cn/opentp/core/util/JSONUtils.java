@@ -1,4 +1,4 @@
-package cn.opentp.core.tp.util;
+package cn.opentp.core.util;
 
 
 import com.fasterxml.jackson.core.JsonGenerator;
