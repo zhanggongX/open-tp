@@ -1,5 +1,6 @@
 package cn.opentp.server.bootstrap;
 
+import cn.opentp.server.net.NettyHttpServer;
 import cn.opentp.server.net.NettyServer;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
@@ -27,6 +28,7 @@ public class OpentpBootstrap {
         }
 
         Thread serverThread = NettyServer.start();
+        Thread start = NettyHttpServer.start();
         serverThread.join();
     }
 }
