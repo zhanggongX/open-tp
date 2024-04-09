@@ -1,8 +1,7 @@
-package cn.opentp.core.tp.net.handler;
+package cn.opentp.core.net.handler;
 
+import cn.opentp.core.net.kryo.KryoSerializer;
 import cn.opentp.core.tp.ThreadPoolWrapper;
-import cn.opentp.core.tp.net.serializer.Serializer;
-import cn.opentp.core.tp.net.serializer.SerializerFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -15,12 +14,11 @@ import io.netty.handler.codec.MessageToByteEncoder;
  */
 public class ThreadPoolWrapperEncoder extends MessageToByteEncoder<ThreadPoolWrapper> {
 
-    private final Serializer serializer = SerializerFactory.getSerializer(ThreadPoolWrapper.class);
-
     @Override
     protected void encode(ChannelHandlerContext ctx, ThreadPoolWrapper msg, ByteBuf out) throws Exception {
         // 1. 将对象转换为byte
-        byte[] body = serializer.serialize(msg);
+        KryoSerializer kryoSerializer = new KryoSerializer();
+        byte[] body = kryoSerializer.serialize(msg);
         // 2. 读取消息的长度
         int dataLength = body.length;
         // 3. 先将消息长度写入，也就是消息头

@@ -1,15 +1,9 @@
 package cn.opentp.server.net.handler;
 
 import cn.opentp.core.tp.ThreadPoolWrapper;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
-import io.netty.handler.codec.protobuf.ProtobufEncoder;
-import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Date;
 
 public class DefaultServerHandler extends ChannelInboundHandlerAdapter {
 
@@ -38,7 +32,7 @@ public class DefaultServerHandler extends ChannelInboundHandlerAdapter {
 //        }
 
         ThreadPoolWrapper tpw = (ThreadPoolWrapper) msg;
-        log.info("coreSize: {}, maxSize: {}", tpw.getCoreSize(), tpw.getMaxSize());
+        log.info("thread info : {}", tpw.toString());
     }
 
 //    @Override

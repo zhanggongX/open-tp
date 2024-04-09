@@ -39,6 +39,10 @@ public class ThreadPoolWrapper implements Serializable {
      */
     private int largestPoolSize;
     /**
+     * 线程名
+     */
+    private String threadName;
+    /**
      * 线程池
      */
     private transient ThreadPoolExecutor target;
@@ -49,20 +53,20 @@ public class ThreadPoolWrapper implements Serializable {
     public ThreadPoolWrapper(ThreadPoolExecutor target) {
         this.target = target;
     }
-//
-//    public void flush() {
-//        if (target == null) {
-//            setDefault();
-//        }
-//        this.coreSize = target.getCorePoolSize();
-//        this.maxSize = target.getMaximumPoolSize();
-//        this.poolSize = target.getPoolSize();
-//        this.activeCount = target.getActiveCount();
-//        this.completedCount = target.getCompletedTaskCount();
-//        this.queueSize = target.getQueue().size();
-//        this.queueLength = target.getQueue().remainingCapacity();
-//        this.largestPoolSize = target.getLargestPoolSize();
-//    }
+
+    public void flush() {
+        if (target == null) {
+            setDefault();
+        }
+        this.coreSize = target.getCorePoolSize();
+        this.maxSize = target.getMaximumPoolSize();
+        this.poolSize = target.getPoolSize();
+        this.activeCount = target.getActiveCount();
+        this.completedCount = target.getCompletedTaskCount();
+        this.queueSize = target.getQueue().size();
+        this.queueLength = target.getQueue().remainingCapacity();
+        this.largestPoolSize = target.getLargestPoolSize();
+    }
 
     public void setDefault() {
         this.coreSize = -1;
@@ -145,5 +149,28 @@ public class ThreadPoolWrapper implements Serializable {
 
     public void setTarget(ThreadPoolExecutor target) {
         this.target = target;
+    }
+
+    public String getThreadName() {
+        return threadName;
+    }
+
+    public void setThreadName(String threadName) {
+        this.threadName = threadName;
+    }
+
+    @Override
+    public String toString() {
+        return "ThreadPoolWrapper{" +
+                "threadName=" + threadName +
+                ", coreSize=" + coreSize +
+                ", maxSize=" + maxSize +
+                ", poolSize=" + poolSize +
+                ", activeCount=" + activeCount +
+                ", completedCount=" + completedCount +
+                ", queueSize=" + queueSize +
+                ", queueLength=" + queueLength +
+                ", largestPoolSize=" + largestPoolSize +
+                '}';
     }
 }

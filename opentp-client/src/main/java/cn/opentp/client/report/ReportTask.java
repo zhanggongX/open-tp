@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -15,15 +16,16 @@ public class ReportTask extends TimerTask {
 
     @Override
     public void run() {
-        List<ThreadPoolWrapper> threadPoolWrappers = OpentpContext.allTps();
-        for(ThreadPoolWrapper tpw : threadPoolWrappers){
-            tpw.setDefault();
-            NettyClient.send(tpw);
+        Map<String, ThreadPoolWrapper> allTps = OpentpContext.allTps();
+        for (Map.Entry<String, ThreadPoolWrapper> entry : allTps.entrySet()) {
+            entry.getValue().flush();
+            entry.getValue().setThreadName(entry.getKey());
+            NettyClient.send(entry.getValue());
         }
     }
 
-    public void startReport(){
+    public void startReport() {
         log.debug("netty client started");
-        new Timer().schedule(new ReportTask(), 0, 10000000);
+        new Timer().schedule(new ReportTask(), 0, 1000);
     }
 }

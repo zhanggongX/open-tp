@@ -1,13 +1,11 @@
 package cn.opentp.client.context;
 
 import cn.opentp.core.tp.ThreadPoolWrapper;
-import io.netty.buffer.Unpooled;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public class OpentpContext {
 
@@ -30,7 +28,7 @@ public class OpentpContext {
         return stringBuilder.toString();
     }
 
-    public static List<ThreadPoolWrapper> allTps() {
-        return new ArrayList<>(tpwCache.values());
+    public static Map<String, ThreadPoolWrapper> allTps() {
+        return tpwCache;
     }
 }

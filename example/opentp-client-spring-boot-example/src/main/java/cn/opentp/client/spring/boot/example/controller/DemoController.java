@@ -3,14 +3,19 @@ package cn.opentp.client.spring.boot.example.controller;
 import cn.opentp.client.context.OpentpContext;
 import cn.opentp.client.net.NettyClient;
 import cn.opentp.core.tp.ThreadPoolWrapper;
+import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 
 @RestController
 @RequestMapping("demo")
 public class DemoController {
+
+    @Resource
+    private ThreadPoolExecutor threadPoolExecutor;
 
     @GetMapping("test")
     public String test() {
@@ -31,12 +36,27 @@ public class DemoController {
 
     @GetMapping("report")
     public String report() {
-        List<ThreadPoolWrapper> threadPoolWrappers = OpentpContext.allTps();
-        for (ThreadPoolWrapper tpw : threadPoolWrappers) {
-//            tpw.flush();
-            tpw.setDefault();
+        Map<String, ThreadPoolWrapper> allTps = OpentpContext.allTps();
+        for (ThreadPoolWrapper tpw : allTps.values()) {
+            tpw.flush();
             NettyClient.send(tpw);
         }
+        return "ok";
+    }
+
+    @GetMapping("new")
+    public String newThread() {
+        threadPoolExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println(1);
+            }
+        });
         return "ok";
     }
 }

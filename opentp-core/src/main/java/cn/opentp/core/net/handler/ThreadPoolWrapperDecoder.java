@@ -1,8 +1,7 @@
-package cn.opentp.core.tp.net.handler;
+package cn.opentp.core.net.handler;
 
+import cn.opentp.core.net.kryo.KryoSerializer;
 import cn.opentp.core.tp.ThreadPoolWrapper;
-import cn.opentp.core.tp.net.serializer.Serializer;
-import cn.opentp.core.tp.net.serializer.SerializerFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
@@ -15,7 +14,6 @@ import java.util.List;
 public class ThreadPoolWrapperDecoder extends ByteToMessageDecoder {
     // 表示数据流（头部是消息长度）头部的字节数
     private static final int HEAD_LENGTH = 4;
-    private final Serializer serializer = SerializerFactory.getSerializer(ThreadPoolWrapper.class);
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
@@ -39,7 +37,8 @@ public class ThreadPoolWrapperDecoder extends ByteToMessageDecoder {
         in.readBytes(body);
 
         // 将bytes数组转换为我们需要的对象
-        ThreadPoolWrapper msg = serializer.deserialize(body);
+        KryoSerializer kryoSerializer = new KryoSerializer();
+        ThreadPoolWrapper msg = kryoSerializer.deserialize(body, ThreadPoolWrapper.class);
         out.add(msg);
     }
 }

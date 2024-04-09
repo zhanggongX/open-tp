@@ -1,8 +1,8 @@
 package cn.opentp.client.net;
 
 import cn.opentp.client.net.handler.DefaultClientHandler;
-import cn.opentp.core.tp.net.handler.ThreadPoolWrapperDecoder;
-import cn.opentp.core.tp.net.handler.ThreadPoolWrapperEncoder;
+import cn.opentp.core.net.handler.ThreadPoolWrapperDecoder;
+import cn.opentp.core.net.handler.ThreadPoolWrapperEncoder;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
