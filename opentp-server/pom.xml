@@ -56,4 +56,39 @@
         <!-- netty end -->
     </dependencies>
 
+
+    <build>
+        <!-- 项目最终打包成的名字 -->
+        <finalName>opentp-server</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.6.0</version>
+                <configuration>
+                    <archive>
+                        <!-- 指定启动类 -->
+                        <manifest>
+                            <mainClass>cn.opentp.server.bootstrap.OpentpBootstrap</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+
+                <!-- 相当于在执行 package 打包时，在后面加上 assembly:single  -->
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>
