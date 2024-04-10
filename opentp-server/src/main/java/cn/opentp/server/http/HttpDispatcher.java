@@ -13,56 +13,23 @@ import java.util.Map;
 public class HttpDispatcher {
 
 
-    public static FullHttpResponse doDispatcher(FullHttpRequest req) {
-        if("/favicon.ico".equals(req.uri())){
-            boolean keepAlive = HttpUtil.isKeepAlive(req);
-            FullHttpResponse response = new DefaultFullHttpResponse(req.protocolVersion(), HttpResponseStatus.OK);
-            response.headers().set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
-            response.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
-            if (keepAlive) {
-                if (!req.protocolVersion().isKeepAliveDefault()) {
-                    response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-                }
-            } else {
-                response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
-            }
-            return response;
-        }
-
-
-        String uri = req.uri();
-        HttpMethod method = req.method();
+    public static void doDispatcher(FullHttpRequest httpRequest, FullHttpResponse httpResponse) {
+        String uri = httpRequest.uri();
+        HttpMethod method = httpRequest.method();
 
         String[] split = uri.split("/");
         String endPoint = split[1];
         Map<String, HttpHandler> endPoints = Configuration.configuration().getEndPoints();
         HttpHandler httpHandler = endPoints.get(endPoint);
 
-        BaseRes res = null;
         if (HttpMethod.GET.equals(method)) {
-            res = httpHandler.doGet(req);
-        }else if(HttpMethod.POST.equals(method)){
-            res = httpHandler.doPost(req);
-        }else if(HttpMethod.PUT.equals(method)){
-            res = httpHandler.doPut(req);
-        }else if(HttpMethod.DELETE.equals(method)){
-            res = httpHandler.doDelete(req);
+            httpHandler.doGet(httpRequest, httpResponse);
+        } else if (HttpMethod.POST.equals(method)) {
+            httpHandler.doPost(httpRequest, httpResponse);
+        } else if (HttpMethod.PUT.equals(method)) {
+            httpHandler.doPut(httpRequest, httpResponse);
+        } else if (HttpMethod.DELETE.equals(method)) {
+            httpHandler.doDelete(httpRequest, httpResponse);
         }
-
-        boolean keepAlive = HttpUtil.isKeepAlive(req);
-
-        FullHttpResponse response = new DefaultFullHttpResponse(req.protocolVersion(), HttpResponseStatus.OK);
-        response.content().writeBytes(JSONUtils.toJsonString(res).getBytes(StandardCharsets.UTF_8));
-
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
-        response.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
-        if (keepAlive) {
-            if (!req.protocolVersion().isKeepAliveDefault()) {
-                response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-            }
-        } else {
-            response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
-        }
-        return response;
     }
 }

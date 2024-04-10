@@ -1,34 +1,88 @@
 package cn.opentp.server.http.handler;
 
 import cn.opentp.core.tp.ThreadPoolWrapper;
+import cn.opentp.core.util.JSONUtils;
 import cn.opentp.server.http.BaseRes;
 import cn.opentp.server.http.annotation.RequestURI;
 import cn.opentp.server.tp.Configuration;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
 
+import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 //@RequestURI(url = "opentp")
-public class OpentpHandler implements HttpHandler<Map<String, ThreadPoolWrapper>> {
-
+public class OpentpHandler extends AbstractHttpHandler implements HttpHandler {
 
     @Override
-    public BaseRes<Map<String, ThreadPoolWrapper>> doGet(FullHttpRequest request) {
-        String uri = request.uri();
+    public void doGet(FullHttpRequest httpRequest, FullHttpResponse httpResponse) {
+
+        String uri = httpRequest.uri();
         if (!uri.startsWith("/opentp")) {
             throw new IllegalArgumentException("错误的路径");
         }
-        if (uri.equals("/opentp")) {
-            return BaseRes.success(Configuration.configuration().getTpCache());
-        }
-        String[] split = uri.split("/");
+
+        Map<String, ThreadPoolWrapper> tpCache = Configuration.configuration().getTpCache();
+
         String tpName = null;
-        if (split.length > 2) {
-            tpName = split[2];
+        String[] urlPaths = uri.split("/");
+        if (urlPaths.length == 2) {
+            BaseRes<Map<String, ThreadPoolWrapper>> res = BaseRes.success(tpCache);
+            updateHttpResponse(httpResponse, res);
+            return;
+        }
+
+        if (urlPaths.length > 2) {
+            tpName = urlPaths[2];
         }
         if (tpName == null || tpName.isEmpty()) {
-            throw new IllegalArgumentException("错误的tpName");
+            BaseRes<Void> res = BaseRes.fail(-1, "错误的tpName");
+            updateHttpResponse(httpResponse, res);
+            return;
+        }
+
+        ThreadPoolWrapper threadPoolWrapper = tpCache.get(tpName);
+        updateHttpResponse(httpResponse, threadPoolWrapper);
+    }
+
+
+    @Override
+    public void doPost(FullHttpRequest httpRequest, FullHttpResponse httpResponse) {
+
+    }
+
+    @Override
+    public void doPut(FullHttpRequest httpRequest, FullHttpResponse httpResponse) {
+
+        String uri = httpRequest.uri();
+        if (!uri.startsWith("/opentp")) {
+            throw new IllegalArgumentException("错误的路径");
+        }
+        String[] urlPaths = uri.split("/");
+        if (urlPaths.length != 5) {
+            BaseRes<Void> res = BaseRes.fail(-1, "错误的更新方法");
+            updateHttpResponse(httpResponse, res);
+            return;
+        }
+        String tpName = urlPaths[2];
+        String param = urlPaths[3];
+        int value = Integer.parseInt(urlPaths[4]);
+
+        Field declaredField = null;
+        try {
+            declaredField = ThreadPoolWrapper.class.getDeclaredField(param);
+            declaredField.setAccessible(true);
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+
+        if(declaredField == null){
+            BaseRes<Void> res = BaseRes.fail(-1, "无效的参数");
+            updateHttpResponse(httpResponse, res);
+            return;
         }
 
         Configuration configuration = Configuration.configuration();
@@ -37,24 +91,21 @@ public class OpentpHandler implements HttpHandler<Map<String, ThreadPoolWrapper>
         ThreadPoolWrapper threadPoolWrapper = new ThreadPoolWrapper();
         threadPoolWrapper.setDefault();
         threadPoolWrapper.setThreadName(tpName);
-        threadPoolWrapper.setPoolSize(20);
+
+        try {
+            declaredField.set(threadPoolWrapper, value);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
         channel.writeAndFlush(threadPoolWrapper);
 
-        return BaseRes.success();
+        BaseRes<Void> res = BaseRes.success();
+        updateHttpResponse(httpResponse, res);
     }
 
     @Override
-    public BaseRes<Void> doPost(FullHttpRequest request) {
-        return null;
-    }
+    public void doDelete(FullHttpRequest httpRequest, FullHttpResponse httpResponse) {
 
-    @Override
-    public BaseRes<Void> doPut(FullHttpRequest request) {
-        return null;
-    }
-
-    @Override
-    public BaseRes<Void> doDelete(FullHttpRequest request) {
-        return null;
     }
 }

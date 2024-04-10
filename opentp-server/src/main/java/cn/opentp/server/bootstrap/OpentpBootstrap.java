@@ -1,6 +1,7 @@
 package cn.opentp.server.bootstrap;
 
 import cn.opentp.server.http.NettyHttpServer;
+import cn.opentp.server.http.handler.FaviconHandler;
 import cn.opentp.server.http.handler.HttpHandler;
 import cn.opentp.server.http.handler.OpentpHandler;
 import cn.opentp.server.net.NettyServer;
@@ -36,6 +37,7 @@ public class OpentpBootstrap {
         Thread start = NettyHttpServer.start();
         Configuration configuration = Configuration.configuration();
         Map<String, HttpHandler> endPoints = configuration.getEndPoints();
+        endPoints.put("favicon.ico", new FaviconHandler());
         endPoints.put("opentp", new OpentpHandler());
 
         serverThread.join();

@@ -2,32 +2,33 @@ package cn.opentp.server.http.handler;
 
 import cn.opentp.server.http.BaseRes;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
 
-public interface HttpHandler<T> {
+public interface HttpHandler {
 
     /**
      * 查询
      */
-    BaseRes<T> doGet(FullHttpRequest request);
+    void doGet(FullHttpRequest httpRequest, FullHttpResponse httpResponse);
 
     /**
      * 新增
      *
      * @return
      */
-    BaseRes<Void> doPost(FullHttpRequest request);
+    void doPost(FullHttpRequest httpRequest, FullHttpResponse httpResponse);
 
     /**
      * 修改
      *
      * @return
      */
-    BaseRes<Void> doPut(FullHttpRequest request);
+    void doPut(FullHttpRequest httpRequest, FullHttpResponse httpResponse);
 
     /**
      * 删除
      *
      * @return
      */
-    BaseRes<Void> doDelete(FullHttpRequest request);
+    void doDelete(FullHttpRequest httpRequest, FullHttpResponse httpResponse);
 }

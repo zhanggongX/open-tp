@@ -12,6 +12,8 @@ import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ThreadPoolExecutor;
+
 
 public class DefaultClientHandler extends ChannelInboundHandlerAdapter {
 
@@ -28,7 +30,9 @@ public class DefaultClientHandler extends ChannelInboundHandlerAdapter {
         ThreadPoolWrapper tpw = (ThreadPoolWrapper) msg;
 
         ThreadPoolWrapper threadPoolWrapper = OpentpContext.get(tpw.getThreadName());
-        threadPoolWrapper.getTarget().setCorePoolSize(tpw.getPoolSize());
+
+        ThreadPoolExecutor target = threadPoolWrapper.getTarget();
+        target.setCorePoolSize(tpw.getCoreSize());
 
         log.info("doUpdate");
     }

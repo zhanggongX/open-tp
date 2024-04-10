@@ -16,17 +16,30 @@ public class DefaultHttpServerHandler extends SimpleChannelInboundHandler<FullHt
 
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
-        boolean continueExpected = HttpUtil.is100ContinueExpected(req);
+    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest httpRequest) throws Exception {
+        boolean continueExpected = HttpUtil.is100ContinueExpected(httpRequest);
         if (continueExpected) {
             // 100 continue expected 处理
-            ctx.writeAndFlush(new DefaultFullHttpResponse(req.protocolVersion(), HttpResponseStatus.CONTINUE));
+            ctx.writeAndFlush(new DefaultFullHttpResponse(httpRequest.protocolVersion(), HttpResponseStatus.CONTINUE));
         }
 
-        FullHttpResponse response = HttpDispatcher.doDispatcher(req);
+        boolean keepAlive = HttpUtil.isKeepAlive(httpRequest);
 
-        boolean keepAlive = HttpUtil.isKeepAlive(req);
-        ChannelFuture channelFuture = ctx.writeAndFlush(response);
+        // 生成 httpResponse
+        FullHttpResponse httpResponse = new DefaultFullHttpResponse(httpRequest.protocolVersion(), HttpResponseStatus.OK);
+        httpResponse.headers().set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
+        if (keepAlive) {
+            if (!httpRequest.protocolVersion().isKeepAliveDefault()) {
+                httpResponse.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+            }
+        } else {
+            httpResponse.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
+        }
+
+
+        HttpDispatcher.doDispatcher(httpRequest, httpResponse);
+
+        ChannelFuture channelFuture = ctx.writeAndFlush(httpResponse);
         if (!keepAlive) {
             channelFuture.addListener(ChannelFutureListener.CLOSE);
         }
