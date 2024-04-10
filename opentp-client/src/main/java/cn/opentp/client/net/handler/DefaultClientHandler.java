@@ -1,5 +1,7 @@
 package cn.opentp.client.net.handler;
 
+import cn.opentp.client.context.OpentpContext;
+import cn.opentp.core.tp.ThreadPoolWrapper;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
@@ -21,9 +23,14 @@ public class DefaultClientHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object in) {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
 
-        log.info("read");
+        ThreadPoolWrapper tpw = (ThreadPoolWrapper) msg;
+
+        ThreadPoolWrapper threadPoolWrapper = OpentpContext.get(tpw.getThreadName());
+        threadPoolWrapper.getTarget().setCorePoolSize(tpw.getPoolSize());
+
+        log.info("doUpdate");
     }
 
     @Override

@@ -1,18 +1,14 @@
-package cn.opentp.server.net;
+package cn.opentp.server.http;
 
-import cn.opentp.core.net.handler.ThreadPoolWrapperDecoder;
-import cn.opentp.core.net.handler.ThreadPoolWrapperEncoder;
-import cn.opentp.server.net.handler.DefaultHttpServerHandler;
-import cn.opentp.server.net.handler.DefaultServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.http.HttpObjectDecoder;
-import io.netty.handler.codec.http.HttpRequestDecoder;
-import io.netty.handler.codec.http.HttpResponseEncoder;
+import io.netty.handler.codec.http.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,12 +27,18 @@ public class NettyHttpServer {
                         .childHandler(new ChannelInitializer<SocketChannel>() {
                             @Override
                             protected void initChannel(SocketChannel socketChannel) throws Exception {
-                                socketChannel.pipeline().addLast(new HttpRequestDecoder());
-                                socketChannel.pipeline().addLast(new HttpResponseEncoder());
+                                socketChannel.pipeline().addLast(new HttpServerCodec());
+                                socketChannel.pipeline().addLast(new HttpObjectAggregator(65536));
                                 socketChannel.pipeline().addLast(new DefaultHttpServerHandler());
                             }
                         });
-                httpServerBootstrap.bind(8001);
+                try {
+                    ChannelFuture channelFuture = httpServerBootstrap.bind(8001).sync();
+                    Channel channel = channelFuture.channel();
+                    channel.closeFuture().sync();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         });
         log.info("http server start bind on 8001");

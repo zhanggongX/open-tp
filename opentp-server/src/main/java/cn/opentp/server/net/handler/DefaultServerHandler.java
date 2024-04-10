@@ -1,6 +1,7 @@
 package cn.opentp.server.net.handler;
 
 import cn.opentp.core.tp.ThreadPoolWrapper;
+import cn.opentp.server.tp.Configuration;
 import io.netty.channel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,9 @@ public class DefaultServerHandler extends ChannelInboundHandlerAdapter {
 //        }
 
         ThreadPoolWrapper tpw = (ThreadPoolWrapper) msg;
+        Configuration configuration = Configuration.configuration();
+        configuration.getTpCache().put(tpw.getThreadName(), tpw);
+        configuration.getTpChannel().put(tpw.getThreadName(), ctx.channel());
         log.info("thread info : {}", tpw.toString());
     }
 
