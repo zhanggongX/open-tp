@@ -41,5 +41,6 @@ public class DefaultClientHandler extends ChannelInboundHandlerAdapter {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.printStackTrace();
         ctx.close();
+        // todo 尝试重新链接到服务器。
     }
 }

@@ -6,6 +6,7 @@ import cn.opentp.core.net.handler.ThreadPoolWrapperEncoder;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -56,12 +57,21 @@ public class NettyClient {
                                 socketChannel.pipeline().addLast(new DefaultClientHandler());
                             }
                         });
-                ChannelFuture channelFuture = null;
-                try {
-                    channelFuture = clientBootstrap.connect("localhost", 9527).sync();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+                ChannelFuture channelFuture = clientBootstrap.connect("localhost", 9527);
+                // 链接成功回调
+                channelFuture.addListener(new ChannelFutureListener() {
+                    @Override
+                    public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                        if(channelFuture.isSuccess()){
+                            // todo 发送权限验证
+                            channelFutures.add(channelFuture);
+                        }else{
+                            Throwable cause = channelFuture.cause();
+                            log.error("链接失败：{}", cause.toString());
+                        }
+
+                    }
+                });
                 channelFutures.add(channelFuture);
                 System.out.println(1);
             }
