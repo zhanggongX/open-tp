@@ -1,6 +1,7 @@
-package cn.opentp.client.annotation;
+package opentp.client.spring.boot.starter.annotation;
 
 import java.lang.annotation.*;
+
 
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

@@ -1,6 +1,6 @@
 package cn.opentp.client.spring.boot.example.tp;
 
-import cn.opentp.client.annotation.Opentp;
+import opentp.client.spring.boot.starter.annotation.Opentp;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 

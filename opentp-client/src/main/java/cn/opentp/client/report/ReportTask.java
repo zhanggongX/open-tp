@@ -1,12 +1,11 @@
 package cn.opentp.client.report;
 
-import cn.opentp.client.context.OpentpContext;
+import cn.opentp.client.configuration.OpentpContext;
 import cn.opentp.client.net.NettyClient;
 import cn.opentp.core.tp.ThreadPoolWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;

@@ -1,0 +1,4 @@
+opentp:
+  server:
+    - host: localhost
+      port: 9527

@@ -1,12 +1,11 @@
 package cn.opentp.client.spring.boot.example.controller;
 
-import cn.opentp.client.context.OpentpContext;
+import cn.opentp.client.configuration.OpentpContext;
 import cn.opentp.client.net.NettyClient;
 import cn.opentp.core.tp.ThreadPoolWrapper;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 

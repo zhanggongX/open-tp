@@ -1,7 +1,7 @@
 package opentp.client.spring.boot.starter.configuration;
 
-import cn.opentp.client.annotation.Opentp;
-import cn.opentp.client.context.OpentpContext;
+import opentp.client.spring.boot.starter.annotation.Opentp;
+import cn.opentp.client.configuration.OpentpContext;
 import cn.opentp.core.tp.ThreadPoolWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

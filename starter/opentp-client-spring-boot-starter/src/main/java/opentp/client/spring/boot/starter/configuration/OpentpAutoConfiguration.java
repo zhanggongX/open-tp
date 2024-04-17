@@ -3,6 +3,7 @@ package opentp.client.spring.boot.starter.configuration;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -10,7 +11,8 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ConditionalOnBean(OpentpAutoConfigurationMarker.Marker.class)
-public class OpentpAutoConfiguration implements InitializingBean, BeanNameAware {
+@EnableConfigurationProperties
+public class OpentpAutoConfiguration {
 
     private String beanName;
 
