@@ -6,8 +6,10 @@ import org.springframework.context.annotation.Configuration;
 
 
 @Configuration
-@ConfigurationProperties(prefix = "opentp")
+@ConfigurationProperties(prefix = OpentpProperties.PREFIX)
 public class OpentpProperties {
+
+    public static final String PREFIX = "opentp";
 
     private String servers;
 
