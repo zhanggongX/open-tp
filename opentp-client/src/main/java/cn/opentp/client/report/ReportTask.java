@@ -1,8 +1,8 @@
 package cn.opentp.client.report;
 
-import cn.opentp.client.configuration.OpentpContext;
+import cn.opentp.client.configuration.Configuration;
 import cn.opentp.client.net.NettyClient;
-import cn.opentp.core.tp.ThreadPoolWrapper;
+import cn.opentp.core.tp.ThreadPoolContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,15 +15,15 @@ public class ReportTask extends TimerTask {
 
     @Override
     public void run() {
-        Map<String, ThreadPoolWrapper> allTps = OpentpContext.allTps();
-        for (Map.Entry<String, ThreadPoolWrapper> entry : allTps.entrySet()) {
-            entry.getValue().flush();
-            entry.getValue().setThreadName(entry.getKey());
-            NettyClient.send(entry.getValue());
+        Map<String, ThreadPoolContext> threadPoolContextCache = Configuration.configuration().threadPoolContextCache();
+        for (Map.Entry<String, ThreadPoolContext> threadPoolContextEntry : threadPoolContextCache.entrySet()) {
+            threadPoolContextEntry.getValue().flush();
+            threadPoolContextEntry.getValue().setThreadName(threadPoolContextEntry.getKey());
+            NettyClient.send(threadPoolContextEntry.getValue());
         }
     }
 
-    public void startReport() {
+    public static void startReport() {
         log.debug("netty client started");
         new Timer().schedule(new ReportTask(), 0, 1000);
     }

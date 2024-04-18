@@ -7,10 +7,6 @@ public class OpentpClientBootstrap {
 
     public void start() {
         NettyClient.start();
-        new ReportTask().startReport();
-    }
-
-    public static void main(String[] args) {
-        new OpentpClientBootstrap().start();
+        ReportTask.startReport();
     }
 }

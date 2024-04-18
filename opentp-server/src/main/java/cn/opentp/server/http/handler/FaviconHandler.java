@@ -1,6 +1,6 @@
 package cn.opentp.server.http.handler;
 
-import cn.opentp.core.tp.ThreadPoolWrapper;
+import cn.opentp.core.tp.ThreadPoolContext;
 import cn.opentp.server.http.BaseRes;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -11,7 +11,7 @@ public class FaviconHandler extends AbstractHttpHandler implements HttpHandler {
 
     @Override
     public void doGet(FullHttpRequest httpRequest, FullHttpResponse httpResponse) {
-        BaseRes<Map<String, ThreadPoolWrapper>> res = BaseRes.success();
+        BaseRes<Map<String, ThreadPoolContext>> res = BaseRes.success();
         updateHttpResponse(httpResponse, res);
     }
 

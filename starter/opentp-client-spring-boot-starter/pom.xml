@@ -20,15 +20,18 @@
     </properties>
 
     <dependencies>
+        <!-- spring boot starter 支持 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
             <version>${spring.version}</version>
         </dependency>
+        <!-- spring boot starter 配置生成器 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <version>${spring.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>cn.opentp</groupId>

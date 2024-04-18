@@ -1,6 +1,6 @@
 package cn.opentp.core.net.kryo;
 
-import cn.opentp.core.tp.ThreadPoolWrapper;
+import cn.opentp.core.tp.ThreadPoolContext;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
@@ -25,7 +25,7 @@ public class KryoSerializer implements Serializer {
         //设置默认的实例化器
         ((DefaultInstantiatorStrategy) kryo.getInstantiatorStrategy()).setFallbackInstantiatorStrategy(new StdInstantiatorStrategy());
         //方式二：由于默认是需要进行注册的，若是不设置为false，那么就需要进行手动注册class类
-        kryo.register(ThreadPoolWrapper.class);
+        kryo.register(ThreadPoolContext.class);
         return kryo;
 
     });

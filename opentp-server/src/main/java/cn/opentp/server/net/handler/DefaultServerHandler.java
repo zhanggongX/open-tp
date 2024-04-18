@@ -1,6 +1,6 @@
 package cn.opentp.server.net.handler;
 
-import cn.opentp.core.tp.ThreadPoolWrapper;
+import cn.opentp.core.tp.ThreadPoolContext;
 import cn.opentp.server.tp.Configuration;
 import io.netty.channel.*;
 import org.slf4j.Logger;
@@ -12,7 +12,7 @@ public class DefaultServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        ThreadPoolWrapper tpw = (ThreadPoolWrapper) msg;
+        ThreadPoolContext tpw = (ThreadPoolContext) msg;
         Configuration configuration = Configuration.configuration();
         configuration.getTpCache().put(tpw.getThreadName(), tpw);
         configuration.getTpChannel().put(tpw.getThreadName(), ctx.channel());

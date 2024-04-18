@@ -1,7 +1,7 @@
 package cn.opentp.core.net.handler;
 
 import cn.opentp.core.net.kryo.KryoSerializer;
-import cn.opentp.core.tp.ThreadPoolWrapper;
+import cn.opentp.core.tp.ThreadPoolContext;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -12,10 +12,10 @@ import io.netty.handler.codec.MessageToByteEncoder;
  * @author stone
  * @date 2019/7/30 14:16
  */
-public class ThreadPoolWrapperEncoder extends MessageToByteEncoder<ThreadPoolWrapper> {
+public class ThreadPoolWrapperEncoder extends MessageToByteEncoder<ThreadPoolContext> {
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, ThreadPoolWrapper msg, ByteBuf out) throws Exception {
+    protected void encode(ChannelHandlerContext ctx, ThreadPoolContext msg, ByteBuf out) throws Exception {
         // 1. 将对象转换为byte
         KryoSerializer kryoSerializer = new KryoSerializer();
         byte[] body = kryoSerializer.serialize(msg);

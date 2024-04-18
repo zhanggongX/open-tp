@@ -1,5 +1,6 @@
 package cn.opentp.client.net;
 
+import cn.opentp.client.configuration.Configuration;
 import cn.opentp.client.net.handler.DefaultClientHandler;
 import cn.opentp.core.net.handler.ThreadPoolWrapperDecoder;
 import cn.opentp.core.net.handler.ThreadPoolWrapperEncoder;
@@ -14,6 +15,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,21 +24,21 @@ public class NettyClient {
     private static final List<ChannelFuture> channelFutures = new ArrayList<>();
 
     public static void send(ByteBuf msg) {
-        if(channelFutures.isEmpty()){
+        if (channelFutures.isEmpty()) {
             return;
         }
         channelFutures.get(0).channel().writeAndFlush(msg);
     }
 
     public static void send(Object o) {
-        if(channelFutures.isEmpty()){
+        if (channelFutures.isEmpty()) {
             return;
         }
         channelFutures.get(0).channel().writeAndFlush(o);
     }
 
     public static void send(byte[] msg) {
-        if(channelFutures.isEmpty()){
+        if (channelFutures.isEmpty()) {
             return;
         }
         channelFutures.get(0).channel().writeAndFlush(msg);
@@ -57,22 +59,25 @@ public class NettyClient {
                                 socketChannel.pipeline().addLast(new DefaultClientHandler());
                             }
                         });
-                ChannelFuture channelFuture = clientBootstrap.connect("localhost", 9527);
-                // 链接成功回调
-                channelFuture.addListener(new ChannelFutureListener() {
-                    @Override
-                    public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                        if(channelFuture.isSuccess()){
-                            // todo 发送权限验证
-                            channelFutures.add(channelFuture);
-                        }else{
-                            Throwable cause = channelFuture.cause();
-                            log.error("链接失败：{}", cause.toString());
-                        }
 
-                    }
-                });
-                channelFutures.add(channelFuture);
+//                List<InetSocketAddress> inetSocketAddresses = Configuration.configuration().serverAddresses();
+//                log.debug("服务端地址：{}, 端口：{}", inetSocketAddresses.get(0).getHostName(), inetSocketAddresses.get(0).getPort());
+//                ChannelFuture channelFuture = clientBootstrap.connect(inetSocketAddresses.get(0));
+                // 链接成功回调
+//                channelFuture.addListener(new ChannelFutureListener() {
+//                    @Override
+//                    public void operationComplete(ChannelFuture channelFuture) throws Exception {
+//                        if (channelFuture.isSuccess()) {
+//                            // todo 发送权限验证
+//                            channelFutures.add(channelFuture);
+//                        } else {
+//                            Throwable cause = channelFuture.cause();
+//                            log.error("链接失败：{}", cause.toString());
+//                        }
+//
+//                    }
+//                });
+//                channelFutures.add(channelFuture);
                 System.out.println(1);
             }
         });

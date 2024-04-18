@@ -1,6 +1,6 @@
 package cn.opentp.server.tp;
 
-import cn.opentp.core.tp.ThreadPoolWrapper;
+import cn.opentp.core.tp.ThreadPoolContext;
 import cn.opentp.server.http.handler.HttpHandler;
 import io.netty.channel.Channel;
 
@@ -14,7 +14,7 @@ public class Configuration {
     private Configuration() {
     }
 
-    private final Map<String, ThreadPoolWrapper> tpCache = new ConcurrentHashMap<>();
+    private final Map<String, ThreadPoolContext> tpCache = new ConcurrentHashMap<>();
     private final Map<String, Channel> tpChannel = new ConcurrentHashMap<>();
     private final Map<String, HttpHandler> endPoints = new ConcurrentHashMap<>();
 
@@ -30,7 +30,7 @@ public class Configuration {
         return INSTANCE;
     }
 
-    public Map<String, ThreadPoolWrapper> getTpCache() {
+    public Map<String, ThreadPoolContext> getTpCache() {
         return tpCache;
     }
 

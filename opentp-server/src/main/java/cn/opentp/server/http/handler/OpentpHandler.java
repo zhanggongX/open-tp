@@ -1,17 +1,13 @@
 package cn.opentp.server.http.handler;
 
-import cn.opentp.core.tp.ThreadPoolWrapper;
-import cn.opentp.core.util.JSONUtils;
+import cn.opentp.core.tp.ThreadPoolContext;
 import cn.opentp.server.http.BaseRes;
-import cn.opentp.server.http.annotation.RequestURI;
 import cn.opentp.server.tp.Configuration;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaderNames;
 
 import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 //@RequestURI(url = "opentp")
@@ -25,12 +21,12 @@ public class OpentpHandler extends AbstractHttpHandler implements HttpHandler {
             throw new IllegalArgumentException("错误的路径");
         }
 
-        Map<String, ThreadPoolWrapper> tpCache = Configuration.configuration().getTpCache();
+        Map<String, ThreadPoolContext> tpCache = Configuration.configuration().getTpCache();
 
         String tpName = null;
         String[] urlPaths = uri.split("/");
         if (urlPaths.length == 2) {
-            BaseRes<Map<String, ThreadPoolWrapper>> res = BaseRes.success(tpCache);
+            BaseRes<Map<String, ThreadPoolContext>> res = BaseRes.success(tpCache);
             updateHttpResponse(httpResponse, res);
             return;
         }
@@ -44,7 +40,7 @@ public class OpentpHandler extends AbstractHttpHandler implements HttpHandler {
             return;
         }
 
-        ThreadPoolWrapper threadPoolWrapper = tpCache.get(tpName);
+        ThreadPoolContext threadPoolWrapper = tpCache.get(tpName);
         updateHttpResponse(httpResponse, threadPoolWrapper);
     }
 
@@ -73,7 +69,7 @@ public class OpentpHandler extends AbstractHttpHandler implements HttpHandler {
 
         Field declaredField = null;
         try {
-            declaredField = ThreadPoolWrapper.class.getDeclaredField(param);
+            declaredField = ThreadPoolContext.class.getDeclaredField(param);
             declaredField.setAccessible(true);
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
@@ -88,7 +84,7 @@ public class OpentpHandler extends AbstractHttpHandler implements HttpHandler {
         Configuration configuration = Configuration.configuration();
         Map<String, Channel> tpChannel = configuration.getTpChannel();
         Channel channel = tpChannel.get(tpName);
-        ThreadPoolWrapper threadPoolWrapper = new ThreadPoolWrapper();
+        ThreadPoolContext threadPoolWrapper = new ThreadPoolContext();
         threadPoolWrapper.setDefault();
         threadPoolWrapper.setThreadName(tpName);
 

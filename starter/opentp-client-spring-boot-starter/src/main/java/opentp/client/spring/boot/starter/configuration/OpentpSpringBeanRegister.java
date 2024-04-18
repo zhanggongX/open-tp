@@ -9,12 +9,16 @@ import org.springframework.core.type.AnnotationMetadata;
 public class OpentpSpringBeanRegister implements ImportBeanDefinitionRegistrar {
 
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-        boolean hadRegister = registry.containsBeanDefinition(OpentpSpringBeanPostProcessor.class.getSimpleName());
-        if (!hadRegister) {
-            // opentp start
-            registry.registerBeanDefinition(OpentpClientBootstrap.class.getSimpleName(), new RootBeanDefinition(OpentpClientBootstrap.class));
-            // spring scan @opentp
+        boolean springBeanProcessorRegistered = registry.containsBeanDefinition(OpentpSpringBeanPostProcessor.class.getSimpleName());
+        if (!springBeanProcessorRegistered) {
+            // 去扫描 @opentp 的线程池
             registry.registerBeanDefinition(OpentpSpringBeanPostProcessor.class.getSimpleName(), new RootBeanDefinition(OpentpSpringBeanPostProcessor.class));
+        }
+
+        boolean OpentpClientBootstrapRegistered = registry.containsBeanDefinition(OpentpClientBootstrap.class.getSimpleName());
+        if (!OpentpClientBootstrapRegistered) {
+            // opentp 启动器
+            registry.registerBeanDefinition(OpentpClientBootstrap.class.getSimpleName(), new RootBeanDefinition(OpentpClientBootstrap.class));
         }
     }
 }

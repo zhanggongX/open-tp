@@ -1,12 +1,13 @@
 package cn.opentp.client.net.handler;
 
-import cn.opentp.client.configuration.OpentpContext;
-import cn.opentp.core.tp.ThreadPoolWrapper;
+import cn.opentp.client.configuration.Configuration;
+import cn.opentp.core.tp.ThreadPoolContext;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 
 
@@ -22,9 +23,10 @@ public class DefaultClientHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
 
-        ThreadPoolWrapper tpw = (ThreadPoolWrapper) msg;
+        ThreadPoolContext tpw = (ThreadPoolContext) msg;
 
-        ThreadPoolWrapper threadPoolWrapper = OpentpContext.get(tpw.getThreadName());
+        Map<String, ThreadPoolContext> threadPoolContextCache = Configuration.configuration().threadPoolContextCache();
+        ThreadPoolContext threadPoolWrapper = threadPoolContextCache.get(tpw.getThreadName());
 
         ThreadPoolExecutor target = threadPoolWrapper.getTarget();
         target.setCorePoolSize(tpw.getCoreSize());

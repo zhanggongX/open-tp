@@ -1,13 +1,9 @@
 package cn.opentp.server.http;
 
-import cn.opentp.core.tp.ThreadPoolWrapper;
-import cn.opentp.core.util.JSONUtils;
 import cn.opentp.server.http.handler.HttpHandler;
 import cn.opentp.server.tp.Configuration;
 import io.netty.handler.codec.http.*;
 
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
 
 public class HttpDispatcher {

@@ -1,49 +1,61 @@
 package cn.opentp.client.spring.boot.example.controller;
 
-import cn.opentp.client.configuration.OpentpContext;
+import cn.opentp.client.configuration.Configuration;
 import cn.opentp.client.net.NettyClient;
-import cn.opentp.core.tp.ThreadPoolWrapper;
+import cn.opentp.core.tp.ThreadPoolContext;
+import cn.opentp.core.util.JSONUtils;
 import jakarta.annotation.Resource;
-import org.springframework.web.bind.annotation.*;
+import opentp.client.spring.boot.starter.configuration.OpentpProperties;
+import org.springframework.core.env.Environment;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 
 @RestController
-@RequestMapping("demo")
+@RequestMapping("test")
 public class DemoController {
+
+    @Resource
+    private Environment environment;
+    @Resource
+    private OpentpProperties opentpProperties;
 
     @Resource
     private ThreadPoolExecutor threadPoolExecutor;
 
-    @GetMapping("test")
-    public String test() {
-        return "test";
-    }
-
-    @GetMapping("tps")
+    @GetMapping("threadPool")
     public String tps() {
-        return OpentpContext.all();
+        Map<String, ThreadPoolContext> threadPoolContextCache = Configuration.configuration().threadPoolContextCache();
+        String res = "";
+        for (Map.Entry<String, ThreadPoolContext> e : threadPoolContextCache.entrySet()) {
+            res += e.getValue().toString();
+        }
+        String property = environment.getProperty("opentp.servers");
+        return JSONUtils.toJson(res);
     }
 
-    @GetMapping("tp/{tpName}/{coreSize}")
-    public String tpCoreSize(@PathVariable String tpName, @PathVariable Integer coreSize) {
-        ThreadPoolWrapper threadPoolWrapper = OpentpContext.get(tpName);
-//        threadPoolWrapper.getTarget().setCorePoolSize(coreSize);
-        return "success";
+    @GetMapping("threadPool/{tpName}")
+    public String tpCoreSize(@PathVariable String tpName) {
+        Map<String, ThreadPoolContext> threadPoolContextCache = Configuration.configuration().threadPoolContextCache();
+        ThreadPoolContext threadPoolContext = threadPoolContextCache.get(tpName);
+        return JSONUtils.toJson(threadPoolContext);
     }
 
-    @GetMapping("report")
+    @GetMapping("threadPool/report")
     public String report() {
-        Map<String, ThreadPoolWrapper> allTps = OpentpContext.allTps();
-        for (ThreadPoolWrapper tpw : allTps.values()) {
-            tpw.flush();
-            NettyClient.send(tpw);
+        Map<String, ThreadPoolContext> threadPoolContextCache = Configuration.configuration().threadPoolContextCache();
+        for (ThreadPoolContext threadPoolContext : threadPoolContextCache.values()) {
+            threadPoolContext.flush();
+            NettyClient.send(threadPoolContext);
         }
         return "ok";
     }
 
-    @GetMapping("new")
+    @GetMapping("threadPool/execute")
     public String newThread() {
         threadPoolExecutor.execute(new Runnable() {
             @Override
@@ -53,7 +65,6 @@ public class DemoController {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                System.out.println(1);
             }
         });
         return "ok";

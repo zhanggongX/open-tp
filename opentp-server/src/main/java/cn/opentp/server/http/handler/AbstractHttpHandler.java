@@ -1,13 +1,10 @@
 package cn.opentp.server.http.handler;
 
-import cn.opentp.core.tp.ThreadPoolWrapper;
 import cn.opentp.core.util.JSONUtils;
-import cn.opentp.server.http.BaseRes;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 
 public abstract class AbstractHttpHandler {
 

@@ -1,10 +1,12 @@
 package cn.opentp.core.tp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.beans.Transient;
 import java.io.Serializable;
 import java.util.concurrent.ThreadPoolExecutor;
 
-public class ThreadPoolWrapper implements Serializable {
+public class ThreadPoolContext implements Serializable {
 
     /**
      * 核心线程数
@@ -45,12 +47,13 @@ public class ThreadPoolWrapper implements Serializable {
     /**
      * 线程池
      */
+    @JsonIgnore
     private transient ThreadPoolExecutor target;
 
-    public ThreadPoolWrapper() {
+    public ThreadPoolContext() {
     }
 
-    public ThreadPoolWrapper(ThreadPoolExecutor target) {
+    public ThreadPoolContext(ThreadPoolExecutor target) {
         this.target = target;
     }
 

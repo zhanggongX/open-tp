@@ -1,7 +1,7 @@
 package cn.opentp.core.net.handler;
 
 import cn.opentp.core.net.kryo.KryoSerializer;
-import cn.opentp.core.tp.ThreadPoolWrapper;
+import cn.opentp.core.tp.ThreadPoolContext;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
@@ -38,7 +38,7 @@ public class ThreadPoolWrapperDecoder extends ByteToMessageDecoder {
 
         // 将bytes数组转换为我们需要的对象
         KryoSerializer kryoSerializer = new KryoSerializer();
-        ThreadPoolWrapper msg = kryoSerializer.deserialize(body, ThreadPoolWrapper.class);
+        ThreadPoolContext msg = kryoSerializer.deserialize(body, ThreadPoolContext.class);
         out.add(msg);
     }
 }
