@@ -2,12 +2,15 @@ package cn.opentp.client.net;
 
 import cn.opentp.client.configuration.Configuration;
 import cn.opentp.core.thread.pool.ThreadPoolContext;
+import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.Map;
 
 
@@ -35,6 +38,20 @@ public class ThreadPoolStateReportThread implements Runnable {
                     }
                 }
             });
+
+            // todo 重试策略优化
+            if (!channel.isActive()) {
+                Bootstrap bootstrap = Configuration.configuration().bootstrap();
+                List<InetSocketAddress> inetSocketAddresses = Configuration.configuration().serverAddresses();
+                InetSocketAddress inetSocketAddress = inetSocketAddresses.get(0);
+                ChannelFuture reChannelFuture = bootstrap.connect(inetSocketAddress);
+                reChannelFuture.addListener(new ChannelFutureListener() {
+                    @Override
+                    public void operationComplete(ChannelFuture future) throws Exception {
+                        Configuration.configuration().setThreadPoolReportChannel(reChannelFuture.channel());
+                    }
+                });
+            }
         }
         // todo 批量上报
         // channel.writeAndFlush(threadPoolContextCache.values());

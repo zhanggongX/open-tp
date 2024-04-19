@@ -37,6 +37,8 @@ public class NettyBootstrap {
                         socketChannel.pipeline().addLast(new OpentpClientHandler());
                     }
                 });
+        // 客户端
+        Configuration.configuration().setBootstrap(clientBootstrap);
 
         // 配置的服务器信息
         List<InetSocketAddress> inetSocketAddresses = Configuration.configuration().serverAddresses();

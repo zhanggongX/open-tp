@@ -1,6 +1,7 @@
 package cn.opentp.client.configuration;
 
 import cn.opentp.core.thread.pool.ThreadPoolContext;
+import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 
 import java.net.InetSocketAddress;
@@ -36,6 +37,8 @@ public class Configuration {
     private final List<InetSocketAddress> serverAddresses = new CopyOnWriteArrayList<>();
     // 线程池增强对象缓存
     private final Map<String, ThreadPoolContext> ThreadPoolContextCache = new ConcurrentHashMap<>();
+    // 线程池信息上报 bootstrap
+    private Bootstrap bootstrap;
     // 线程池信息上报 socket
     private Channel threadPoolReportChannel;
 
@@ -54,5 +57,13 @@ public class Configuration {
 
     public void setThreadPoolReportChannel(Channel threadPoolReportChannel) {
         this.threadPoolReportChannel = threadPoolReportChannel;
+    }
+
+    public Bootstrap bootstrap() {
+        return bootstrap;
+    }
+
+    public void setBootstrap(Bootstrap bootstrap) {
+        this.bootstrap = bootstrap;
     }
 }
