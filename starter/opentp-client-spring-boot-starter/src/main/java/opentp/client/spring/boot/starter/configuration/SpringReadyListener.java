@@ -25,6 +25,7 @@ public class SpringReadyListener implements ApplicationListener<ApplicationReady
         if (enableBeans.isEmpty()) {
             return;
         }
+        // 启动服务
         OpentpClientBootstrap opentpClientBootstrap = applicationContext.getBean(OpentpClientBootstrap.class);
         opentpClientBootstrap.start();
     }

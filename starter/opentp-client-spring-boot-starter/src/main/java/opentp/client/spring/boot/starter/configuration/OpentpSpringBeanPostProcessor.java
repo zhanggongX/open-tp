@@ -3,7 +3,7 @@ package opentp.client.spring.boot.starter.configuration;
 import cn.opentp.client.configuration.Configuration;
 import cn.opentp.core.tp.ThreadPoolContext;
 import opentp.client.spring.boot.starter.annotation.Opentp;
-import opentp.client.spring.boot.starter.exception.OpentpDupException;
+import opentp.client.spring.boot.starter.exception.ThreadPoolKeyDupException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -34,7 +34,7 @@ public class OpentpSpringBeanPostProcessor implements BeanPostProcessor, BeanFac
     }
 
     /**
-     * 在 spring bean 初始化回调
+     * 在 spring bean 初始化前回调
      * 如 InitializingBean 的 afterPropertiesSet 方法或者自定义的 init-method 之前被调用
      * 也就是说，这个方法会在bean的属性已经设置完毕，但还未进行初始化时被调用。
      *
@@ -76,7 +76,7 @@ public class OpentpSpringBeanPostProcessor implements BeanPostProcessor, BeanFac
         Map<String, ThreadPoolContext> threadPoolContextCache = configuration.threadPoolContextCache();
 
         if (threadPoolContextCache.containsKey(opentp.value())) {
-            throw new OpentpDupException();
+            throw new ThreadPoolKeyDupException();
         }
 
         threadPoolContextCache.put(opentp.value(), threadPoolContext);

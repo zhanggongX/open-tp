@@ -2,10 +2,8 @@
 package opentp.client.spring.boot.starter.configuration;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 
-@Component
 @ConfigurationProperties(prefix = OpentpProperties.PREFIX)
 public class OpentpProperties {
 

@@ -25,6 +25,13 @@ public class OpentpAutoConfiguration implements InitializingBean {
     @Resource
     private OpentpProperties opentpProperties;
 
+    /**
+     * new Bean -> set Bean -> all Aware -> beanPostProcessor(before) -> InitializingBean(afterPropertiesSet) -> init-method -> beanPostProcessor(after)
+     * opentpProperties 已经注入
+     * DisposableBean -> destroy-method
+     *
+     * @throws Exception InitializingBean 异常信息
+     */
     @Override
     public void afterPropertiesSet() throws Exception {
         // 添加配置信息
