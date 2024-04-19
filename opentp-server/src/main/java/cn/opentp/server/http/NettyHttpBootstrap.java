@@ -12,8 +12,9 @@ import io.netty.handler.codec.http.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NettyHttpServer {
-    private static final Logger log = LoggerFactory.getLogger(NettyHttpServer.class);
+public class NettyHttpBootstrap {
+
+    private static final Logger log = LoggerFactory.getLogger(NettyHttpBootstrap.class);
 
     public static Thread start() {
         Thread thread = new Thread(new Runnable() {

@@ -1,8 +1,8 @@
 package cn.opentp.server.http.handler;
 
-import cn.opentp.core.tp.ThreadPoolContext;
+import cn.opentp.core.thread.pool.ThreadPoolState;
 import cn.opentp.server.http.BaseRes;
-import cn.opentp.server.tp.Configuration;
+import cn.opentp.server.configuration.Configuration;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -10,8 +10,7 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-//@RequestURI(url = "opentp")
-public class OpentpHandler extends AbstractHttpHandler implements HttpHandler {
+public class OpentpHttpHandler extends AbstractHttpHandler implements HttpHandler {
 
     @Override
     public void doGet(FullHttpRequest httpRequest, FullHttpResponse httpResponse) {
@@ -21,12 +20,12 @@ public class OpentpHandler extends AbstractHttpHandler implements HttpHandler {
             throw new IllegalArgumentException("错误的路径");
         }
 
-        Map<String, ThreadPoolContext> tpCache = Configuration.configuration().getTpCache();
+        Map<String, ThreadPoolState> theadPoolStateCache = Configuration.configuration().theadPoolStateCache();
 
         String tpName = null;
         String[] urlPaths = uri.split("/");
         if (urlPaths.length == 2) {
-            BaseRes<Map<String, ThreadPoolContext>> res = BaseRes.success(tpCache);
+            BaseRes<Map<String, ThreadPoolState>> res = BaseRes.success(theadPoolStateCache);
             updateHttpResponse(httpResponse, res);
             return;
         }
@@ -40,8 +39,8 @@ public class OpentpHandler extends AbstractHttpHandler implements HttpHandler {
             return;
         }
 
-        ThreadPoolContext threadPoolWrapper = tpCache.get(tpName);
-        updateHttpResponse(httpResponse, threadPoolWrapper);
+        ThreadPoolState threadPoolState = theadPoolStateCache.get(tpName);
+        updateHttpResponse(httpResponse, threadPoolState);
     }
 
 
@@ -63,38 +62,37 @@ public class OpentpHandler extends AbstractHttpHandler implements HttpHandler {
             updateHttpResponse(httpResponse, res);
             return;
         }
-        String tpName = urlPaths[2];
+        String theadPoolName = urlPaths[2];
         String param = urlPaths[3];
         int value = Integer.parseInt(urlPaths[4]);
 
         Field declaredField = null;
         try {
-            declaredField = ThreadPoolContext.class.getDeclaredField(param);
+            declaredField = ThreadPoolState.class.getDeclaredField(param);
             declaredField.setAccessible(true);
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
         }
 
-        if(declaredField == null){
+        if (declaredField == null) {
             BaseRes<Void> res = BaseRes.fail(-1, "无效的参数");
             updateHttpResponse(httpResponse, res);
             return;
         }
 
         Configuration configuration = Configuration.configuration();
-        Map<String, Channel> tpChannel = configuration.getTpChannel();
-        Channel channel = tpChannel.get(tpName);
-        ThreadPoolContext threadPoolWrapper = new ThreadPoolContext();
-        threadPoolWrapper.setDefault();
-        threadPoolWrapper.setThreadName(tpName);
+        Map<String, Channel> channelCache = configuration.channelCache();
+        Channel channel = channelCache.get(theadPoolName);
+        ThreadPoolState threadPoolState = new ThreadPoolState();
+        threadPoolState.flushDefault(theadPoolName);
 
         try {
-            declaredField.set(threadPoolWrapper, value);
+            declaredField.set(threadPoolState, value);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
 
-        channel.writeAndFlush(threadPoolWrapper);
+        channel.writeAndFlush(threadPoolState);
 
         BaseRes<Void> res = BaseRes.success();
         updateHttpResponse(httpResponse, res);

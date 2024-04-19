@@ -1,4 +1,4 @@
-package cn.opentp.server.bootstrap;
+package cn.opentp.server.command;
 
 import org.apache.commons.cli.*;
 

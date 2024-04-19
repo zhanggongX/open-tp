@@ -1,7 +1,7 @@
 package opentp.client.spring.boot.starter.configuration;
 
 import cn.opentp.client.configuration.Configuration;
-import cn.opentp.core.tp.ThreadPoolContext;
+import cn.opentp.core.thread.pool.ThreadPoolContext;
 import opentp.client.spring.boot.starter.annotation.Opentp;
 import opentp.client.spring.boot.starter.exception.ThreadPoolKeyDupException;
 import org.slf4j.Logger;

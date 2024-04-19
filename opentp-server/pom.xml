@@ -69,7 +69,7 @@
                     <archive>
                         <!-- 指定启动类 -->
                         <manifest>
-                            <mainClass>cn.opentp.server.bootstrap.OpentpBootstrap</mainClass>
+                            <mainClass>cn.opentp.server.OpentpBootstrap</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

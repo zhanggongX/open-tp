@@ -1,12 +1,9 @@
 package cn.opentp.client.spring.boot.example.controller;
 
 import cn.opentp.client.configuration.Configuration;
-import cn.opentp.client.net.NettyClient;
-import cn.opentp.core.tp.ThreadPoolContext;
+import cn.opentp.core.thread.pool.ThreadPoolContext;
 import cn.opentp.core.util.JSONUtils;
 import jakarta.annotation.Resource;
-import opentp.client.spring.boot.starter.configuration.OpentpProperties;
-import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,7 +24,7 @@ public class DemoController {
         Map<String, ThreadPoolContext> threadPoolContextCache = Configuration.configuration().threadPoolContextCache();
         StringBuilder res = new StringBuilder();
         for (Map.Entry<String, ThreadPoolContext> e : threadPoolContextCache.entrySet()) {
-            res.append(e.getValue().toString());
+            res.append(e.getValue().getState().toString());
         }
         return JSONUtils.toJson(res.toString());
     }
@@ -42,9 +39,9 @@ public class DemoController {
     @GetMapping("threadPool/report")
     public String report() {
         Map<String, ThreadPoolContext> threadPoolContextCache = Configuration.configuration().threadPoolContextCache();
-        for (ThreadPoolContext threadPoolContext : threadPoolContextCache.values()) {
-            threadPoolContext.flush();
-//            NettyClient.send(threadPoolContext);
+        for (Map.Entry<String, ThreadPoolContext> threadPoolContextEntry : threadPoolContextCache.entrySet()) {
+            threadPoolContextEntry.getValue().flushState(threadPoolContextEntry.getKey());
+            Configuration.configuration().threadPoolReportChannel().writeAndFlush(threadPoolContextEntry.getValue().getState());
         }
         return "ok";
     }

@@ -1,4 +1,4 @@
-package opentp.client.spring.boot.starter.exception;
+package cn.opentp.client.exception;
 
 public class ServerAddrUnDefineException extends RuntimeException {
 

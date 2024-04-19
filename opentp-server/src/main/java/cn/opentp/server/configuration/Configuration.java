@@ -1,6 +1,6 @@
-package cn.opentp.server.tp;
+package cn.opentp.server.configuration;
 
-import cn.opentp.core.tp.ThreadPoolContext;
+import cn.opentp.core.thread.pool.ThreadPoolState;
 import cn.opentp.server.http.handler.HttpHandler;
 import io.netty.channel.Channel;
 
@@ -11,13 +11,13 @@ public class Configuration {
 
     private volatile static Configuration INSTANCE;
 
-    private Configuration() {
-    }
-
-    private final Map<String, ThreadPoolContext> tpCache = new ConcurrentHashMap<>();
-    private final Map<String, Channel> tpChannel = new ConcurrentHashMap<>();
+    private final Map<String, ThreadPoolState> theadPoolStateCache = new ConcurrentHashMap<>();
+    private final Map<String, Channel> channelCache = new ConcurrentHashMap<>();
     private final Map<String, HttpHandler> endPoints = new ConcurrentHashMap<>();
 
+
+    private Configuration() {
+    }
 
     public static Configuration configuration() {
         if (INSTANCE == null) {
@@ -30,15 +30,15 @@ public class Configuration {
         return INSTANCE;
     }
 
-    public Map<String, ThreadPoolContext> getTpCache() {
-        return tpCache;
+    public Map<String, ThreadPoolState> theadPoolStateCache() {
+        return theadPoolStateCache;
     }
 
-    public Map<String, Channel> getTpChannel() {
-        return tpChannel;
+    public Map<String, Channel> channelCache() {
+        return channelCache;
     }
 
-    public Map<String, HttpHandler> getEndPoints() {
+    public Map<String, HttpHandler> endPoints() {
         return endPoints;
     }
 }

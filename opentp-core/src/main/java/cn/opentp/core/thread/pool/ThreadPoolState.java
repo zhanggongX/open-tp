@@ -1,12 +1,8 @@
-package cn.opentp.core.tp;
+package cn.opentp.core.thread.pool;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import java.beans.Transient;
 import java.io.Serializable;
-import java.util.concurrent.ThreadPoolExecutor;
 
-public class ThreadPoolContext implements Serializable {
+public class ThreadPoolState implements Serializable {
 
     /**
      * 核心线程数
@@ -43,35 +39,9 @@ public class ThreadPoolContext implements Serializable {
     /**
      * 线程名
      */
-    private String threadName;
-    /**
-     * 线程池
-     */
-    @JsonIgnore
-    private transient ThreadPoolExecutor target;
+    private String threadPoolName;
 
-    public ThreadPoolContext() {
-    }
-
-    public ThreadPoolContext(ThreadPoolExecutor target) {
-        this.target = target;
-    }
-
-    public void flush() {
-        if (target == null) {
-            setDefault();
-        }
-        this.coreSize = target.getCorePoolSize();
-        this.maxSize = target.getMaximumPoolSize();
-        this.poolSize = target.getPoolSize();
-        this.activeCount = target.getActiveCount();
-        this.completedCount = target.getCompletedTaskCount();
-        this.queueSize = target.getQueue().size();
-        this.queueLength = target.getQueue().remainingCapacity();
-        this.largestPoolSize = target.getLargestPoolSize();
-    }
-
-    public void setDefault() {
+    public void flushDefault() {
         this.coreSize = -1;
         this.maxSize = -1;
         this.poolSize = -1;
@@ -80,6 +50,11 @@ public class ThreadPoolContext implements Serializable {
         this.queueSize = -1;
         this.queueLength = -1;
         this.largestPoolSize = -1;
+    }
+
+    public void flushDefault(String threadPoolName) {
+        this.threadPoolName = threadPoolName;
+        flushDefault();
     }
 
     public int getCoreSize() {
@@ -146,27 +121,18 @@ public class ThreadPoolContext implements Serializable {
         this.largestPoolSize = largestPoolSize;
     }
 
-    public ThreadPoolExecutor getTarget() {
-        return target;
+    public String getThreadPoolName() {
+        return threadPoolName;
     }
 
-    public void setTarget(ThreadPoolExecutor target) {
-        this.target = target;
-    }
-
-    public String getThreadName() {
-        return threadName;
-    }
-
-    public void setThreadName(String threadName) {
-        this.threadName = threadName;
+    public void setThreadPoolName(String threadPoolName) {
+        this.threadPoolName = threadPoolName;
     }
 
     @Override
     public String toString() {
-        return "ThreadPoolWrapper{" +
-                "threadName=" + threadName +
-                ", coreSize=" + coreSize +
+        return "ThreadPoolState{" +
+                "coreSize=" + coreSize +
                 ", maxSize=" + maxSize +
                 ", poolSize=" + poolSize +
                 ", activeCount=" + activeCount +
@@ -174,6 +140,7 @@ public class ThreadPoolContext implements Serializable {
                 ", queueSize=" + queueSize +
                 ", queueLength=" + queueLength +
                 ", largestPoolSize=" + largestPoolSize +
+                ", threadPoolName='" + threadPoolName + '\'' +
                 '}';
     }
 }

@@ -1,7 +1,7 @@
 package cn.opentp.client.spring.boot.example.thread.pool;
 
 import cn.opentp.client.configuration.Configuration;
-import cn.opentp.core.tp.ThreadPoolContext;
+import cn.opentp.core.thread.pool.ThreadPoolContext;
 import opentp.client.spring.boot.starter.annotation.Opentp;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;

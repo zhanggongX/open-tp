@@ -1,7 +1,7 @@
 package cn.opentp.server.http;
 
 import cn.opentp.server.http.handler.HttpHandler;
-import cn.opentp.server.tp.Configuration;
+import cn.opentp.server.configuration.Configuration;
 import io.netty.handler.codec.http.*;
 
 import java.util.Map;
@@ -15,7 +15,7 @@ public class HttpDispatcher {
 
         String[] split = uri.split("/");
         String endPoint = split[1];
-        Map<String, HttpHandler> endPoints = Configuration.configuration().getEndPoints();
+        Map<String, HttpHandler> endPoints = Configuration.configuration().endPoints();
         HttpHandler httpHandler = endPoints.get(endPoint);
 
         if (HttpMethod.GET.equals(method)) {

@@ -1,7 +1,7 @@
 package opentp.client.spring.boot.starter.support;
 
 import cn.opentp.client.configuration.Configuration;
-import opentp.client.spring.boot.starter.exception.ServerAddrUnDefineException;
+import cn.opentp.client.exception.ServerAddrUnDefineException;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;

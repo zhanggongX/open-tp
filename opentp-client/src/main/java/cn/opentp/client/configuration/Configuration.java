@@ -1,8 +1,7 @@
 package cn.opentp.client.configuration;
 
-import cn.opentp.core.tp.ThreadPoolContext;
+import cn.opentp.core.thread.pool.ThreadPoolContext;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 
 import java.net.InetSocketAddress;
 import java.util.List;
@@ -39,6 +38,7 @@ public class Configuration {
     private final Map<String, ThreadPoolContext> ThreadPoolContextCache = new ConcurrentHashMap<>();
     // 线程池信息上报 socket
     private Channel threadPoolReportChannel;
+
 
     public Map<String, ThreadPoolContext> threadPoolContextCache() {
         return ThreadPoolContextCache;

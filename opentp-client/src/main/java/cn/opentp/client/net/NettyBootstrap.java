@@ -1,9 +1,10 @@
 package cn.opentp.client.net;
 
 import cn.opentp.client.configuration.Configuration;
-import cn.opentp.client.net.handler.DefaultClientHandler;
-import cn.opentp.core.net.handler.ThreadPoolWrapperDecoder;
-import cn.opentp.core.net.handler.ThreadPoolWrapperEncoder;
+import cn.opentp.client.exception.ServerAddrUnDefineException;
+import cn.opentp.client.net.handler.OpentpClientHandler;
+import cn.opentp.core.net.handler.ThreadPoolStateDecoder;
+import cn.opentp.core.net.handler.ThreadPoolStateEncoder;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -16,42 +17,51 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+public class NettyBootstrap {
 
-public class ThreadPoolReportThread implements Runnable {
+    private final static Logger log = LoggerFactory.getLogger(NettyBootstrap.class);
 
-    private final static Logger log = LoggerFactory.getLogger(NettyClient.class);
-
-    @Override
-    public void run() {
+    public static void start() {
 
         Bootstrap clientBootstrap = new Bootstrap();
-        clientBootstrap.group(new NioEventLoopGroup(10))
+
+        clientBootstrap.group(new NioEventLoopGroup(1))
                 .channel(NioSocketChannel.class)
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
-                        socketChannel.pipeline().addLast(new ThreadPoolWrapperEncoder());
-                        socketChannel.pipeline().addLast(new ThreadPoolWrapperDecoder());
-                        socketChannel.pipeline().addLast(new DefaultClientHandler());
+                        socketChannel.pipeline().addLast(new ThreadPoolStateEncoder());
+                        socketChannel.pipeline().addLast(new ThreadPoolStateDecoder());
+                        socketChannel.pipeline().addLast(new OpentpClientHandler());
                     }
                 });
 
+        // 配置的服务器信息
         List<InetSocketAddress> inetSocketAddresses = Configuration.configuration().serverAddresses();
+        if (inetSocketAddresses.size() == 0) {
+            throw new ServerAddrUnDefineException();
+        }
+        // todo 集群迭代。
         log.debug("服务端地址：{}, 端口：{}", inetSocketAddresses.get(0).getHostName(), inetSocketAddresses.get(0).getPort());
-
         ChannelFuture channelFuture = clientBootstrap.connect(inetSocketAddresses.get(0));
+
         // 链接成功回调
         channelFuture.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture channelFuture) throws Exception {
                 if (channelFuture.isSuccess()) {
+                    // todo 发送权限验证
+                    // 记录 channel
                     Configuration.configuration().setThreadPoolReportChannel(channelFuture.channel());
+                    // 没一秒都去上报 todo 配置
+                    channelFuture.channel().eventLoop().scheduleAtFixedRate(new ThreadPoolStateReportThread(), 1, 1, TimeUnit.SECONDS);
                 } else {
+                    // 重试
                     Throwable cause = channelFuture.cause();
                     log.error("链接失败：{}", cause.toString());
                 }
-
             }
         });
     }

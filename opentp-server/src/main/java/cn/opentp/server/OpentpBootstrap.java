@@ -1,11 +1,12 @@
-package cn.opentp.server.bootstrap;
+package cn.opentp.server;
 
-import cn.opentp.server.http.NettyHttpServer;
-import cn.opentp.server.http.handler.FaviconHandler;
+import cn.opentp.server.command.CommandOptions;
+import cn.opentp.server.configuration.Configuration;
+import cn.opentp.server.http.NettyHttpBootstrap;
+import cn.opentp.server.http.handler.FaviconHttpHandler;
 import cn.opentp.server.http.handler.HttpHandler;
-import cn.opentp.server.http.handler.OpentpHandler;
-import cn.opentp.server.net.NettyServer;
-import cn.opentp.server.tp.Configuration;
+import cn.opentp.server.http.handler.OpentpHttpHandler;
+import cn.opentp.server.net.NettyBootstrap;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,13 +34,14 @@ public class OpentpBootstrap {
             return;
         }
 
-        Thread serverThread = NettyServer.start();
-        Thread start = NettyHttpServer.start();
-        Configuration configuration = Configuration.configuration();
-        Map<String, HttpHandler> endPoints = configuration.getEndPoints();
-        endPoints.put("favicon.ico", new FaviconHandler());
-        endPoints.put("opentp", new OpentpHandler());
+        Thread nettyBootstrap = NettyBootstrap.start();
+        Thread nettyHttpBootstrap = NettyHttpBootstrap.start();
 
-        serverThread.join();
+        Map<String, HttpHandler> endPoints = Configuration.configuration().endPoints();
+        // 添加 handler
+        endPoints.put("favicon.ico", new FaviconHttpHandler());
+        endPoints.put("opentp", new OpentpHttpHandler());
+
+        nettyBootstrap.join();
     }
 }

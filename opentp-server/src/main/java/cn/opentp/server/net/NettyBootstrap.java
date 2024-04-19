@@ -1,8 +1,8 @@
 package cn.opentp.server.net;
 
-import cn.opentp.core.net.handler.ThreadPoolWrapperDecoder;
-import cn.opentp.core.net.handler.ThreadPoolWrapperEncoder;
-import cn.opentp.server.net.handler.DefaultServerHandler;
+import cn.opentp.core.net.handler.ThreadPoolStateDecoder;
+import cn.opentp.core.net.handler.ThreadPoolStateEncoder;
+import cn.opentp.server.net.handler.OpentpHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -12,8 +12,9 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NettyServer {
-    private static final Logger log = LoggerFactory.getLogger(NettyServer.class);
+public class NettyBootstrap {
+
+    private static final Logger log = LoggerFactory.getLogger(NettyBootstrap.class);
 
     public static Thread start() {
         Thread thread = new Thread(new Runnable() {
@@ -27,9 +28,9 @@ public class NettyServer {
                         .childHandler(new ChannelInitializer<SocketChannel>() {
                             @Override
                             protected void initChannel(SocketChannel socketChannel) throws Exception {
-                                socketChannel.pipeline().addLast(new ThreadPoolWrapperEncoder());
-                                socketChannel.pipeline().addLast(new ThreadPoolWrapperDecoder());
-                                socketChannel.pipeline().addLast(new DefaultServerHandler());
+                                socketChannel.pipeline().addLast(new ThreadPoolStateEncoder());
+                                socketChannel.pipeline().addLast(new ThreadPoolStateDecoder());
+                                socketChannel.pipeline().addLast(new OpentpHandler());
                             }
                         });
                 serverBootstrap.bind(9527);
