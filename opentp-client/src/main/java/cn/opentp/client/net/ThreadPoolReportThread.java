@@ -1,9 +1,58 @@
 package cn.opentp.client.net;
 
+import cn.opentp.client.configuration.Configuration;
+import cn.opentp.client.net.handler.DefaultClientHandler;
+import cn.opentp.core.net.handler.ThreadPoolWrapperDecoder;
+import cn.opentp.core.net.handler.ThreadPoolWrapperEncoder;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.net.InetSocketAddress;
+import java.util.List;
+
+
 public class ThreadPoolReportThread implements Runnable {
+
+    private final static Logger log = LoggerFactory.getLogger(NettyClient.class);
 
     @Override
     public void run() {
 
+        Bootstrap clientBootstrap = new Bootstrap();
+        clientBootstrap.group(new NioEventLoopGroup(10))
+                .channel(NioSocketChannel.class)
+                .handler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    protected void initChannel(SocketChannel socketChannel) throws Exception {
+                        socketChannel.pipeline().addLast(new ThreadPoolWrapperEncoder());
+                        socketChannel.pipeline().addLast(new ThreadPoolWrapperDecoder());
+                        socketChannel.pipeline().addLast(new DefaultClientHandler());
+                    }
+                });
+
+        List<InetSocketAddress> inetSocketAddresses = Configuration.configuration().serverAddresses();
+        log.debug("服务端地址：{}, 端口：{}", inetSocketAddresses.get(0).getHostName(), inetSocketAddresses.get(0).getPort());
+
+        ChannelFuture channelFuture = clientBootstrap.connect(inetSocketAddresses.get(0));
+        // 链接成功回调
+        channelFuture.addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                if (channelFuture.isSuccess()) {
+                    Configuration.configuration().setThreadPoolReportChannel(channelFuture.channel());
+                } else {
+                    Throwable cause = channelFuture.cause();
+                    log.error("链接失败：{}", cause.toString());
+                }
+
+            }
+        });
     }
 }

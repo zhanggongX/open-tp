@@ -44,7 +44,7 @@ public class DemoController {
         Map<String, ThreadPoolContext> threadPoolContextCache = Configuration.configuration().threadPoolContextCache();
         for (ThreadPoolContext threadPoolContext : threadPoolContextCache.values()) {
             threadPoolContext.flush();
-            NettyClient.send(threadPoolContext);
+//            NettyClient.send(threadPoolContext);
         }
         return "ok";
     }

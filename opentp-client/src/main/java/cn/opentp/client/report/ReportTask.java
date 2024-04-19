@@ -19,7 +19,7 @@ public class ReportTask extends TimerTask {
         for (Map.Entry<String, ThreadPoolContext> threadPoolContextEntry : threadPoolContextCache.entrySet()) {
             threadPoolContextEntry.getValue().flush();
             threadPoolContextEntry.getValue().setThreadName(threadPoolContextEntry.getKey());
-            NettyClient.send(threadPoolContextEntry.getValue());
+//            NettyClient.send(threadPoolContextEntry.getValue());
         }
     }
 
