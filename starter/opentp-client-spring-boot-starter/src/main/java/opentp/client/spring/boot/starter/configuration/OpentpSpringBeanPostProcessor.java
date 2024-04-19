@@ -30,7 +30,7 @@ public class OpentpSpringBeanPostProcessor implements BeanPostProcessor, BeanFac
 
     @Override
     public int getOrder() {
-        return Ordered.LOWEST_PRECEDENCE;
+        return Ordered.HIGHEST_PRECEDENCE;
     }
 
     /**
@@ -45,7 +45,7 @@ public class OpentpSpringBeanPostProcessor implements BeanPostProcessor, BeanFac
      */
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        return null;
+        return bean;
     }
 
     /**

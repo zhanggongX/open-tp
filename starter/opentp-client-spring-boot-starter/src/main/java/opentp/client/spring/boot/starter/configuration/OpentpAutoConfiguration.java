@@ -27,7 +27,7 @@ public class OpentpAutoConfiguration implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        // 配置地址信息
+        // 添加配置信息
         List<InetSocketAddress> configInetSocketAddress = ServerAddressParser.parse(opentpProperties.getServers());
         cn.opentp.client.configuration.Configuration.configuration().serverAddresses().addAll(configInetSocketAddress);
     }
