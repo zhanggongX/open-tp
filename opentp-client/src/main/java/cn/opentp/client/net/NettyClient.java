@@ -20,29 +20,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NettyClient {
+
     private final static Logger log = LoggerFactory.getLogger(NettyClient.class);
-    private static final List<ChannelFuture> channelFutures = new ArrayList<>();
 
-    public static void send(ByteBuf msg) {
-        if (channelFutures.isEmpty()) {
-            return;
-        }
-        channelFutures.get(0).channel().writeAndFlush(msg);
-    }
-
-    public static void send(Object o) {
-        if (channelFutures.isEmpty()) {
-            return;
-        }
-        channelFutures.get(0).channel().writeAndFlush(o);
-    }
-
-    public static void send(byte[] msg) {
-        if (channelFutures.isEmpty()) {
-            return;
-        }
-        channelFutures.get(0).channel().writeAndFlush(msg);
-    }
+//    public static void send(ByteBuf msg) {
+//        if (channelFutures.isEmpty()) {
+//            return;
+//        }
+//        channelFutures.get(0).channel().writeAndFlush(msg);
+//    }
+//
+//    public static void send(Object o) {
+//        if (channelFutures.isEmpty()) {
+//            return;
+//        }
+//        channelFutures.get(0).channel().writeAndFlush(o);
+//    }
+//
+//    public static void send(byte[] msg) {
+//        if (channelFutures.isEmpty()) {
+//            return;
+//        }
+//        channelFutures.get(0).channel().writeAndFlush(msg);
+//    }
 
     public static Thread start() {
         Thread thread = new Thread(new Runnable() {

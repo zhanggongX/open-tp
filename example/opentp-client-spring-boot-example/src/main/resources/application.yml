@@ -1,0 +1,3 @@
+opentp:
+  servers: localhost:9527
+  name: opentp-client1

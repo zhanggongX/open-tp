@@ -4,6 +4,7 @@ import cn.opentp.client.configuration.Configuration;
 import cn.opentp.core.tp.ThreadPoolContext;
 import cn.opentp.core.util.JSONUtils;
 import opentp.client.spring.boot.starter.annotation.Opentp;
+import opentp.client.spring.boot.starter.exception.OpentpDupException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -32,7 +33,7 @@ public class OpentpSpringBeanPostProcessor implements BeanPostProcessor, BeanFac
 
     @Override
     public int getOrder() {
-        return Ordered.HIGHEST_PRECEDENCE;
+        return Ordered.LOWEST_PRECEDENCE;
     }
 
     @Override
@@ -57,17 +58,11 @@ public class OpentpSpringBeanPostProcessor implements BeanPostProcessor, BeanFac
         Configuration configuration = Configuration.configuration();
         Map<String, ThreadPoolContext> threadPoolContextCache = configuration.threadPoolContextCache();
 
-        InetAddress addr = null;
-        try {
-            addr = InetAddress.getLocalHost();
-            String hostname = addr.getHostName();
-            log.info("当前主机信息：{}", JSONUtils.toJson(addr));
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
+        if (threadPoolContextCache.containsKey(opentp.value())) {
+            throw new OpentpDupException();
         }
 
         threadPoolContextCache.put(opentp.value(), threadPoolContext);
-
         return bean;
     }
 }

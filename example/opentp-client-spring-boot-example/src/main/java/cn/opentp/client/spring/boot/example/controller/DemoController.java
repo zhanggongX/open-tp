@@ -20,22 +20,16 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class DemoController {
 
     @Resource
-    private Environment environment;
-    @Resource
-    private OpentpProperties opentpProperties;
-
-    @Resource
     private ThreadPoolExecutor threadPoolExecutor;
 
     @GetMapping("threadPool")
     public String tps() {
         Map<String, ThreadPoolContext> threadPoolContextCache = Configuration.configuration().threadPoolContextCache();
-        String res = "";
+        StringBuilder res = new StringBuilder();
         for (Map.Entry<String, ThreadPoolContext> e : threadPoolContextCache.entrySet()) {
-            res += e.getValue().toString();
+            res.append(e.getValue().toString());
         }
-        String property = environment.getProperty("opentp.servers");
-        return JSONUtils.toJson(res);
+        return JSONUtils.toJson(res.toString());
     }
 
     @GetMapping("threadPool/{tpName}")

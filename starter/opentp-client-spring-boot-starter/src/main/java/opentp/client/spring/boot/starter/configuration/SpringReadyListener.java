@@ -1,6 +1,6 @@
 package opentp.client.spring.boot.starter.configuration;
 
-import cn.opentp.client.bootstrap.OpentpClientBootstrap;
+import cn.opentp.client.OpentpClientBootstrap;
 import opentp.client.spring.boot.starter.annotation.EnableOpentp;
 import org.springframework.beans.BeansException;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
