@@ -40,7 +40,7 @@ public class DemoController {
     public String report() {
         Map<String, ThreadPoolContext> threadPoolContextCache = Configuration.configuration().threadPoolContextCache();
         for (Map.Entry<String, ThreadPoolContext> threadPoolContextEntry : threadPoolContextCache.entrySet()) {
-            threadPoolContextEntry.getValue().flushState(threadPoolContextEntry.getKey());
+            threadPoolContextEntry.getValue().flushStateAndSetThreadPoolName(threadPoolContextEntry.getKey());
             Configuration.configuration().threadPoolReportChannel().writeAndFlush(threadPoolContextEntry.getValue().getState());
         }
         return "ok";

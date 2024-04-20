@@ -1,6 +1,6 @@
 package cn.opentp.core.net.handler;
 
-import cn.opentp.core.net.kryo.KryoSerializer;
+import cn.opentp.core.net.serializer.kryo.KryoSerializer;
 import cn.opentp.core.thread.pool.ThreadPoolState;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

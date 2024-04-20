@@ -1,7 +1,11 @@
 package cn.opentp.client.net;
 
 import cn.opentp.client.configuration.Configuration;
+import cn.opentp.core.net.OpentpMessage;
+import cn.opentp.core.net.OpentpMessageTypeEnum;
+import cn.opentp.core.net.serializer.SerializerTypeEnum;
 import cn.opentp.core.thread.pool.ThreadPoolContext;
+import cn.opentp.core.util.MessageTraceIdUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -26,15 +30,25 @@ public class ThreadPoolStateReportThread implements Runnable {
         for (Map.Entry<String, ThreadPoolContext> threadPoolContextEntry : threadPoolContextCache.entrySet()) {
             String threadPoolKey = threadPoolContextEntry.getKey();
             ThreadPoolContext threadPoolContext = threadPoolContextEntry.getValue();
-            threadPoolContext.flushState(threadPoolKey);
-            ChannelFuture channelFuture = channel.writeAndFlush(threadPoolContext.getState());
+            threadPoolContext.flushStateAndSetThreadPoolName(threadPoolKey);
+
+            OpentpMessage opentpMessage = Configuration.OPENTP_MSG_PROTO.clone();
+            OpentpMessage
+                    .builder()
+                    .messageType(OpentpMessageTypeEnum.THREAD_POOL_EXPORT.getCode())
+                    .serializerType(OpentpMessageTypeEnum.THREAD_POOL_EXPORT.getCode())
+                    .traceId(MessageTraceIdUtil.traceId())
+                    .data(threadPoolContext.getState())
+                    .buildTo(opentpMessage);
+
+            ChannelFuture channelFuture = channel.writeAndFlush(opentpMessage);
             channelFuture.addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture channelFuture) throws Exception {
                     log.info("发送消息结果： {}", channelFuture.isSuccess());
                     if (!channelFuture.isSuccess()) {
                         Throwable cause = channelFuture.cause();
-                        cause.printStackTrace();
+                        log.error("send message error : {}", cause.toString());
                     }
                 }
             });

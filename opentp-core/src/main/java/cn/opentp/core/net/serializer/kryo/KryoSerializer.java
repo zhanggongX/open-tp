@@ -1,6 +1,6 @@
-package cn.opentp.core.net.kryo;
+package cn.opentp.core.net.serializer.kryo;
 
-import cn.opentp.core.thread.pool.ThreadPoolContext;
+import cn.opentp.core.net.serializer.Serializer;
 import cn.opentp.core.thread.pool.ThreadPoolState;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;

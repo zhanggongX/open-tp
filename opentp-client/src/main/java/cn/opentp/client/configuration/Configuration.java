@@ -1,5 +1,7 @@
 package cn.opentp.client.configuration;
 
+import cn.opentp.core.net.OpentpMessage;
+import cn.opentp.core.net.OpentpMessageConstant;
 import cn.opentp.core.thread.pool.ThreadPoolContext;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -32,6 +34,7 @@ public class Configuration {
     public static final int DEFAULT_PORT = 9527;
     public static final String SERVER_SPLITTER = ",";
     public static final String SERVER_PORT_SPLITTER = ":";
+    public static final OpentpMessage OPENTP_MSG_PROTO = new OpentpMessage(OpentpMessageConstant.MAGIC, OpentpMessageConstant.VERSION);
 
     // 服务器地址
     private final List<InetSocketAddress> serverAddresses = new CopyOnWriteArrayList<>();

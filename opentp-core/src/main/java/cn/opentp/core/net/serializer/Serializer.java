@@ -1,4 +1,4 @@
-package cn.opentp.core.net.kryo;
+package cn.opentp.core.net.serializer;
 
 public interface Serializer {
 

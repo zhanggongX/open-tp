@@ -3,8 +3,8 @@ package cn.opentp.client.net;
 import cn.opentp.client.configuration.Configuration;
 import cn.opentp.client.exception.ServerAddrUnDefineException;
 import cn.opentp.client.net.handler.OpentpClientHandler;
-import cn.opentp.core.net.handler.ThreadPoolStateDecoder;
-import cn.opentp.core.net.handler.ThreadPoolStateEncoder;
+import cn.opentp.core.net.handler.OpentpMessageDecoder;
+import cn.opentp.core.net.handler.OpentpMessageEncoder;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -12,6 +12,7 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,8 +33,9 @@ public class NettyBootstrap {
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
-                        socketChannel.pipeline().addLast(new ThreadPoolStateEncoder());
-                        socketChannel.pipeline().addLast(new ThreadPoolStateDecoder());
+                        socketChannel.pipeline().addLast(new IdleStateHandler(10, 0, 0));
+                        socketChannel.pipeline().addLast(new OpentpMessageEncoder());
+                        socketChannel.pipeline().addLast(new OpentpMessageDecoder());
                         socketChannel.pipeline().addLast(new OpentpClientHandler());
                     }
                 });
@@ -42,7 +44,7 @@ public class NettyBootstrap {
 
         // 配置的服务器信息
         List<InetSocketAddress> inetSocketAddresses = Configuration.configuration().serverAddresses();
-        if (inetSocketAddresses.size() == 0) {
+        if (inetSocketAddresses.isEmpty()) {
             throw new ServerAddrUnDefineException();
         }
         // todo 集群迭代。

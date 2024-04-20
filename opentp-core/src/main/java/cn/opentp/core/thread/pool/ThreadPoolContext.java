@@ -34,7 +34,7 @@ public class ThreadPoolContext implements Serializable {
         this.target = target;
     }
 
-    public void flushState(String threadPoolName) {
+    public void flushStateAndSetThreadPoolName(String threadPoolName) {
         state.setThreadPoolName(threadPoolName);
         if (target == null) {
             state.flushDefault();
@@ -50,7 +50,7 @@ public class ThreadPoolContext implements Serializable {
         state.setLargestPoolSize(target.getLargestPoolSize());
     }
 
-    public void flushTarget(ThreadPoolState threadPoolState) {
+    public void flushTargetState(ThreadPoolState threadPoolState) {
         if (target == null) {
             return;
         }

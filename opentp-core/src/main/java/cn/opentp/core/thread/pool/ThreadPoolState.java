@@ -57,6 +57,17 @@ public class ThreadPoolState implements Serializable {
         flushDefault();
     }
 
+    public void flushState(ThreadPoolState threadPoolState) {
+        this.coreSize = threadPoolState.getCoreSize();
+        this.maxSize = threadPoolState.getMaxSize();
+        this.poolSize = threadPoolState.getPoolSize();
+        this.activeCount = threadPoolState.getActiveCount();
+        this.completedCount = threadPoolState.getPoolSize();
+        this.queueSize = threadPoolState.getQueueSize();
+        this.queueLength = threadPoolState.getQueueLength();
+        this.largestPoolSize = threadPoolState.getLargestPoolSize();
+    }
+
     public int getCoreSize() {
         return coreSize;
     }

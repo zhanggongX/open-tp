@@ -22,8 +22,8 @@ public class NettyHttpBootstrap {
             public void run() {
                 ServerBootstrap httpServerBootstrap = new ServerBootstrap();
                 httpServerBootstrap.group(new NioEventLoopGroup(10), new NioEventLoopGroup(10))
-                        .option(ChannelOption.SO_BACKLOG, 1024)
-                        .option(ChannelOption.SO_KEEPALIVE, true)
+                        .childOption(ChannelOption.SO_BACKLOG, 1024)
+                        .childOption(ChannelOption.SO_KEEPALIVE, true)
                         .channel(NioServerSocketChannel.class)
                         .childHandler(new ChannelInitializer<SocketChannel>() {
                             @Override
