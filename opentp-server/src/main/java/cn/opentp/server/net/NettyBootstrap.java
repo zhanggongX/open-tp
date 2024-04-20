@@ -2,8 +2,6 @@ package cn.opentp.server.net;
 
 import cn.opentp.core.net.handler.OpentpMessageDecoder;
 import cn.opentp.core.net.handler.OpentpMessageEncoder;
-import cn.opentp.core.net.handler.ThreadPoolStateDecoder;
-import cn.opentp.core.net.handler.ThreadPoolStateEncoder;
 import cn.opentp.server.net.handler.OpentpHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
