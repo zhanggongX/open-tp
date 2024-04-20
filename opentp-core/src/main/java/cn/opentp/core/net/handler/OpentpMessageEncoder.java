@@ -47,20 +47,8 @@ public class OpentpMessageEncoder extends MessageToByteEncoder<OpentpMessage> {
      * @param opentpMessage 消息协议
      */
     private void encodeMessage(OpentpMessage opentpMessage) {
-        if (opentpMessage.getMessageType() == OpentpMessageTypeEnum.HEART_PING.getCode()
-                || opentpMessage.getMessageType() == OpentpMessageTypeEnum.HEART_PONG.getCode()) {
-            opentpMessage.setLength(OpentpMessageConstant.MESSAGE_HEAD_LENGTH);
-            opentpMessage.setContent(new byte[0]);
-            return;
-        }
-
-        if (opentpMessage.getMessageType() == OpentpMessageTypeEnum.THREAD_POOL_EXPORT.getCode()
-                || opentpMessage.getMessageType() == OpentpMessageTypeEnum.THREAD_POOL_UPDATE.getCode()) {
-
-            Serializer serializer = SerializerFactory.serializer(opentpMessage.getSerializerType());
-            opentpMessage.setContent(serializer.serialize(opentpMessage.getData()));
-            opentpMessage.setLength(OpentpMessageConstant.MESSAGE_HEAD_LENGTH + opentpMessage.getContent().length);
-            return;
-        }
+        Serializer serializer = SerializerFactory.serializer(opentpMessage.getSerializerType());
+        opentpMessage.setContent(serializer.serialize(opentpMessage.getData()));
+        opentpMessage.setLength(OpentpMessageConstant.MESSAGE_HEAD_LENGTH + opentpMessage.getContent().length);
     }
 }

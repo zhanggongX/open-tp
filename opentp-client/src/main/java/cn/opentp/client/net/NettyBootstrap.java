@@ -33,7 +33,8 @@ public class NettyBootstrap {
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
-                        socketChannel.pipeline().addLast(new IdleStateHandler(10, 0, 0));
+                        // 每五秒一直没有发送任何消息，则发生一个心跳
+                        socketChannel.pipeline().addLast(new IdleStateHandler(0, 5, 0, TimeUnit.SECONDS));
                         socketChannel.pipeline().addLast(new OpentpMessageEncoder());
                         socketChannel.pipeline().addLast(new OpentpMessageDecoder());
                         socketChannel.pipeline().addLast(new OpentpClientHandler());
@@ -60,7 +61,7 @@ public class NettyBootstrap {
                     // 记录 channel
                     Configuration.configuration().setThreadPoolReportChannel(channelFuture.channel());
                     // 没一秒都去上报 todo 配置
-                    channelFuture.channel().eventLoop().scheduleAtFixedRate(new ThreadPoolStateReportThread(), 1, 1, TimeUnit.SECONDS);
+                    channelFuture.channel().eventLoop().scheduleAtFixedRate(new ThreadPoolStateReportThread(), 1, 10, TimeUnit.SECONDS);
                 } else {
                     // 重试
                     Throwable cause = channelFuture.cause();

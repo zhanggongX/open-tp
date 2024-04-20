@@ -38,26 +38,6 @@ public class OpentpClientHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
-    @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt instanceof IdleStateEvent) {
-            IdleState state = ((IdleStateEvent) evt).state();
-            if (state == IdleState.WRITER_IDLE) {
-                OpentpMessage opentpMessage = Configuration.OPENTP_MSG_PROTO.clone();
-                OpentpMessage
-                        .builder()
-                        .messageType(OpentpMessageTypeEnum.HEART_PING.getCode())
-                        .serializerType(SerializerTypeEnum.Kryo.getType())
-                        .data(null)
-                        .traceId(MessageTraceIdUtil.traceId())
-                        .buildTo(opentpMessage);
-                ctx.channel().writeAndFlush(opentpMessage);
-            }
-        } else {
-            super.userEventTriggered(ctx, evt);
-        }
-    }
-
     /**
      * 处理 OpentpMessage
      *
@@ -69,8 +49,6 @@ public class OpentpClientHandler extends ChannelInboundHandlerAdapter {
         OpentpMessageTypeEnum opentpMessageTypeEnum = OpentpMessageTypeEnum.parse(opentpMessage.getMessageType());
 
         switch (Objects.requireNonNull(opentpMessageTypeEnum)) {
-            case HEART_PONG:
-                break;
             case THREAD_POOL_UPDATE:
                 ThreadPoolState threadPoolState = (ThreadPoolState) opentpMessage.getData();
 
@@ -83,6 +61,28 @@ public class OpentpClientHandler extends ChannelInboundHandlerAdapter {
                 break;
             default:
                 log.warn("unknown opentp message type;");
+        }
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) {
+            IdleState state = ((IdleStateEvent) evt).state();
+
+            if (state == IdleState.WRITER_IDLE) {
+                OpentpMessage opentpMessage = Configuration.OPENTP_MSG_PROTO.clone();
+                OpentpMessage
+                        .builder()
+                        .messageType(OpentpMessageTypeEnum.HEART_PING.getCode())
+                        .serializerType(SerializerTypeEnum.Kryo.getType())
+                        .data(OpentpMessageConstant.HEARD_PING)
+                        .traceId(MessageTraceIdUtil.traceId())
+                        .buildTo(opentpMessage);
+                log.info("send heart beat");
+                ctx.channel().writeAndFlush(opentpMessage);
+            }
+        } else {
+            super.userEventTriggered(ctx, evt);
         }
     }
 

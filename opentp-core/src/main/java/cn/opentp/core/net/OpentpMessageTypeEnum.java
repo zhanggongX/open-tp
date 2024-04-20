@@ -10,17 +10,13 @@ public enum OpentpMessageTypeEnum {
      */
     HEART_PING((byte) 0x01),
     /**
-     * 心跳相应
-     */
-    HEART_PONG((byte) 0x02),
-    /**
      * 线程池信息上报
      */
-    THREAD_POOL_EXPORT((byte) 0x03),
+    THREAD_POOL_EXPORT((byte) 0x10),
     /**
      * 线程池信息更新
      */
-    THREAD_POOL_UPDATE((byte) 0x04);
+    THREAD_POOL_UPDATE((byte) 0x11);
 
 
     OpentpMessageTypeEnum(byte code) {

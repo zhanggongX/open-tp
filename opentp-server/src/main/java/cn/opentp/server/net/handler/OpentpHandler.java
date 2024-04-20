@@ -43,9 +43,7 @@ public class OpentpHandler extends ChannelInboundHandlerAdapter {
 
         switch (Objects.requireNonNull(opentpMessageTypeEnum)) {
             case HEART_PING:
-                opentpMessage.setMessageType(OpentpMessageTypeEnum.HEART_PONG.getCode());
-                opentpMessage.setData(OpentpMessageConstant.HEARD_PONG);
-                ctx.channel().writeAndFlush(opentpMessage);
+                log.info("heard beat info : {}, and say : {}", opentpMessage.getData(), OpentpMessageConstant.HEARD_PONG);
                 break;
             case THREAD_POOL_EXPORT:
                 ThreadPoolState threadPoolState = (ThreadPoolState) opentpMessage.getData();

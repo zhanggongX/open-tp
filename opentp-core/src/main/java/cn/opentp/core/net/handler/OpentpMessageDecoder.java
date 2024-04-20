@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public class OpentpMessageDecoder extends LengthFieldBasedFrameDecoder {
 
@@ -25,7 +26,7 @@ public class OpentpMessageDecoder extends LengthFieldBasedFrameDecoder {
         /*
          * lengthFieldOffset   = 6         3 byte magicNum + 3 byte version
          * lengthFieldLength   = 4         length is int.
-         * lengthAdjustment    = -10       length - 3 byte magicNum - 3 byte version - 4 byte length field
+         * lengthAdjustment    = -10       - 3 byte magicNum - 3 byte version - 4 byte length field
          * initialBytesToStrip = 0         strip 0 byte.
          */
         super(OpentpMessageConstant.MAX_FRAME_LEN, 6, 4, -10, 0);
@@ -44,15 +45,13 @@ public class OpentpMessageDecoder extends LengthFieldBasedFrameDecoder {
         Object decodeObj = super.decode(ctx, byteBuf);
 
         if (decodeObj instanceof ByteBuf decodeBuf) {
-            if (decodeBuf.readableBytes() >= OpentpMessageConstant.MESSAGE_HEAD_LENGTH) {
-                try {
-                    return decodeMessage(decodeBuf);
-                } catch (Exception e) {
-                    log.error("OpentpMessageDecoder decode error : {}", e.toString());
-                } finally {
-                    // 池化消息释放
-                    decodeBuf.release();
-                }
+            try {
+                return decodeMessage(decodeBuf);
+            } catch (Exception e) {
+                log.error("OpentpMessageDecoder decode error : {}", e.toString());
+            } finally {
+                // 池化消息释放
+                decodeBuf.release();
             }
         }
 
@@ -73,7 +72,7 @@ public class OpentpMessageDecoder extends LengthFieldBasedFrameDecoder {
         int length = byteBuf.readInt();
         byte messageType = byteBuf.readByte();
         byte serializerType = byteBuf.readByte();
-        int traceId = byteBuf.readInt();
+        long traceId = byteBuf.readLong();
 
         OpentpMessage opentpMessage = OpentpMessage
                 .builder()
@@ -81,16 +80,6 @@ public class OpentpMessageDecoder extends LengthFieldBasedFrameDecoder {
                 .serializerType(serializerType)
                 .traceId(traceId)
                 .build();
-
-        if (messageType == OpentpMessageTypeEnum.HEART_PING.getCode()) {
-            opentpMessage.setData(OpentpMessageConstant.HEARD_PING);
-            return opentpMessage;
-        }
-        if (messageType == OpentpMessageTypeEnum.HEART_PONG.getCode()) {
-            opentpMessage.setData(OpentpMessageConstant.HEARD_PONG);
-            return opentpMessage;
-        }
-
         /*
          * 实际数据长度
          */
@@ -99,14 +88,20 @@ public class OpentpMessageDecoder extends LengthFieldBasedFrameDecoder {
         if (length <= 0) return opentpMessage;
 
         byte[] bytes = new byte[length];
-        byteBuf.writeBytes(byteBuf);
+        byteBuf.readBytes(bytes);
         Serializer serializer = SerializerFactory.serializer(serializerType);
-        if (messageType == OpentpMessageTypeEnum.THREAD_POOL_EXPORT.getCode()
-                || messageType == OpentpMessageTypeEnum.THREAD_POOL_UPDATE.getCode()) {
 
-            ThreadPoolState threadPoolState = serializer.deserialize(bytes, ThreadPoolState.class);
-            opentpMessage.setData(threadPoolState);
-            return opentpMessage;
+        OpentpMessageTypeEnum messageTypeEnum = OpentpMessageTypeEnum.parse(messageType);
+        switch (Objects.requireNonNull(messageTypeEnum)) {
+            case HEART_PING:
+                String ping = serializer.deserialize(bytes, String.class);
+                opentpMessage.setData(ping);
+                break;
+            case THREAD_POOL_EXPORT:
+            case THREAD_POOL_UPDATE:
+                ThreadPoolState threadPoolState = serializer.deserialize(bytes, ThreadPoolState.class);
+                opentpMessage.setData(threadPoolState);
+                break;
         }
 
         return opentpMessage;

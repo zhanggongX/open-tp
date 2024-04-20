@@ -27,8 +27,8 @@ public class KryoSerializer implements Serializer {
         ((DefaultInstantiatorStrategy) kryo.getInstantiatorStrategy()).setFallbackInstantiatorStrategy(new StdInstantiatorStrategy());
         //方式二：由于默认是需要进行注册的，若是不设置为false，那么就需要进行手动注册class类
         kryo.register(ThreadPoolState.class);
+        kryo.register(String.class);
         return kryo;
-
     });
 
     @Override
