@@ -15,6 +15,7 @@
         <module>opentp-client</module>
         <module>starter</module>
         <module>example</module>
+        <module>example/opentp-client-java</module>
     </modules>
 
     <properties>
