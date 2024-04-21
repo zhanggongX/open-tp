@@ -1,6 +1,7 @@
 package cn.opentp.client.net.handler;
 
 import cn.opentp.client.configuration.Configuration;
+import cn.opentp.core.auth.OpentpLicense;
 import cn.opentp.core.net.OpentpMessage;
 import cn.opentp.core.net.OpentpMessageConstant;
 import cn.opentp.core.net.OpentpMessageTypeEnum;
@@ -56,6 +57,12 @@ public class OpentpClientHandler extends ChannelInboundHandlerAdapter {
                 ThreadPoolContext threadPoolContext = threadPoolContextCache.get(threadPoolState.getThreadPoolName());
 
                 threadPoolContext.flushTargetState(threadPoolState);
+                break;
+            case AUTHENTICATION_RES:
+                OpentpLicense opentpLicense = (OpentpLicense) opentpMessage.getData();
+                Configuration configuration = Configuration.configuration();
+                // 认证成功，设置 license
+                configuration.threadPoolStateReportChannel().attr(Configuration.EXPORT_CHANNEL_ATTR_KEY).set(opentpLicense.getLicenseKey());
                 break;
             default:
                 log.warn("未知的消息类型，不处理！");

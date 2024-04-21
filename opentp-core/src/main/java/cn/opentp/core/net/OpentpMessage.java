@@ -41,6 +41,16 @@ public class OpentpMessage implements Serializable, Cloneable {
     private long traceId;
 
     /**
+     * 认证码
+     */
+    private String licenseKey;
+
+    /**
+     * 认证码内容
+     */
+    private byte[] licenseBytes;
+
+    /**
      * 传输的数据
      */
     private Object data;
@@ -50,11 +60,12 @@ public class OpentpMessage implements Serializable, Cloneable {
      */
     private byte[] content;
 
-    public OpentpMessage(byte messageType, byte serializerType, long traceId, Object data) {
+    public OpentpMessage(byte messageType, byte serializerType, long traceId, Object data, String licenseKey) {
         this.messageType = messageType;
         this.serializerType = serializerType;
         this.traceId = traceId;
         this.data = data;
+        this.licenseKey = licenseKey;
     }
 
     public OpentpMessage(byte[] magicNum, byte[] version) {
@@ -128,6 +139,22 @@ public class OpentpMessage implements Serializable, Cloneable {
 
     public static OpentpMessageBuilder builder() {
         return new OpentpMessageBuilder();
+    }
+
+    public String getLicenseKey() {
+        return licenseKey;
+    }
+
+    public void setLicenseKey(String licenseKey) {
+        this.licenseKey = licenseKey;
+    }
+
+    public byte[] getLicenseBytes() {
+        return licenseBytes;
+    }
+
+    public void setLicenseBytes(byte[] licenseBytes) {
+        this.licenseBytes = licenseBytes;
     }
 
     @Override

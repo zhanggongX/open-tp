@@ -20,7 +20,7 @@ public class OpentpHttpHandler extends AbstractHttpHandler implements HttpHandle
             throw new IllegalArgumentException("错误的路径");
         }
 
-        Map<String, ThreadPoolState> theadPoolStateCache = Configuration.configuration().theadPoolStateCache();
+        Map<String, ThreadPoolState> theadPoolStateCache = Configuration.configuration().threadPoolStateCache();
 
         String tpName = null;
         String[] urlPaths = uri.split("/");

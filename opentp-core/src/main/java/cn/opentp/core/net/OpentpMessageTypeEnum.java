@@ -16,7 +16,15 @@ public enum OpentpMessageTypeEnum {
     /**
      * 线程池信息更新
      */
-    THREAD_POOL_UPDATE((byte) 0x11);
+    THREAD_POOL_UPDATE((byte) 0x11),
+    /**
+     * 认证请求 authentication
+     */
+    AUTHENTICATION_REQ((byte) 0x20),
+    /**
+     * 鉴权相应
+     */
+    AUTHENTICATION_RES((byte) 0x21);
 
 
     OpentpMessageTypeEnum(byte code) {

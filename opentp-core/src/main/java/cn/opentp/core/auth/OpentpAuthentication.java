@@ -1,38 +1,41 @@
-package cn.opentp.client.configuration;
+package cn.opentp.core.auth;
 
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.UUID;
 
-public class OpentpClientProperties {
+/**
+ * 认证
+ */
+public class OpentpAuthentication implements Serializable {
 
     private final static String UUID_SPLITTER = "-";
 
     private String appKey;
     private String appSecret;
-    private String localhost;
+    private String host;
     private String instance;
 
-    public OpentpClientProperties() {
+    public OpentpAuthentication() {
         InetAddress localHost = null;
         try {
             localHost = InetAddress.getLocalHost();
-            this.localhost = localHost.getHostAddress();
+            this.host = localHost.getHostAddress();
         } catch (UnknownHostException e) {
             Logger log = LoggerFactory.getLogger(this.getClass());
             log.warn("获取本机 IP 失败，使用空地址： ", e);
-            this.localhost = Strings.EMPTY;
+            this.host = Strings.EMPTY;
         }
         // 本机实例
         this.instance = UUID.randomUUID().toString().split(UUID_SPLITTER)[0];
     }
 
-    public OpentpClientProperties(String appKey, String appSecret) {
+    public OpentpAuthentication(String appKey, String appSecret) {
         this();
         this.appKey = appKey;
         this.appSecret = appSecret;
@@ -52,5 +55,21 @@ public class OpentpClientProperties {
 
     public void setAppSecret(String appSecret) {
         this.appSecret = appSecret;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public String getInstance() {
+        return instance;
+    }
+
+    public void setInstance(String instance) {
+        this.instance = instance;
     }
 }

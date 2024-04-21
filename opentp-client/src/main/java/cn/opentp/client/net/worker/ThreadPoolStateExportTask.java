@@ -10,6 +10,7 @@ import cn.opentp.core.util.MessageTraceIdUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.util.Attribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +48,8 @@ public class ThreadPoolStateExportTask implements Runnable {
     @Override
     public void run() {
         Channel channel = Configuration.configuration().threadPoolStateReportChannel();
-        if (channel == null || !channel.isActive()) {
+        // 连接为空，连接断开，连接 licenseKey 为空，都不发送消息
+        if (channel == null || !channel.isActive() || channel.attr(Configuration.EXPORT_CHANNEL_ATTR_KEY).get().isEmpty()) {
             return;
         }
 
@@ -68,6 +70,7 @@ public class ThreadPoolStateExportTask implements Runnable {
                 .messageType(OpentpMessageTypeEnum.THREAD_POOL_EXPORT.getCode())
                 .serializerType(OpentpMessageTypeEnum.THREAD_POOL_EXPORT.getCode())
                 .traceId(MessageTraceIdUtil.traceId())
+                .licenseKey(channel.attr(Configuration.EXPORT_CHANNEL_ATTR_KEY).get())
                 .data(threadPoolStates)
                 .buildTo(opentpMessage);
 

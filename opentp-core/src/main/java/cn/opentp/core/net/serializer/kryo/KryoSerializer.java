@@ -1,5 +1,7 @@
 package cn.opentp.core.net.serializer.kryo;
 
+import cn.opentp.core.auth.OpentpAuthentication;
+import cn.opentp.core.auth.OpentpLicense;
 import cn.opentp.core.net.serializer.Serializer;
 import cn.opentp.core.thread.pool.ThreadPoolState;
 import com.esotericsoftware.kryo.Kryo;
@@ -30,6 +32,8 @@ public class KryoSerializer implements Serializer {
         kryo.register(ThreadPoolState.class);
         kryo.register(String.class);
         kryo.register(ArrayList.class);
+        kryo.register(OpentpAuthentication.class);
+        kryo.register(OpentpLicense.class);
         return kryo;
     });
 
@@ -60,4 +64,24 @@ public class KryoSerializer implements Serializer {
             throw new RuntimeException("Serialization failed");
         }
     }
+
+//    public static void main(String[] args) {
+//
+//        byte[] bytes = new byte[]{1, 1, 111, 112, 101, 110, 116, 112, 45, 99, 108, 105, 101, 110, 116, 45, 106, 97, 118, -31, 1, 49, 50, 51, 52, 53, -74, 1, 49, 57, 50, 46, 49, 54, 56, 46, 51, 49, 46, 49, 56, -79, 1, 97, 98, 54, 52};
+//        KryoSerializer kryoSerializer = new KryoSerializer();
+//        OpentpAuthentication opentpAuthentication = new OpentpAuthentication();
+//        opentpAuthentication.setHost("192");
+//        opentpAuthentication.setAppKey("java");
+//        opentpAuthentication.setAppSecret("123");
+//        opentpAuthentication.setInstance("aaaa");
+//        byte[] a = kryoSerializer.serialize(opentpAuthentication);
+//
+//        AuthClone b = kryoSerializer.deserialize(bytes, AuthClone.class);
+//
+//        byte[] c = kryoSerializer.serialize("");
+//
+//        String d = kryoSerializer.deserialize(c, String.class);
+//
+//        System.out.println(1);
+//    }
 }

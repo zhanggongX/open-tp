@@ -34,6 +34,8 @@ public class OpentpMessageEncoder extends MessageToByteEncoder<OpentpMessage> {
             byteBuf.writeByte(opentpMessage.getMessageType());
             byteBuf.writeByte(opentpMessage.getSerializerType());
             byteBuf.writeLong(MessageTraceIdUtil.traceId());
+            byteBuf.writeInt(opentpMessage.getLicenseBytes().length);
+            byteBuf.writeBytes(opentpMessage.getLicenseBytes());
             byteBuf.writeBytes(opentpMessage.getContent());
         } catch (Exception e) {
             log.error("OpentpMessageDecoder encode error : ", e);
@@ -47,7 +49,8 @@ public class OpentpMessageEncoder extends MessageToByteEncoder<OpentpMessage> {
      */
     private void encodeMessage(OpentpMessage opentpMessage) {
         Serializer serializer = SerializerFactory.serializer(opentpMessage.getSerializerType());
+        opentpMessage.setLicenseBytes(serializer.serialize(opentpMessage.getLicenseKey()));
         opentpMessage.setContent(serializer.serialize(opentpMessage.getData()));
-        opentpMessage.setLength(OpentpMessageConstant.MESSAGE_HEAD_LENGTH + opentpMessage.getContent().length);
+        opentpMessage.setLength(OpentpMessageConstant.MESSAGE_HEAD_LENGTH + opentpMessage.getLicenseBytes().length + opentpMessage.getContent().length);
     }
 }

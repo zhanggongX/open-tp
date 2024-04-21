@@ -16,9 +16,9 @@ public class OpentpMessageConstant {
     public static final byte[] VERSION = new byte[]{(byte) 0x01, (byte) 0x00, (byte) 0x01};
 
     /**
-     * 魔数 + 版本 + Int(length) + Byte(messageType) + Byte(serializerType) + Long(traceId)
+     * 魔数 + 版本 + Int(length) + Byte(messageType) + Byte(serializerType) + Long(traceId) + Int(licenseKeyLength)
      */
-    public static final int MESSAGE_HEAD_LENGTH = MAGIC.length + VERSION.length + 4 + 1 + 1 + 8;
+    public static final int MESSAGE_HEAD_LENGTH = MAGIC.length + VERSION.length + 4 + 1 + 1 + 8 + 4;
 
 
     /**

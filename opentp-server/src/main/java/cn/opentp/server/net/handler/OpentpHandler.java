@@ -1,9 +1,13 @@
 package cn.opentp.server.net.handler;
 
+import cn.opentp.core.auth.OpentpAuthentication;
+import cn.opentp.core.auth.OpentpLicense;
 import cn.opentp.core.net.OpentpMessage;
 import cn.opentp.core.net.OpentpMessageConstant;
 import cn.opentp.core.net.OpentpMessageTypeEnum;
+import cn.opentp.core.net.serializer.SerializerTypeEnum;
 import cn.opentp.core.thread.pool.ThreadPoolState;
+import cn.opentp.server.auth.LicenseKeyFactory;
 import cn.opentp.server.configuration.Configuration;
 import io.netty.channel.*;
 import io.netty.handler.timeout.IdleState;
@@ -44,21 +48,42 @@ public class OpentpHandler extends ChannelInboundHandlerAdapter {
 
         switch (Objects.requireNonNull(opentpMessageTypeEnum)) {
             case HEART_PING:
-                log.info("接收心跳信息： {}, 应答: {}", opentpMessage.getData(), OpentpMessageConstant.HEARD_PONG);
+                log.info("接收心跳信息： {} 应答: {}", opentpMessage.getData(), OpentpMessageConstant.HEARD_PONG);
                 break;
             case THREAD_POOL_EXPORT:
+                String licenseKey = opentpMessage.getLicenseKey();
+                log.info("接受到信息，认证码：{}", licenseKey);
+                // todo licenseKey 校验
+
                 List<?> threadPoolStates = (List<?>) opentpMessage.getData();
                 for (Object obj : threadPoolStates) {
                     ThreadPoolState threadPoolState = (ThreadPoolState) obj;
                     Configuration configuration = Configuration.configuration();
 
-                    configuration.theadPoolStateCache().putIfAbsent(threadPoolState.getThreadPoolName(), new ThreadPoolState());
-                    ThreadPoolState configThreadPoolState = configuration.theadPoolStateCache().get(threadPoolState.getThreadPoolName());
+                    configuration.threadPoolStateCache().putIfAbsent(threadPoolState.getThreadPoolName(), new ThreadPoolState());
+                    ThreadPoolState configThreadPoolState = configuration.threadPoolStateCache().get(threadPoolState.getThreadPoolName());
                     configThreadPoolState.flushState(threadPoolState);
 
                     configuration.channelCache().put(threadPoolState.getThreadPoolName(), ctx.channel());
-                    log.debug("线程池信息 : {}", configThreadPoolState.toString());
+                    log.debug("上报线程池信息 : {}", configThreadPoolState.toString());
                 }
+                break;
+            case AUTHENTICATION_REQ:
+                OpentpAuthentication opentpAuthentication = (OpentpAuthentication) opentpMessage.getData();
+                // todo 根据信息认证
+                log.debug("有新认证到来，appKey: {}, appSecret: {}, host: {}, instance: {}", opentpAuthentication.getAppKey(), opentpAuthentication.getAppSecret(), opentpAuthentication.getHost(), opentpAuthentication.getInstance());
+                Configuration configuration = Configuration.configuration();
+                OpentpMessage opentpMessageRes = Configuration.OPENTP_MSG_PROTO.clone();
+                OpentpMessage
+                        .builder()
+                        .messageType(OpentpMessageTypeEnum.AUTHENTICATION_RES.getCode())
+                        .serializerType(SerializerTypeEnum.Kryo.getType())
+                        .data(new OpentpLicense(LicenseKeyFactory.get()))
+                        .traceId(opentpMessage.getTraceId())
+                        .buildTo(opentpMessageRes);
+
+                // 返回 licenseKey
+                ctx.channel().writeAndFlush(opentpMessageRes);
                 break;
             default:
                 log.warn("未知的消息类型，不处理！");
@@ -81,7 +106,7 @@ public class OpentpHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error("channel catch ex : ", cause);
+        log.error("channel 捕获异常 : ", cause);
         // todo 处理缓存 channel
         ctx.close();
     }

@@ -26,8 +26,8 @@ public class Example {
         Configuration.configuration().threadPoolStateReportProperties().setInitialDelay(2);
         Configuration.configuration().threadPoolStateReportProperties().setPeriod(2);
 
-        Configuration.configuration().opentpClientProperties().setAppKey("opentp-client-java");
-        Configuration.configuration().opentpClientProperties().setAppSecret("123456");
+        Configuration.configuration().opentpAuthentication().setAppKey("opentp-client-java");
+        Configuration.configuration().opentpAuthentication().setAppSecret("123456");
 
         // 记录线程池信息
         ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(10, 20, 60, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1024));

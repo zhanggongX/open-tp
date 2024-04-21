@@ -1,5 +1,7 @@
 package cn.opentp.core.net;
 
+import org.apache.logging.log4j.util.Strings;
+
 public class OpentpMessageBuilder {
 
     /**
@@ -23,9 +25,9 @@ public class OpentpMessageBuilder {
     private Object data;
 
     /**
-     * 消息内容
+     * 认证码
      */
-    private byte[] content;
+    private String licenseKey;
 
     public OpentpMessageBuilder messageType(byte messageType) {
         this.messageType = messageType;
@@ -47,14 +49,26 @@ public class OpentpMessageBuilder {
         return this;
     }
 
+    public OpentpMessageBuilder licenseKey(String licenseKey) {
+        this.licenseKey = licenseKey;
+        return this;
+    }
+
     public OpentpMessage build() {
-        return new OpentpMessage(this.messageType, this.serializerType, this.traceId, this.data);
+        if (this.licenseKey == null) {
+            this.licenseKey = Strings.EMPTY;
+        }
+        return new OpentpMessage(this.messageType, this.serializerType, this.traceId, this.data, this.licenseKey);
     }
 
     public void buildTo(OpentpMessage opentpMessage) {
+        if (this.licenseKey == null) {
+            this.licenseKey = Strings.EMPTY;
+        }
         opentpMessage.setMessageType(this.messageType);
         opentpMessage.setSerializerType(this.serializerType);
         opentpMessage.setTraceId(this.traceId);
         opentpMessage.setData(this.data);
+        opentpMessage.setLicenseKey(this.licenseKey);
     }
 }

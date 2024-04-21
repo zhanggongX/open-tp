@@ -1,5 +1,6 @@
 package cn.opentp.client.configuration;
 
+import cn.opentp.core.auth.OpentpAuthentication;
 import cn.opentp.core.net.OpentpMessage;
 import cn.opentp.core.net.OpentpMessageConstant;
 import cn.opentp.core.thread.pool.ThreadPoolContext;
@@ -24,6 +25,9 @@ public class Configuration {
     public static final String SERVER_SPLITTER = ",";
     public static final String SERVER_PORT_SPLITTER = ":";
     public static final OpentpMessage OPENTP_MSG_PROTO = new OpentpMessage(OpentpMessageConstant.MAGIC, OpentpMessageConstant.VERSION);
+    public static final String EXPORT_CHANNEL_LICENSE_KEY = "license";
+    // licenseKey
+    public static final AttributeKey<String> EXPORT_CHANNEL_ATTR_KEY = AttributeKey.valueOf(EXPORT_CHANNEL_LICENSE_KEY);
 
     // 服务器地址
     private final List<InetSocketAddress> serverAddresses = new CopyOnWriteArrayList<>();
@@ -33,12 +37,10 @@ public class Configuration {
     private final NettyReconnectProperties nettyReconnectProperties = new NettyReconnectProperties();
     // 线程池信息上报配置
     private final ThreadPoolStateReportProperties threadPoolStateReportProperties = new ThreadPoolStateReportProperties();
-    // 客户端配置信息
-    private final OpentpClientProperties opentpClientProperties = new OpentpClientProperties();
-
+    // 客户端认证信息
+    private final OpentpAuthentication opentpAuthentication = new OpentpAuthentication();
     // 线程池信息上报 socket
     private Channel threadPoolStateReportChannel;
-    //    private AttributeKey<Channel> channel = new Attribute<>()
 
 
     public Map<String, ThreadPoolContext> threadPoolContextCache() {
@@ -65,8 +67,8 @@ public class Configuration {
         this.threadPoolStateReportChannel = threadPoolStateReportChannel;
     }
 
-    public OpentpClientProperties opentpClientProperties() {
-        return opentpClientProperties;
+    public OpentpAuthentication opentpAuthentication() {
+        return opentpAuthentication;
     }
 
     public static Configuration configuration() {

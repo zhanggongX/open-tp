@@ -3,9 +3,14 @@ package cn.opentp.client.net;
 import cn.opentp.client.configuration.Configuration;
 import cn.opentp.client.exception.ServerAddrUnDefineException;
 import cn.opentp.client.net.handler.OpentpClientHandler;
+import cn.opentp.core.net.OpentpMessage;
+import cn.opentp.core.net.OpentpMessageTypeEnum;
 import cn.opentp.core.net.handler.OpentpMessageDecoder;
 import cn.opentp.core.net.handler.OpentpMessageEncoder;
+import cn.opentp.core.net.serializer.SerializerTypeEnum;
+import cn.opentp.core.util.MessageTraceIdUtil;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
@@ -13,6 +18,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,9 +65,24 @@ public class NettyBootstrap {
             @Override
             public void operationComplete(ChannelFuture channelFuture) throws Exception {
                 if (channelFuture.isSuccess()) {
-                    // todo 发送权限验证
+                    Configuration configuration = Configuration.configuration();
+
                     // 记录 channel
-                    Configuration.configuration().threadPoolStateReportChannel(channelFuture.channel());
+                    Channel channel = channelFuture.channel();
+                    channel.attr(Configuration.EXPORT_CHANNEL_ATTR_KEY).set(Strings.EMPTY);
+                    Configuration.configuration().threadPoolStateReportChannel(channel);
+
+                    // 发送权限验证
+                    OpentpMessage opentpMessage = Configuration.OPENTP_MSG_PROTO.clone();
+                    OpentpMessage
+                            .builder()
+                            .messageType(OpentpMessageTypeEnum.AUTHENTICATION_REQ.getCode())
+                            .serializerType(SerializerTypeEnum.Kryo.getType())
+                            .traceId(MessageTraceIdUtil.traceId())
+                            .data(configuration.opentpAuthentication())
+                            .buildTo(opentpMessage);
+
+                    channelFuture.channel().writeAndFlush(opentpMessage);
                 }
             }
         });

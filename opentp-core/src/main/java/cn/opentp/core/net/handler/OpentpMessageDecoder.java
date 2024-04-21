@@ -1,5 +1,7 @@
 package cn.opentp.core.net.handler;
 
+import cn.opentp.core.auth.OpentpAuthentication;
+import cn.opentp.core.auth.OpentpLicense;
 import cn.opentp.core.net.OpentpMessage;
 import cn.opentp.core.net.OpentpMessageConstant;
 import cn.opentp.core.net.OpentpMessageTypeEnum;
@@ -74,23 +76,29 @@ public class OpentpMessageDecoder extends LengthFieldBasedFrameDecoder {
         byte messageType = byteBuf.readByte();
         byte serializerType = byteBuf.readByte();
         long traceId = byteBuf.readLong();
+        int licenseKeyLength = byteBuf.readInt();
+        byte[] licenseKeyBytes = new byte[licenseKeyLength];
+        byteBuf.readBytes(licenseKeyBytes);
+
+        Serializer serializer = SerializerFactory.serializer(serializerType);
+        String licenseKey = serializer.deserialize(licenseKeyBytes, String.class);
 
         OpentpMessage opentpMessage = OpentpMessage
                 .builder()
                 .messageType(messageType)
                 .serializerType(serializerType)
                 .traceId(traceId)
+                .licenseKey(licenseKey)
                 .build();
         /*
-         * 实际数据长度
+         * 实际数据长度，减去头部信息长度，减去 licenseKey 长度，减去 licenseKeyLength 长度
          */
-        length -= OpentpMessageConstant.MESSAGE_HEAD_LENGTH;
+        length -= (OpentpMessageConstant.MESSAGE_HEAD_LENGTH + licenseKeyLength);
 
         if (length <= 0) return opentpMessage;
 
         byte[] bytes = new byte[length];
         byteBuf.readBytes(bytes);
-        Serializer serializer = SerializerFactory.serializer(serializerType);
 
         OpentpMessageTypeEnum messageTypeEnum = OpentpMessageTypeEnum.parse(messageType);
         switch (Objects.requireNonNull(messageTypeEnum)) {
@@ -102,6 +110,14 @@ public class OpentpMessageDecoder extends LengthFieldBasedFrameDecoder {
             case THREAD_POOL_UPDATE:
                 List<?> threadPoolStates = serializer.deserialize(bytes, ArrayList.class);
                 opentpMessage.setData(threadPoolStates);
+                break;
+            case AUTHENTICATION_REQ:
+                OpentpAuthentication opentpAuthentication = serializer.deserialize(bytes, OpentpAuthentication.class);
+                opentpMessage.setData(opentpAuthentication);
+                break;
+            case AUTHENTICATION_RES:
+                OpentpLicense opentpLicense = serializer.deserialize(bytes, OpentpLicense.class);
+                opentpMessage.setData(opentpLicense);
                 break;
         }
 
