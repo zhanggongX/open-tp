@@ -41,7 +41,7 @@ public class DemoController {
         Map<String, ThreadPoolContext> threadPoolContextCache = Configuration.configuration().threadPoolContextCache();
         for (Map.Entry<String, ThreadPoolContext> threadPoolContextEntry : threadPoolContextCache.entrySet()) {
             threadPoolContextEntry.getValue().flushStateAndSetThreadPoolName(threadPoolContextEntry.getKey());
-            Configuration.configuration().threadPoolReportChannel().writeAndFlush(threadPoolContextEntry.getValue().getState());
+            Configuration.configuration().threadPoolStateReportChannel().writeAndFlush(threadPoolContextEntry.getValue().getState());
         }
         return "ok";
     }

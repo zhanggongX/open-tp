@@ -3,8 +3,9 @@ package cn.opentp.client.configuration;
 import cn.opentp.core.net.OpentpMessage;
 import cn.opentp.core.net.OpentpMessageConstant;
 import cn.opentp.core.thread.pool.ThreadPoolContext;
-import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
+import io.netty.util.Attribute;
+import io.netty.util.AttributeKey;
 
 import java.net.InetSocketAddress;
 import java.util.List;
@@ -30,25 +31,29 @@ public class Configuration {
     private final Map<String, ThreadPoolContext> ThreadPoolContextCache = new ConcurrentHashMap<>();
     // 线程池信息上报 socket
     private Channel threadPoolStateReportChannel;
+    //    private AttributeKey<Channel> channel = new Attribute<>()
+    // 重连配置
+    private final NettyReconnectProperties nettyReconnectProperties = new NettyReconnectProperties();
+    // 线程池信息上报配置
+    private final ThreadPoolStateReportProperties threadPoolStateReportProperties = new ThreadPoolStateReportProperties();
 
 
-    /**
-     * 获取所有线程池信息
-     */
     public Map<String, ThreadPoolContext> threadPoolContextCache() {
         return ThreadPoolContextCache;
     }
 
-    /**
-     * 获取所有服务器信息
-     */
     public List<InetSocketAddress> serverAddresses() {
         return serverAddresses;
     }
 
-    /**
-     * 唯一连接成功的 channel
-     */
+    public NettyReconnectProperties nettyReconnectProperties() {
+        return nettyReconnectProperties;
+    }
+
+    public ThreadPoolStateReportProperties threadPoolStateReportProperties() {
+        return threadPoolStateReportProperties;
+    }
+
     public Channel threadPoolStateReportChannel() {
         return threadPoolStateReportChannel;
     }

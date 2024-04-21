@@ -24,7 +24,7 @@ public class OpentpHandler extends ChannelInboundHandlerAdapter {
             if (msg instanceof OpentpMessage opentpMessage) {
                 channelRead0(ctx, opentpMessage);
             } else {
-                log.warn("unknown message, discard");
+                log.warn("未知消息类型，丢弃！");
             }
         } finally {
             ReferenceCountUtil.release(msg);
@@ -43,7 +43,7 @@ public class OpentpHandler extends ChannelInboundHandlerAdapter {
 
         switch (Objects.requireNonNull(opentpMessageTypeEnum)) {
             case HEART_PING:
-                log.info("heard beat info : {}, and say : {}", opentpMessage.getData(), OpentpMessageConstant.HEARD_PONG);
+                log.info("接收心跳信息： {}, 应答: {}", opentpMessage.getData(), OpentpMessageConstant.HEARD_PONG);
                 break;
             case THREAD_POOL_EXPORT:
                 ThreadPoolState threadPoolState = (ThreadPoolState) opentpMessage.getData();
@@ -54,10 +54,10 @@ public class OpentpHandler extends ChannelInboundHandlerAdapter {
                 configThreadPoolState.flushState(threadPoolState);
 
                 configuration.channelCache().put(threadPoolState.getThreadPoolName(), ctx.channel());
-                log.info("thread info : {}", configThreadPoolState.toString());
+                log.debug("线程池信息 : {}", configThreadPoolState.toString());
                 break;
             default:
-                log.warn("unknown opentp message type;");
+                log.warn("未知的消息类型，不处理！");
         }
     }
 
@@ -66,8 +66,8 @@ public class OpentpHandler extends ChannelInboundHandlerAdapter {
         if (evt instanceof IdleStateEvent) {
             IdleState state = ((IdleStateEvent) evt).state();
             if (state == IdleState.READER_IDLE) {
-                log.info("heart beat exception, close this channel");
-                // todo 处理缓存
+                log.warn("心跳超时，关闭连接！");
+                // todo 处理缓存 channel
                 ctx.close();
             }
         } else {
@@ -78,7 +78,7 @@ public class OpentpHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         log.error("channel catch ex : {}", cause.toString());
-        // todo 处理缓存
+        // todo 处理缓存 channel
         ctx.close();
     }
 }

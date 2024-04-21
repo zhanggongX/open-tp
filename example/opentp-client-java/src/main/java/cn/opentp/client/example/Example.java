@@ -18,6 +18,12 @@ public class Example {
         List<InetSocketAddress> inetSocketAddresses = Configuration.configuration().serverAddresses();
         inetSocketAddresses.add(new InetSocketAddress("localhost", 9527));
 
+        Configuration.configuration().nettyReconnectProperties().setInitialDelay(5);
+        Configuration.configuration().nettyReconnectProperties().setPeriod(5);
+
+        Configuration.configuration().threadPoolStateReportProperties().setInitialDelay(2);
+        Configuration.configuration().threadPoolStateReportProperties().setPeriod(2);
+
         // 记录线程池信息
         ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(10, 20, 60, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1024));
         Configuration.configuration().threadPoolContextCache().put("threadPool", new ThreadPoolContext(threadPoolExecutor));

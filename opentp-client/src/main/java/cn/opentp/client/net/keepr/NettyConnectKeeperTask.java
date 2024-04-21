@@ -1,6 +1,7 @@
 package cn.opentp.client.net.keepr;
 
 import cn.opentp.client.configuration.Configuration;
+import cn.opentp.client.configuration.NettyReconnectProperties;
 import cn.opentp.client.net.NettyBootstrap;
 import io.netty.channel.Channel;
 
@@ -15,6 +16,8 @@ import java.util.concurrent.TimeUnit;
 public class NettyConnectKeeperTask implements Runnable {
 
     private final NettyBootstrap nettyBootstrap;
+    private final static long DEFAULT_INITIAL_DELAY = 1;
+    private final static long DEFAULT_PERIOD = 5;
 
     public NettyConnectKeeperTask(NettyBootstrap nettyBootstrap) {
         this.nettyBootstrap = nettyBootstrap;
@@ -22,7 +25,12 @@ public class NettyConnectKeeperTask implements Runnable {
 
     public static void startup(NettyBootstrap nettyBootstrap) {
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        scheduledExecutorService.scheduleAtFixedRate(new NettyConnectKeeperTask(nettyBootstrap), 5, 5, TimeUnit.SECONDS);
+
+        NettyReconnectProperties nettyReconnectProperties = Configuration.configuration().nettyReconnectProperties();
+        long initialDelay = nettyReconnectProperties.getInitialDelay() <= 0 ? DEFAULT_INITIAL_DELAY : nettyReconnectProperties.getInitialDelay();
+        long period = nettyReconnectProperties.getInitialDelay() <= 0 ? DEFAULT_PERIOD : nettyReconnectProperties.getPeriod();
+
+        scheduledExecutorService.scheduleAtFixedRate(new NettyConnectKeeperTask(nettyBootstrap), initialDelay, period, TimeUnit.SECONDS);
     }
 
     @Override

@@ -1,6 +1,8 @@
 package cn.opentp.client.net.worker;
 
 import cn.opentp.client.configuration.Configuration;
+import cn.opentp.client.configuration.NettyReconnectProperties;
+import cn.opentp.client.configuration.ThreadPoolStateReportProperties;
 import cn.opentp.core.net.OpentpMessage;
 import cn.opentp.core.net.OpentpMessageTypeEnum;
 import cn.opentp.core.thread.pool.ThreadPoolContext;
@@ -27,9 +29,17 @@ public class ThreadPoolStateExportTask implements Runnable {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
+    private final static long DEFAULT_INITIAL_DELAY = 1;
+    private final static long DEFAULT_PERIOD = 1;
+
     public static void startup() {
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        scheduledExecutorService.scheduleAtFixedRate(new ThreadPoolStateExportTask(), 5, 5, TimeUnit.SECONDS);
+
+        ThreadPoolStateReportProperties threadPoolStateReportProperties = Configuration.configuration().threadPoolStateReportProperties();
+        long initialDelay = threadPoolStateReportProperties.getInitialDelay() <= 0 ? DEFAULT_INITIAL_DELAY : threadPoolStateReportProperties.getInitialDelay();
+        long period = threadPoolStateReportProperties.getInitialDelay() <= 0 ? DEFAULT_PERIOD : threadPoolStateReportProperties.getPeriod();
+
+        scheduledExecutorService.scheduleAtFixedRate(new ThreadPoolStateExportTask(), initialDelay, period, TimeUnit.SECONDS);
     }
 
     @Override
