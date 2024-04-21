@@ -1,8 +1,10 @@
 package opentp.client.spring.boot.starter.configuration;
 
 import cn.opentp.client.OpentpClientBootstrap;
+import cn.opentp.client.configuration.Configuration;
 import jakarta.annotation.Resource;
 import opentp.client.spring.boot.starter.annotation.EnableOpentp;
+import opentp.client.spring.boot.starter.configuration.prop.OpentpProperties;
 import opentp.client.spring.boot.starter.support.ServerAddressParser;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -36,7 +38,13 @@ public class OpentpAutoConfiguration implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
         // 添加配置信息
         List<InetSocketAddress> configInetSocketAddress = ServerAddressParser.parse(opentpProperties.getServers());
-        cn.opentp.client.configuration.Configuration.configuration().serverAddresses().addAll(configInetSocketAddress);
+        Configuration.configuration().serverAddresses().addAll(configInetSocketAddress);
+
+        Configuration.configuration().nettyReconnectProperties().setInitialDelay(opentpProperties.getReconnect().getInitialDelay());
+        Configuration.configuration().nettyReconnectProperties().setPeriod(opentpProperties.getReconnect().getPeriod());
+
+        Configuration.configuration().threadPoolStateReportProperties().setInitialDelay(opentpProperties.getExport().getInitialDelay());
+        Configuration.configuration().threadPoolStateReportProperties().setPeriod(opentpProperties.getExport().getPeriod());
     }
 
     @ConditionalOnMissingBean(OpentpClientBootstrap.class)

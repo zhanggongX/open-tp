@@ -1,3 +1,9 @@
 opentp:
   servers: localhost:9527
-  name: opentp-client1
+  name: opentp-client-1
+  reconnect:
+    initial-Delay: 5
+    period: 5
+  export:
+    initial-delay: 2
+    period: 2
