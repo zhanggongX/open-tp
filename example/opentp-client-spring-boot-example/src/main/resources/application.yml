@@ -1,6 +1,6 @@
 opentp:
   servers: localhost:9527
-  appKey: opentp-client
+  appKey: opentp-client-springBoot
   appSecret: 123456
   reconnect:
     initial-Delay: 5
