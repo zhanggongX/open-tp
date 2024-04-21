@@ -24,9 +24,9 @@ public class NettyBootstrap {
 
     private final static Logger log = LoggerFactory.getLogger(NettyBootstrap.class);
 
-    public static void start() {
+    private final Bootstrap clientBootstrap = new Bootstrap();
 
-        Bootstrap clientBootstrap = new Bootstrap();
+    public void configBootstrap() {
 
         clientBootstrap.group(new NioEventLoopGroup(1))
                 .channel(NioSocketChannel.class)
@@ -40,9 +40,9 @@ public class NettyBootstrap {
                         socketChannel.pipeline().addLast(new OpentpClientHandler());
                     }
                 });
-        // 客户端
-        Configuration.configuration().setBootstrap(clientBootstrap);
+    }
 
+    public void doConnect() {
         // 配置的服务器信息
         List<InetSocketAddress> inetSocketAddresses = Configuration.configuration().serverAddresses();
         if (inetSocketAddresses.isEmpty()) {
@@ -50,24 +50,26 @@ public class NettyBootstrap {
         }
         // todo 集群迭代。
         log.debug("服务端地址：{}, 端口：{}", inetSocketAddresses.get(0).getHostName(), inetSocketAddresses.get(0).getPort());
+        log.debug("尝试连接服务器...");
         ChannelFuture channelFuture = clientBootstrap.connect(inetSocketAddresses.get(0));
 
-        // 链接成功回调
+        // 监听连接状态
         channelFuture.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture channelFuture) throws Exception {
                 if (channelFuture.isSuccess()) {
                     // todo 发送权限验证
                     // 记录 channel
-                    Configuration.configuration().setThreadPoolReportChannel(channelFuture.channel());
-                    // 没一秒都去上报 todo 配置
-                    channelFuture.channel().eventLoop().scheduleAtFixedRate(new ThreadPoolStateReportThread(), 1, 10, TimeUnit.SECONDS);
-                } else {
-                    // 重试
-                    Throwable cause = channelFuture.cause();
-                    log.error("链接失败：{}", cause.toString());
+                    Configuration.configuration().threadPoolStateReportChannel(channelFuture.channel());
                 }
             }
         });
+    }
+
+    public void startup() {
+        // 配置 netty 引导类
+        configBootstrap();
+        // 连接服务器
+        doConnect();
     }
 }

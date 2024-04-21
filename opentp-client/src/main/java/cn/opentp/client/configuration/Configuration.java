@@ -19,18 +19,6 @@ public class Configuration {
     private Configuration() {
     }
 
-    public static Configuration configuration() {
-        if (INSTANCE == null) {
-            synchronized (Configuration.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new Configuration();
-                }
-            }
-        }
-        return INSTANCE;
-    }
-
-
     public static final int DEFAULT_PORT = 9527;
     public static final String SERVER_SPLITTER = ",";
     public static final String SERVER_PORT_SPLITTER = ":";
@@ -40,33 +28,43 @@ public class Configuration {
     private final List<InetSocketAddress> serverAddresses = new CopyOnWriteArrayList<>();
     // 线程池增强对象缓存
     private final Map<String, ThreadPoolContext> ThreadPoolContextCache = new ConcurrentHashMap<>();
-    // 线程池信息上报 bootstrap
-    private Bootstrap bootstrap;
     // 线程池信息上报 socket
-    private Channel threadPoolReportChannel;
+    private Channel threadPoolStateReportChannel;
 
 
+    /**
+     * 获取所有线程池信息
+     */
     public Map<String, ThreadPoolContext> threadPoolContextCache() {
         return ThreadPoolContextCache;
     }
 
+    /**
+     * 获取所有服务器信息
+     */
     public List<InetSocketAddress> serverAddresses() {
         return serverAddresses;
     }
 
-    public Channel threadPoolReportChannel() {
-        return threadPoolReportChannel;
+    /**
+     * 唯一连接成功的 channel
+     */
+    public Channel threadPoolStateReportChannel() {
+        return threadPoolStateReportChannel;
     }
 
-    public void setThreadPoolReportChannel(Channel threadPoolReportChannel) {
-        this.threadPoolReportChannel = threadPoolReportChannel;
+    public void threadPoolStateReportChannel(Channel threadPoolStateReportChannel) {
+        this.threadPoolStateReportChannel = threadPoolStateReportChannel;
     }
 
-    public Bootstrap bootstrap() {
-        return bootstrap;
-    }
-
-    public void setBootstrap(Bootstrap bootstrap) {
-        this.bootstrap = bootstrap;
+    public static Configuration configuration() {
+        if (INSTANCE == null) {
+            synchronized (Configuration.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new Configuration();
+                }
+            }
+        }
+        return INSTANCE;
     }
 }

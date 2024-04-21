@@ -31,7 +31,7 @@ public class OpentpClientHandler extends ChannelInboundHandlerAdapter {
             if (msg instanceof OpentpMessage opentpMessage) {
                 channelRead0(ctx, opentpMessage);
             } else {
-                log.warn("unknown message, discard");
+                log.warn("未知消息，丢弃！");
             }
         } finally {
             ReferenceCountUtil.release(msg);
@@ -56,11 +56,9 @@ public class OpentpClientHandler extends ChannelInboundHandlerAdapter {
                 ThreadPoolContext threadPoolContext = threadPoolContextCache.get(threadPoolState.getThreadPoolName());
 
                 threadPoolContext.flushTargetState(threadPoolState);
-
-                log.info("doUpdate");
                 break;
             default:
-                log.warn("unknown opentp message type;");
+                log.warn("未知的消息类型，不处理！");
         }
     }
 
@@ -78,7 +76,8 @@ public class OpentpClientHandler extends ChannelInboundHandlerAdapter {
                         .data(OpentpMessageConstant.HEARD_PING)
                         .traceId(MessageTraceIdUtil.traceId())
                         .buildTo(opentpMessage);
-                log.info("send heart beat");
+
+                log.info("发送心跳信息");
                 ctx.channel().writeAndFlush(opentpMessage);
             }
         } else {
@@ -88,8 +87,7 @@ public class OpentpClientHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        log.error("channel catch exception : {}", cause.toString());
+        log.error("channel catch exception : ", cause);
         ctx.close();
-        // todo 尝试重新链接到服务器。
     }
 }
