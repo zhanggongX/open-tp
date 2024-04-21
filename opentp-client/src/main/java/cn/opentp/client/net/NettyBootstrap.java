@@ -25,10 +25,11 @@ public class NettyBootstrap {
     private final static Logger log = LoggerFactory.getLogger(NettyBootstrap.class);
 
     private final Bootstrap clientBootstrap = new Bootstrap();
+    private final NioEventLoopGroup nioEventLoopGroup = new NioEventLoopGroup(1);
 
     public void configBootstrap() {
 
-        clientBootstrap.group(new NioEventLoopGroup(1))
+        clientBootstrap.group(nioEventLoopGroup)
                 .channel(NioSocketChannel.class)
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
@@ -71,5 +72,9 @@ public class NettyBootstrap {
         configBootstrap();
         // 连接服务器
         doConnect();
+    }
+
+    public void shutdown() {
+        nioEventLoopGroup.shutdownGracefully();
     }
 }
