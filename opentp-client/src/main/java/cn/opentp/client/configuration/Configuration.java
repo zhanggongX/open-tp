@@ -29,13 +29,16 @@ public class Configuration {
     private final List<InetSocketAddress> serverAddresses = new CopyOnWriteArrayList<>();
     // 线程池增强对象缓存
     private final Map<String, ThreadPoolContext> ThreadPoolContextCache = new ConcurrentHashMap<>();
-    // 线程池信息上报 socket
-    private Channel threadPoolStateReportChannel;
-    //    private AttributeKey<Channel> channel = new Attribute<>()
     // 重连配置
     private final NettyReconnectProperties nettyReconnectProperties = new NettyReconnectProperties();
     // 线程池信息上报配置
     private final ThreadPoolStateReportProperties threadPoolStateReportProperties = new ThreadPoolStateReportProperties();
+    // 客户端配置信息
+    private final OpentpClientProperties opentpClientProperties = new OpentpClientProperties();
+
+    // 线程池信息上报 socket
+    private Channel threadPoolStateReportChannel;
+    //    private AttributeKey<Channel> channel = new Attribute<>()
 
 
     public Map<String, ThreadPoolContext> threadPoolContextCache() {
@@ -60,6 +63,10 @@ public class Configuration {
 
     public void threadPoolStateReportChannel(Channel threadPoolStateReportChannel) {
         this.threadPoolStateReportChannel = threadPoolStateReportChannel;
+    }
+
+    public OpentpClientProperties opentpClientProperties() {
+        return opentpClientProperties;
     }
 
     public static Configuration configuration() {

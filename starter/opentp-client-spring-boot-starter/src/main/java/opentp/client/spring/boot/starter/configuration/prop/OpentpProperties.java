@@ -12,7 +12,8 @@ public class OpentpProperties {
     private String servers;
     private ReconnectProperties reconnect;
     private ExportProperties export;
-    private String name;
+    private String appKey;
+    private String appSecret;
 
     public String getServers() {
         return servers;
@@ -20,14 +21,6 @@ public class OpentpProperties {
 
     public void setServers(String servers) {
         this.servers = servers;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public ReconnectProperties getReconnect() {
@@ -44,5 +37,21 @@ public class OpentpProperties {
 
     public void setExport(ExportProperties export) {
         this.export = export;
+    }
+
+    public String getAppKey() {
+        return appKey;
+    }
+
+    public void setAppKey(String appKey) {
+        this.appKey = appKey;
+    }
+
+    public String getAppSecret() {
+        return appSecret;
+    }
+
+    public void setAppSecret(String appSecret) {
+        this.appSecret = appSecret;
     }
 }

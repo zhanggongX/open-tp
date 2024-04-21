@@ -12,8 +12,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.util.StringUtils;
 
 import java.net.InetSocketAddress;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -38,13 +40,23 @@ public class OpentpAutoConfiguration implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
         // 添加配置信息
         List<InetSocketAddress> configInetSocketAddress = ServerAddressParser.parse(opentpProperties.getServers());
-        Configuration.configuration().serverAddresses().addAll(configInetSocketAddress);
+        Configuration configuration = Configuration.configuration();
+        configuration.serverAddresses().addAll(configInetSocketAddress);
 
-        Configuration.configuration().nettyReconnectProperties().setInitialDelay(opentpProperties.getReconnect().getInitialDelay());
-        Configuration.configuration().nettyReconnectProperties().setPeriod(opentpProperties.getReconnect().getPeriod());
+        configuration.nettyReconnectProperties().setInitialDelay(opentpProperties.getReconnect().getInitialDelay());
+        configuration.nettyReconnectProperties().setPeriod(opentpProperties.getReconnect().getPeriod());
 
-        Configuration.configuration().threadPoolStateReportProperties().setInitialDelay(opentpProperties.getExport().getInitialDelay());
-        Configuration.configuration().threadPoolStateReportProperties().setPeriod(opentpProperties.getExport().getPeriod());
+        configuration.threadPoolStateReportProperties().setInitialDelay(opentpProperties.getExport().getInitialDelay());
+        configuration.threadPoolStateReportProperties().setPeriod(opentpProperties.getExport().getPeriod());
+
+        if (opentpProperties.getAppKey() == null || opentpProperties.getAppKey().isEmpty()) {
+            throw new IllegalArgumentException("请配置 opentp appKey");
+        }
+        if (opentpProperties.getAppSecret() == null || opentpProperties.getAppSecret().isEmpty()) {
+            throw new IllegalArgumentException("请配置 opentp appSecret");
+        }
+        configuration.opentpClientProperties().setAppSecret(opentpProperties.getAppSecret());
+        configuration.opentpClientProperties().setAppKey(opentpProperties.getAppKey());
     }
 
     @ConditionalOnMissingBean(OpentpClientBootstrap.class)

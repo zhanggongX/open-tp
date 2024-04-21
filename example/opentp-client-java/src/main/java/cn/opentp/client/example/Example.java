@@ -18,15 +18,22 @@ public class Example {
         List<InetSocketAddress> inetSocketAddresses = Configuration.configuration().serverAddresses();
         inetSocketAddresses.add(new InetSocketAddress("localhost", 9527));
 
+        // 设置断网重连重试周期，非必填
         Configuration.configuration().nettyReconnectProperties().setInitialDelay(5);
         Configuration.configuration().nettyReconnectProperties().setPeriod(5);
 
+        // 线程上报信息周期，非必填
         Configuration.configuration().threadPoolStateReportProperties().setInitialDelay(2);
         Configuration.configuration().threadPoolStateReportProperties().setPeriod(2);
+
+        Configuration.configuration().opentpClientProperties().setAppKey("opentp-client-java");
+        Configuration.configuration().opentpClientProperties().setAppSecret("123456");
 
         // 记录线程池信息
         ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(10, 20, 60, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1024));
         Configuration.configuration().threadPoolContextCache().put("threadPool", new ThreadPoolContext(threadPoolExecutor));
+
+        Configuration configuration = Configuration.configuration();
 
         // 开启服务
         new OpentpClientBootstrap().start();

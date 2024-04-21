@@ -1,6 +1,7 @@
 opentp:
   servers: localhost:9527
-  name: opentp-client-1
+  appKey: opentp-client
+  appSecret: 123456
   reconnect:
     initial-Delay: 5
     period: 5
