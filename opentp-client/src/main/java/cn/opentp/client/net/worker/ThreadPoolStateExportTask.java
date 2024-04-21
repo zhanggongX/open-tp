@@ -1,11 +1,11 @@
 package cn.opentp.client.net.worker;
 
 import cn.opentp.client.configuration.Configuration;
-import cn.opentp.client.configuration.NettyReconnectProperties;
 import cn.opentp.client.configuration.ThreadPoolStateReportProperties;
 import cn.opentp.core.net.OpentpMessage;
 import cn.opentp.core.net.OpentpMessageTypeEnum;
 import cn.opentp.core.thread.pool.ThreadPoolContext;
+import cn.opentp.core.thread.pool.ThreadPoolState;
 import cn.opentp.core.util.MessageTraceIdUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -13,6 +13,8 @@ import io.netty.channel.ChannelFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -49,34 +51,36 @@ public class ThreadPoolStateExportTask implements Runnable {
             return;
         }
 
+        List<ThreadPoolState> threadPoolStates = new ArrayList<>();
+
         Map<String, ThreadPoolContext> threadPoolContextCache = Configuration.configuration().threadPoolContextCache();
         for (Map.Entry<String, ThreadPoolContext> threadPoolContextEntry : threadPoolContextCache.entrySet()) {
             String threadPoolKey = threadPoolContextEntry.getKey();
             ThreadPoolContext threadPoolContext = threadPoolContextEntry.getValue();
             threadPoolContext.flushStateAndSetThreadPoolName(threadPoolKey);
-
-            // 克隆信息，自带魔数和版本号
-            OpentpMessage opentpMessage = Configuration.OPENTP_MSG_PROTO.clone();
-            OpentpMessage
-                    .builder()
-                    .messageType(OpentpMessageTypeEnum.THREAD_POOL_EXPORT.getCode())
-                    .serializerType(OpentpMessageTypeEnum.THREAD_POOL_EXPORT.getCode())
-                    .traceId(MessageTraceIdUtil.traceId())
-                    .data(threadPoolContext.getState())
-                    .buildTo(opentpMessage);
-
-            // todo 批量上报
-            ChannelFuture channelFuture = channel.writeAndFlush(opentpMessage);
-            channelFuture.addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                    if (channelFuture.isSuccess()) {
-                        log.debug("上报线程消息成功");
-                    } else {
-                        log.error("上报信息异常 : ", channelFuture.cause());
-                    }
-                }
-            });
+            threadPoolStates.add(threadPoolContext.getState());
         }
+
+        // 克隆信息，自带魔数和版本号
+        OpentpMessage opentpMessage = Configuration.OPENTP_MSG_PROTO.clone();
+        OpentpMessage
+                .builder()
+                .messageType(OpentpMessageTypeEnum.THREAD_POOL_EXPORT.getCode())
+                .serializerType(OpentpMessageTypeEnum.THREAD_POOL_EXPORT.getCode())
+                .traceId(MessageTraceIdUtil.traceId())
+                .data(threadPoolStates)
+                .buildTo(opentpMessage);
+
+        ChannelFuture channelFuture = channel.writeAndFlush(opentpMessage);
+        channelFuture.addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                if (channelFuture.isSuccess()) {
+                    log.debug("上报线程消息成功");
+                } else {
+                    log.error("上报信息异常 : ", channelFuture.cause());
+                }
+            }
+        });
     }
 }

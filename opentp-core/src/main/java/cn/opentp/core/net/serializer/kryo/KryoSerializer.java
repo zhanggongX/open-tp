@@ -11,6 +11,7 @@ import org.objenesis.strategy.StdInstantiatorStrategy;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class KryoSerializer implements Serializer {
 
@@ -28,6 +29,7 @@ public class KryoSerializer implements Serializer {
         //方式二：由于默认是需要进行注册的，若是不设置为false，那么就需要进行手动注册class类
         kryo.register(ThreadPoolState.class);
         kryo.register(String.class);
+        kryo.register(ArrayList.class);
         return kryo;
     });
 

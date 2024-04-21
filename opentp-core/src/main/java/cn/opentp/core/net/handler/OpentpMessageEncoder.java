@@ -2,7 +2,6 @@ package cn.opentp.core.net.handler;
 
 import cn.opentp.core.net.OpentpMessage;
 import cn.opentp.core.net.OpentpMessageConstant;
-import cn.opentp.core.net.OpentpMessageTypeEnum;
 import cn.opentp.core.net.serializer.Serializer;
 import cn.opentp.core.net.serializer.SerializerFactory;
 import cn.opentp.core.util.MessageTraceIdUtil;
@@ -37,7 +36,7 @@ public class OpentpMessageEncoder extends MessageToByteEncoder<OpentpMessage> {
             byteBuf.writeLong(MessageTraceIdUtil.traceId());
             byteBuf.writeBytes(opentpMessage.getContent());
         } catch (Exception e) {
-            log.error("OpentpMessageDecoder encode error : {}", e.toString());
+            log.error("OpentpMessageDecoder encode error : ", e);
         }
     }
 

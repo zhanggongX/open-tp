@@ -1,6 +1,9 @@
 package cn.opentp.core.net;
 
+import cn.opentp.core.thread.pool.ThreadPoolState;
+
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * opentp 自定义传输协议

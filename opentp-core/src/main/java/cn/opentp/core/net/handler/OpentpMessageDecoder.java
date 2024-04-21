@@ -3,16 +3,17 @@ package cn.opentp.core.net.handler;
 import cn.opentp.core.net.OpentpMessage;
 import cn.opentp.core.net.OpentpMessageConstant;
 import cn.opentp.core.net.OpentpMessageTypeEnum;
-import cn.opentp.core.net.serializer.SerializerFactory;
 import cn.opentp.core.net.serializer.Serializer;
-import cn.opentp.core.thread.pool.ThreadPoolState;
+import cn.opentp.core.net.serializer.SerializerFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 public class OpentpMessageDecoder extends LengthFieldBasedFrameDecoder {
@@ -48,7 +49,7 @@ public class OpentpMessageDecoder extends LengthFieldBasedFrameDecoder {
             try {
                 return decodeMessage(decodeBuf);
             } catch (Exception e) {
-                log.error("OpentpMessageDecoder decode error : {}", e.toString());
+                log.error("OpentpMessageDecoder decode error : ", e);
             } finally {
                 // 池化消息释放
                 decodeBuf.release();
@@ -99,8 +100,8 @@ public class OpentpMessageDecoder extends LengthFieldBasedFrameDecoder {
                 break;
             case THREAD_POOL_EXPORT:
             case THREAD_POOL_UPDATE:
-                ThreadPoolState threadPoolState = serializer.deserialize(bytes, ThreadPoolState.class);
-                opentpMessage.setData(threadPoolState);
+                List<?> threadPoolStates = serializer.deserialize(bytes, ArrayList.class);
+                opentpMessage.setData(threadPoolStates);
                 break;
         }
 
