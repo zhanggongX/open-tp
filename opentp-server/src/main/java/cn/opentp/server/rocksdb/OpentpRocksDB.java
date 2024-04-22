@@ -1,5 +1,6 @@
 package cn.opentp.server.rocksdb;
 
+import org.apache.logging.log4j.util.Strings;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -9,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 public class OpentpRocksDB {
 
     private static final RocksDB rocksDB;
-    private static final String path = "./opentp-rocks";
+    private static final String path = "../opentp-rocks";
 
     static {
         RocksDB.loadLibrary();
@@ -25,6 +26,9 @@ public class OpentpRocksDB {
 
     public static void set(String key, String value) {
         try {
+            if (key == null || key.isEmpty() || value == null || value.isEmpty()) {
+                return;
+            }
             rocksDB.put(key.getBytes(StandardCharsets.UTF_8), value.getBytes(StandardCharsets.UTF_8));
         } catch (RocksDBException e) {
             throw new RuntimeException(e);
@@ -34,6 +38,8 @@ public class OpentpRocksDB {
     public static String get(String key) {
         try {
             byte[] bytes = rocksDB.get(key.getBytes(StandardCharsets.UTF_8));
+            if (bytes == null) return Strings.EMPTY;
+
             return new String(bytes, StandardCharsets.UTF_8);
         } catch (RocksDBException e) {
             throw new RuntimeException(e);
