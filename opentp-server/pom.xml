@@ -54,6 +54,13 @@
             <version>4.1.101.Final</version>
         </dependency>
         <!-- netty end -->
+        <!-- rocksDB start -->
+        <dependency>
+            <groupId>org.rocksdb</groupId>
+            <artifactId>rocksdbjni</artifactId>
+            <version>8.8.1</version>
+        </dependency>
+        <!-- rocksDB end -->
     </dependencies>
 
 
