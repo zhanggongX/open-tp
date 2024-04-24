@@ -13,12 +13,20 @@ public class Configuration {
 
     private volatile static Configuration INSTANCE;
 
-    private final Map<String, ThreadPoolState> threadPoolStateCache = new ConcurrentHashMap<>();
-    private final Map<String, Channel> channelCache = new ConcurrentHashMap<>();
-    private final Map<String, HttpHandler> endPoints = new ConcurrentHashMap<>();
+    // todo 后续迭代认证服务
+    private static final String DEFAULT_USER = "admin";
+    private static final String DEFAULT_PW = "123456";
+    // todo 后续迭代去掉
+    private static final String ADMIN_DEFAULT_APP = "opentp";
+    private static final String ADMIN_DEFAULT_SECRET = "opentp-secret";
     // 消息原型
     public static final OpentpMessage OPENTP_MSG_PROTO = new OpentpMessage(OpentpMessageConstant.MAGIC, OpentpMessageConstant.VERSION);
 
+    // 全局配置开始
+    private final Map<String, ThreadPoolState> threadPoolStateCache = new ConcurrentHashMap<>();
+    private final Map<String, Channel> channelCache = new ConcurrentHashMap<>();
+    private final Map<String, HttpHandler> endPoints = new ConcurrentHashMap<>();
+    // 全局配置结束
 
     private Configuration() {
     }

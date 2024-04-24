@@ -7,21 +7,9 @@ public class CommandOptions {
     public static Options opentpOption() {
 
         Options options = new Options();
-        options.addOption("a", "all", false, "do not hide entries starting with .");
-        options.addOption("A", "almost-all", false, "do not list implied . and ..");
-        options.addOption("b", "escape", false, "print octal escapes for non-graphic "
-                + "characters");
-        options.addOption(Option.builder("SIZE").longOpt("block-size")
-                .desc("use SIZE-byte blocks")
-                .hasArg()
-                .build());
-        options.addOption("B", "ignore-backups", false, "do not list implied entries "
-                + "ending with ~");
-        options.addOption("c", false, "with -lt: sort by, and show, ctime (time of last "
-                + "modification of file status information) with "
-                + "-l:show ctime and sort by name otherwise: sort "
-                + "by ctime");
-        options.addOption("C", false, "list entries by columns");
+        options.addOption("ep", "export-port", true, "client export use port");
+        options.addOption("sp", "server-port", true, "server sync info port");
+        options.addOption("hp", "http-port", true, "http rest api port");
         return options;
     }
 }

@@ -79,6 +79,7 @@
                             <mainClass>cn.opentp.server.OpentpBootstrap</mainClass>
                         </manifest>
                     </archive>
+                    <outputDirectory>./bin</outputDirectory>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>

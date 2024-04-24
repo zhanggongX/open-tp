@@ -34,6 +34,13 @@ public class OpentpBootstrap {
             return;
         }
 
+        String exportPort = cmd.getOptionValue("ep");
+        String serverPort = cmd.getOptionValue("sp");
+        String httpPort = cmd.getOptionValue("hp");
+        System.out.println(serverPort);
+        System.out.println(exportPort);
+        System.out.println(httpPort);
+
         Thread nettyBootstrap = NettyBootstrap.start();
         Thread nettyHttpBootstrap = NettyHttpBootstrap.start();
 
