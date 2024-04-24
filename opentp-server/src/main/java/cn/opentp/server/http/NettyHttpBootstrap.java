@@ -29,6 +29,8 @@ public class NettyHttpBootstrap {
     }
 
     public void start() {
+        httpConfig();
+
         ChannelFuture channelFuture = httpServerBootstrap.bind(8001);
         channelFuture.addListener(new ChannelFutureListener() {
             @Override
