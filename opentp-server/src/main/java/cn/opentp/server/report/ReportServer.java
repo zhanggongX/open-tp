@@ -2,6 +2,8 @@ package cn.opentp.server.report;
 
 import cn.opentp.core.net.handler.OpentpMessageDecoder;
 import cn.opentp.core.net.handler.OpentpMessageEncoder;
+import cn.opentp.server.configuration.Configuration;
+import cn.opentp.server.constant.Constant;
 import cn.opentp.server.report.handler.ReportServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -41,13 +43,15 @@ public class ReportServer {
                 });
     }
 
-    public void start() {
+    public void start(String bindPort) {
+        int port = bindPort == null ? Constant.DEFAULT_REPORT_SERVER_PORT : Integer.parseInt(bindPort);
+
         configServer();
-        serverBootstrap.bind(9527).addListener(new ChannelFutureListener() {
+        serverBootstrap.bind(port).addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
-                    log.info("report server start bind on 9527");
+                    log.info("report server start bind on {}", port);
                 } else {
                     log.error("report server start error: ", future.cause());
                 }

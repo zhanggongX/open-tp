@@ -1,5 +1,6 @@
 package cn.opentp.server.rest;
 
+import cn.opentp.server.constant.Constant;
 import cn.opentp.server.rest.handler.RestServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -14,30 +15,35 @@ public class RestServer {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    private final ServerBootstrap httpServerBootstrap = new ServerBootstrap();
+    private final ServerBootstrap serverBootstrap = new ServerBootstrap();
     private final NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
     private final NioEventLoopGroup workGroup = new NioEventLoopGroup(1);
 
     private void httpConfig() {
-        httpServerBootstrap.group(bossGroup, workGroup).childOption(ChannelOption.SO_BACKLOG, 1024).childOption(ChannelOption.SO_KEEPALIVE, true).channel(NioServerSocketChannel.class).childHandler(new ChannelInitializer<SocketChannel>() {
-            @Override
-            protected void initChannel(SocketChannel socketChannel) throws Exception {
-                socketChannel.pipeline().addLast(new HttpServerCodec());
-                socketChannel.pipeline().addLast(new HttpObjectAggregator(65536));
-                socketChannel.pipeline().addLast(new RestServerHandler());
-            }
-        });
+        serverBootstrap.group(bossGroup, workGroup)
+                .childOption(ChannelOption.SO_BACKLOG, 1024)
+                .childOption(ChannelOption.SO_KEEPALIVE, true)
+                .channel(NioServerSocketChannel.class).childHandler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    protected void initChannel(SocketChannel socketChannel) throws Exception {
+                        socketChannel.pipeline().addLast(new HttpServerCodec());
+                        socketChannel.pipeline().addLast(new HttpObjectAggregator(65536));
+                        socketChannel.pipeline().addLast(new RestServerHandler());
+                    }
+                });
     }
 
-    public void start() {
+    public void start(String bindPort) {
+        int port = bindPort == null ? Constant.DEFAULT_REST_SERVER_PORT : Integer.parseInt(bindPort);
+
         httpConfig();
 
-        ChannelFuture channelFuture = httpServerBootstrap.bind(8001);
+        ChannelFuture channelFuture = serverBootstrap.bind(port);
         channelFuture.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
-                    log.info("http rest server start bind on 8001");
+                    log.info("http rest api server start bind on {}", port);
                 } else {
                     log.error("http rest server start error: ", future.cause());
                 }

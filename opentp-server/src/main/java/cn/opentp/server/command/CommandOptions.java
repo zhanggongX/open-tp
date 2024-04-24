@@ -7,9 +7,10 @@ public class CommandOptions {
     public static Options opentpOption() {
 
         Options options = new Options();
-        options.addOption("ep", "export-port", true, "client export use port");
-        options.addOption("sp", "server-port", true, "server sync info port");
+        options.addOption("rp", "report-port", true, "client report use port");
         options.addOption("hp", "http-port", true, "http rest api port");
+        options.addOption("tp", "transport-port", true, "opentp sync info port");
+
         return options;
     }
 }

@@ -9,6 +9,7 @@ import cn.opentp.server.rest.controller.FaviconHttpHandler;
 import cn.opentp.server.rest.controller.HttpHandler;
 import cn.opentp.server.rest.controller.OpentpHttpHandler;
 import cn.opentp.server.rocksdb.OpentpRocksDB;
+import cn.opentp.server.transport.TransportServer;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,18 +37,18 @@ public class OpentpBootstrap {
             return;
         }
 
-        String exportPort = cmd.getOptionValue("ep");
-        String serverPort = cmd.getOptionValue("sp");
+        String reportPort = cmd.getOptionValue("rp");
         String httpPort = cmd.getOptionValue("hp");
-        System.out.println(serverPort);
-        System.out.println(exportPort);
-        System.out.println(httpPort);
+        String transportPort = cmd.getOptionValue("tp");
 
         ReportServer reportServer = new ReportServer();
-        reportServer.start();
+        reportServer.start(reportPort);
 
         RestServer restServer = new RestServer();
-        restServer.start();
+        restServer.start(httpPort);
+
+        TransportServer transportServer = new TransportServer();
+        transportServer.start(transportPort);
 
         Map<String, HttpHandler> endPoints = Configuration.configuration().endPoints();
         // 添加 handler

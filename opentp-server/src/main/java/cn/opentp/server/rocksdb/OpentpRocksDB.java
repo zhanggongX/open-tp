@@ -4,6 +4,8 @@ import org.apache.logging.log4j.util.Strings;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 
@@ -11,6 +13,7 @@ public class OpentpRocksDB {
 
     private static final RocksDB rocksDB;
     private static final String path = "../opentp-rocks";
+    private final static Logger log = LoggerFactory.getLogger(OpentpRocksDB.class);
 
     static {
         RocksDB.loadLibrary();
@@ -47,6 +50,10 @@ public class OpentpRocksDB {
     }
 
     public static void close() {
-        rocksDB.close();
+        try {
+            rocksDB.close();
+        } catch (Exception e) {
+            log.error("close error : ", e);
+        }
     }
 }
