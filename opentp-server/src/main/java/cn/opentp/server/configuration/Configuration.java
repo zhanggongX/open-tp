@@ -3,7 +3,7 @@ package cn.opentp.server.configuration;
 import cn.opentp.core.net.OpentpMessage;
 import cn.opentp.core.net.OpentpMessageConstant;
 import cn.opentp.core.thread.pool.ThreadPoolState;
-import cn.opentp.server.http.handler.HttpHandler;
+import cn.opentp.server.rest.controller.HttpHandler;
 import io.netty.channel.Channel;
 
 import java.util.Map;

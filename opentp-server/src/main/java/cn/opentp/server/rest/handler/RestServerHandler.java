@@ -1,18 +1,14 @@
-package cn.opentp.server.http;
+package cn.opentp.server.rest.handler;
 
-import cn.opentp.core.util.JSONUtils;
+import cn.opentp.server.rest.HttpDispatcher;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
+public class RestServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-public class DefaultHttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
-
-    private final Logger log = LoggerFactory.getLogger(DefaultHttpServerHandler.class);
+    private final Logger log = LoggerFactory.getLogger(RestServerHandler.class);
 
 
     @Override

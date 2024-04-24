@@ -1,5 +1,6 @@
-package cn.opentp.server.http;
+package cn.opentp.server.rest;
 
+import cn.opentp.server.rest.handler.RestServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -9,7 +10,7 @@ import io.netty.handler.codec.http.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NettyHttpBootstrap {
+public class RestServer {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -23,7 +24,7 @@ public class NettyHttpBootstrap {
             protected void initChannel(SocketChannel socketChannel) throws Exception {
                 socketChannel.pipeline().addLast(new HttpServerCodec());
                 socketChannel.pipeline().addLast(new HttpObjectAggregator(65536));
-                socketChannel.pipeline().addLast(new DefaultHttpServerHandler());
+                socketChannel.pipeline().addLast(new RestServerHandler());
             }
         });
     }
@@ -36,9 +37,9 @@ public class NettyHttpBootstrap {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
-                    log.info("http server start bind on 8001");
+                    log.info("http rest server start bind on 8001");
                 } else {
-                    log.error("http server start error: ", future.cause());
+                    log.error("http rest server start error: ", future.cause());
                 }
             }
         });

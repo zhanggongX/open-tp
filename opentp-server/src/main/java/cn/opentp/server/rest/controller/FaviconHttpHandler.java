@@ -1,7 +1,7 @@
-package cn.opentp.server.http.handler;
+package cn.opentp.server.rest.controller;
 
 import cn.opentp.core.thread.pool.ThreadPoolContext;
-import cn.opentp.server.http.BaseRes;
+import cn.opentp.server.rest.BaseRes;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 

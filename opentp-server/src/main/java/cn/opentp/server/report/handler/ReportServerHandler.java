@@ -1,4 +1,4 @@
-package cn.opentp.server.net.handler;
+package cn.opentp.server.report.handler;
 
 import cn.opentp.core.auth.OpentpAuthentication;
 import cn.opentp.core.auth.OpentpLicense;
@@ -19,9 +19,9 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Objects;
 
-public class OpentpHandler extends ChannelInboundHandlerAdapter {
+public class ReportServerHandler extends ChannelInboundHandlerAdapter {
 
-    private final Logger log = LoggerFactory.getLogger(OpentpHandler.class);
+    private final Logger log = LoggerFactory.getLogger(ReportServerHandler.class);
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {

@@ -1,6 +1,5 @@
-package cn.opentp.server.http.handler;
+package cn.opentp.server.rest.controller;
 
-import cn.opentp.server.http.BaseRes;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 

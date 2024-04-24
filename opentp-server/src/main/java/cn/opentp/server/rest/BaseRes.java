@@ -1,4 +1,4 @@
-package cn.opentp.server.http;
+package cn.opentp.server.rest;
 
 public class BaseRes<T> {
 

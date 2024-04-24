@@ -1,8 +1,8 @@
-package cn.opentp.server.net;
+package cn.opentp.server.report;
 
 import cn.opentp.core.net.handler.OpentpMessageDecoder;
 import cn.opentp.core.net.handler.OpentpMessageEncoder;
-import cn.opentp.server.net.handler.OpentpHandler;
+import cn.opentp.server.report.handler.ReportServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -15,9 +15,9 @@ import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NettyBootstrap {
+public class ReportServer {
 
-    private static final Logger log = LoggerFactory.getLogger(NettyBootstrap.class);
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final ServerBootstrap serverBootstrap = new ServerBootstrap();
     private final NioEventLoopGroup bossGroup = new NioEventLoopGroup(2);
@@ -36,7 +36,7 @@ public class NettyBootstrap {
                         socketChannel.pipeline().addLast(new IdleStateHandler(30, 0, 0));
                         socketChannel.pipeline().addLast(new OpentpMessageEncoder());
                         socketChannel.pipeline().addLast(new OpentpMessageDecoder());
-                        socketChannel.pipeline().addLast(new OpentpHandler());
+                        socketChannel.pipeline().addLast(new ReportServerHandler());
                     }
                 });
     }
@@ -47,9 +47,9 @@ public class NettyBootstrap {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
-                    log.info("net server start bind on 9527");
+                    log.info("report server start bind on 9527");
                 } else {
-                    log.error("net server start error: ", future.cause());
+                    log.error("report server start error: ", future.cause());
                 }
             }
         });

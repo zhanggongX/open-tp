@@ -2,11 +2,12 @@ package cn.opentp.server;
 
 import cn.opentp.server.command.CommandOptions;
 import cn.opentp.server.configuration.Configuration;
-import cn.opentp.server.http.NettyHttpBootstrap;
-import cn.opentp.server.http.handler.FaviconHttpHandler;
-import cn.opentp.server.http.handler.HttpHandler;
-import cn.opentp.server.http.handler.OpentpHttpHandler;
-import cn.opentp.server.net.NettyBootstrap;
+import cn.opentp.server.report.ReportServer;
+import cn.opentp.server.report.handler.ReportServerHandler;
+import cn.opentp.server.rest.RestServer;
+import cn.opentp.server.rest.controller.FaviconHttpHandler;
+import cn.opentp.server.rest.controller.HttpHandler;
+import cn.opentp.server.rest.controller.OpentpHttpHandler;
 import cn.opentp.server.rocksdb.OpentpRocksDB;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
@@ -42,11 +43,11 @@ public class OpentpBootstrap {
         System.out.println(exportPort);
         System.out.println(httpPort);
 
-        NettyBootstrap nettyBootstrap = new NettyBootstrap();
-        nettyBootstrap.start();
+        ReportServer reportServer = new ReportServer();
+        reportServer.start();
 
-        NettyHttpBootstrap nettyHttpBootstrap = new NettyHttpBootstrap();
-        nettyHttpBootstrap.start();
+        RestServer restServer = new RestServer();
+        restServer.start();
 
         Map<String, HttpHandler> endPoints = Configuration.configuration().endPoints();
         // 添加 handler
@@ -60,13 +61,13 @@ public class OpentpBootstrap {
                 OpentpRocksDB.close();
                 log.debug("完成关闭 rocksDB");
 
-                log.debug("开始关闭 nettyBootstrap");
-                nettyBootstrap.close();
-                log.debug("开始关闭 nettyBootstrap");
+                log.debug("开始关闭 reportServer");
+                reportServer.close();
+                log.debug("开始关闭 reportServer");
 
-                log.debug("开始关闭 nettyHttpBootstrap");
-                nettyHttpBootstrap.close();
-                log.debug("开始关闭 nettyHttpBootstrap");
+                log.debug("开始关闭 restServer");
+                restServer.close();
+                log.debug("开始关闭 restServer");
             }
         }));
     }

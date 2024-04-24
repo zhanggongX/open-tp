@@ -1,4 +1,4 @@
-package cn.opentp.server.http.handler;
+package cn.opentp.server.rest.controller;
 
 import cn.opentp.core.util.JSONUtils;
 import io.netty.handler.codec.http.FullHttpResponse;

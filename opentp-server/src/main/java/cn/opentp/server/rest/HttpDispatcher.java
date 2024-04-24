@@ -1,6 +1,6 @@
-package cn.opentp.server.http;
+package cn.opentp.server.rest;
 
-import cn.opentp.server.http.handler.HttpHandler;
+import cn.opentp.server.rest.controller.HttpHandler;
 import cn.opentp.server.configuration.Configuration;
 import io.netty.handler.codec.http.*;
 
