@@ -55,21 +55,12 @@ public class OpentpBootstrap {
         endPoints.put("favicon.ico", new FaviconHttpHandler());
         endPoints.put("opentp", new OpentpHttpHandler());
 
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                log.debug("开始关闭 rocksDB");
-                OpentpRocksDB.close();
-                log.debug("完成关闭 rocksDB");
+        ShutdownHook shutdownHook = new ShutdownHook();
+        shutdownHook.add(restServer);
+        shutdownHook.add(reportServer);
+        shutdownHook.add(transportServer);
+        shutdownHook.add(OpentpRocksDB.rocksDB());
 
-                log.debug("开始关闭 reportServer");
-                reportServer.close();
-                log.debug("开始关闭 reportServer");
-
-                log.debug("开始关闭 restServer");
-                restServer.close();
-                log.debug("开始关闭 restServer");
-            }
-        }));
+        Runtime.getRuntime().addShutdownHook(shutdownHook);
     }
 }

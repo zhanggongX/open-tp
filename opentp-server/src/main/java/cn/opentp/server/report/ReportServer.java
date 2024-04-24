@@ -17,7 +17,9 @@ import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ReportServer {
+import java.io.Closeable;
+
+public class ReportServer implements Closeable {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 

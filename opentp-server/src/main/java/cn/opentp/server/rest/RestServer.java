@@ -11,7 +11,9 @@ import io.netty.handler.codec.http.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RestServer {
+import java.io.Closeable;
+
+public class RestServer implements Closeable {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 

@@ -1,5 +1,6 @@
 package cn.opentp.server.rocksdb;
 
+import cn.opentp.server.configuration.Configuration;
 import org.apache.logging.log4j.util.Strings;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
@@ -7,15 +8,19 @@ import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.nio.charset.StandardCharsets;
 
-public class OpentpRocksDB {
+public class OpentpRocksDB implements Closeable {
 
-    private static final RocksDB rocksDB;
-    private static final String path = "../opentp-rocks";
-    private final static Logger log = LoggerFactory.getLogger(OpentpRocksDB.class);
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    static {
+    private static volatile OpentpRocksDB INSTANCE;
+
+    private final RocksDB rocksDB;
+    private final String path = "../opentp-rocks";
+
+    private OpentpRocksDB() {
         RocksDB.loadLibrary();
         Options options = new Options();
         options.setCreateIfMissing(true);
@@ -27,7 +32,18 @@ public class OpentpRocksDB {
         }
     }
 
-    public static void set(String key, String value) {
+    public static OpentpRocksDB rocksDB() {
+        if (INSTANCE == null) {
+            synchronized (OpentpRocksDB.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new OpentpRocksDB();
+                }
+            }
+        }
+        return INSTANCE;
+    }
+
+    public void set(String key, String value) {
         try {
             if (key == null || key.isEmpty() || value == null || value.isEmpty()) {
                 return;
@@ -38,7 +54,7 @@ public class OpentpRocksDB {
         }
     }
 
-    public static String get(String key) {
+    public String get(String key) {
         try {
             byte[] bytes = rocksDB.get(key.getBytes(StandardCharsets.UTF_8));
             if (bytes == null) return Strings.EMPTY;
@@ -49,7 +65,7 @@ public class OpentpRocksDB {
         }
     }
 
-    public static void close() {
+    public void close() {
         try {
             rocksDB.close();
         } catch (Exception e) {
