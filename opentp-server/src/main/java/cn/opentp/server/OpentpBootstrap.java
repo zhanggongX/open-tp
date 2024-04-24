@@ -7,6 +7,7 @@ import cn.opentp.server.http.handler.FaviconHttpHandler;
 import cn.opentp.server.http.handler.HttpHandler;
 import cn.opentp.server.http.handler.OpentpHttpHandler;
 import cn.opentp.server.net.NettyBootstrap;
+import cn.opentp.server.rocksdb.OpentpRocksDB;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,14 +42,32 @@ public class OpentpBootstrap {
         System.out.println(exportPort);
         System.out.println(httpPort);
 
-        Thread nettyBootstrap = NettyBootstrap.start();
-        Thread nettyHttpBootstrap = NettyHttpBootstrap.start();
+        NettyBootstrap nettyBootstrap = new NettyBootstrap();
+        nettyBootstrap.start();
+
+        NettyHttpBootstrap nettyHttpBootstrap = new NettyHttpBootstrap();
+        nettyHttpBootstrap.start();
 
         Map<String, HttpHandler> endPoints = Configuration.configuration().endPoints();
         // 添加 handler
         endPoints.put("favicon.ico", new FaviconHttpHandler());
         endPoints.put("opentp", new OpentpHttpHandler());
 
-        nettyBootstrap.join();
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                log.debug("开始关闭 rocksDB");
+                OpentpRocksDB.close();
+                log.debug("完成关闭 rocksDB");
+
+                log.debug("开始关闭 nettyBootstrap");
+                nettyBootstrap.close();
+                log.debug("开始关闭 nettyBootstrap");
+
+                log.debug("开始关闭 nettyHttpBootstrap");
+                nettyHttpBootstrap.close();
+                log.debug("开始关闭 nettyHttpBootstrap");
+            }
+        }));
     }
 }

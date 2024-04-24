@@ -1,10 +1,7 @@
 package cn.opentp.server.http;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -14,36 +11,39 @@ import org.slf4j.LoggerFactory;
 
 public class NettyHttpBootstrap {
 
-    private static final Logger log = LoggerFactory.getLogger(NettyHttpBootstrap.class);
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    public static Thread start() {
-        Thread thread = new Thread(new Runnable() {
+    private final ServerBootstrap httpServerBootstrap = new ServerBootstrap();
+    private final NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
+    private final NioEventLoopGroup workGroup = new NioEventLoopGroup(1);
+
+    private void httpConfig() {
+        httpServerBootstrap.group(bossGroup, workGroup).childOption(ChannelOption.SO_BACKLOG, 1024).childOption(ChannelOption.SO_KEEPALIVE, true).channel(NioServerSocketChannel.class).childHandler(new ChannelInitializer<SocketChannel>() {
             @Override
-            public void run() {
-                ServerBootstrap httpServerBootstrap = new ServerBootstrap();
-                httpServerBootstrap.group(new NioEventLoopGroup(10), new NioEventLoopGroup(10))
-                        .childOption(ChannelOption.SO_BACKLOG, 1024)
-                        .childOption(ChannelOption.SO_KEEPALIVE, true)
-                        .channel(NioServerSocketChannel.class)
-                        .childHandler(new ChannelInitializer<SocketChannel>() {
-                            @Override
-                            protected void initChannel(SocketChannel socketChannel) throws Exception {
-                                socketChannel.pipeline().addLast(new HttpServerCodec());
-                                socketChannel.pipeline().addLast(new HttpObjectAggregator(65536));
-                                socketChannel.pipeline().addLast(new DefaultHttpServerHandler());
-                            }
-                        });
-                try {
-                    ChannelFuture channelFuture = httpServerBootstrap.bind(8001).sync();
-                    Channel channel = channelFuture.channel();
-                    channel.closeFuture().sync();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            protected void initChannel(SocketChannel socketChannel) throws Exception {
+                socketChannel.pipeline().addLast(new HttpServerCodec());
+                socketChannel.pipeline().addLast(new HttpObjectAggregator(65536));
+                socketChannel.pipeline().addLast(new DefaultHttpServerHandler());
+            }
+        });
+    }
+
+    public void start() {
+        ChannelFuture channelFuture = httpServerBootstrap.bind(8001);
+        channelFuture.addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture future) throws Exception {
+                if (future.isSuccess()) {
+                    log.info("http server start bind on 8001");
+                } else {
+                    log.error("http server start error: ", future.cause());
                 }
             }
         });
-        log.info("http server start bind on 8001");
-        thread.start();
-        return thread;
+    }
+
+    public void close() {
+        bossGroup.shutdownGracefully();
+        workGroup.shutdownGracefully();
     }
 }

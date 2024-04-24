@@ -45,4 +45,8 @@ public class OpentpRocksDB {
             throw new RuntimeException(e);
         }
     }
+
+    public static void close() {
+        rocksDB.close();
+    }
 }
