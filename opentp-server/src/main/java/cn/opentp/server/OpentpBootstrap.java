@@ -31,9 +31,12 @@ public class OpentpBootstrap {
         CommandLine cmd;
         try {
             cmd = parser.parse(options, args);
+            if(cmd.hasOption('h')){
+                CommandOptions.printHelp(options);
+                return;
+            }
         } catch (ParseException exp) {
-            HelpFormatter helpFormatter = new HelpFormatter();
-            helpFormatter.printHelp("opentp", options);
+            CommandOptions.printHelp(options);
             return;
         }
 
