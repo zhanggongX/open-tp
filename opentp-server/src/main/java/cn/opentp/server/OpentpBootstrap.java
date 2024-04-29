@@ -111,7 +111,7 @@ public class OpentpBootstrap {
         try (InputStreamReader reader = new InputStreamReader(resource.openStream(), StandardCharsets.UTF_8)) {
             Properties tempProps = new Properties();
             tempProps.load(reader);
-            System.out.println(1);
+
             for (Map.Entry<Object, Object> entry : tempProps.entrySet()) {
                 String key = (String) entry.getKey();
                 String value = (String) entry.getValue();
