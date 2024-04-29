@@ -1,0 +1,5 @@
+opentp:
+  report-server-port: 9527
+  http-server-port: 8080
+  transport-server-port: 9528
+
