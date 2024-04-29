@@ -40,8 +40,7 @@ public class OpentpBootstrap {
         loadProps(configuration.properties(), Constant.DEFAULT_CONFIG_FILE);
 
         // 加载参数配置
-        boolean loadSuccess = loadCmdProps(configuration.properties(), args);
-        if (!loadSuccess) return;
+        if (!loadCmdProps(configuration.properties(), args)) return;
 
         startServers();
     }
