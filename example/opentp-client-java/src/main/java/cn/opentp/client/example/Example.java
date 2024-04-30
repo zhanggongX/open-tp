@@ -26,14 +26,12 @@ public class Example {
         Configuration.configuration().threadPoolStateReportProperties().setInitialDelay(2);
         Configuration.configuration().threadPoolStateReportProperties().setPeriod(2);
 
-        Configuration.configuration().opentpAuthentication().setAppKey("opentp-client-java");
-        Configuration.configuration().opentpAuthentication().setAppSecret("123456");
+        Configuration.configuration().clientInfo().setAppKey("opentp");
+        Configuration.configuration().clientInfo().setAppSecret("opentp-secret");
 
         // 记录线程池信息
         ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(10, 20, 60, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1024));
         Configuration.configuration().threadPoolContextCache().put("threadPool", new ThreadPoolContext(threadPoolExecutor));
-
-        Configuration configuration = Configuration.configuration();
 
         // 开启服务
         new OpentpClientBootstrap().start();

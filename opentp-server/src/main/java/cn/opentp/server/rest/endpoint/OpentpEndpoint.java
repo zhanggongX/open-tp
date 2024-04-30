@@ -31,7 +31,7 @@ public class OpentpEndpoint extends AbstractEndpointAdapter<Map<String, ThreadPo
             throw new IllegalArgumentException("错误的路径");
         }
 
-        Map<String, ThreadPoolState> threadPoolStateCache = Configuration.configuration().threadPoolStateCache();
+        Map<String, ThreadPoolState> threadPoolStateCache = null; //Configuration.configuration().threadPoolStateCache();
 
         String tpName = null;
         String[] urlPaths = uri.split("/");
@@ -86,7 +86,7 @@ public class OpentpEndpoint extends AbstractEndpointAdapter<Map<String, ThreadPo
         }
 
         Configuration configuration = Configuration.configuration();
-        Map<String, Channel> channelCache = configuration.channelCache();
+        Map<String, Channel> channelCache = null; //configuration.channelCache();
         Channel channel = channelCache.get(theadPoolName);
         ThreadPoolState threadPoolState = new ThreadPoolState();
         threadPoolState.flushDefault(theadPoolName);

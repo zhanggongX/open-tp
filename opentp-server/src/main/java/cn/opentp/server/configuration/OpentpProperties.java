@@ -1,6 +1,6 @@
 package cn.opentp.server.configuration;
 
-import cn.opentp.server.constant.Constant;
+import cn.opentp.server.constant.OpentpServerConstant;
 
 public class OpentpProperties {
 
@@ -12,9 +12,9 @@ public class OpentpProperties {
      * 配置，设置默认值
      */
     public OpentpProperties() {
-        reportServerPort = Constant.DEFAULT_REPORT_SERVER_PORT;
-        transportServerPort = Constant.DEFAULT_TRANSPORT_SERVER_PORT;
-        httpServerPort = Constant.DEFAULT_REST_SERVER_PORT;
+        reportServerPort = OpentpServerConstant.DEFAULT_REPORT_SERVER_PORT;
+        transportServerPort = OpentpServerConstant.DEFAULT_TRANSPORT_SERVER_PORT;
+        httpServerPort = OpentpServerConstant.DEFAULT_REST_SERVER_PORT;
     }
 
     public int getReportServerPort() {

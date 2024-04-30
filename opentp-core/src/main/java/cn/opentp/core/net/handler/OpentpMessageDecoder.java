@@ -1,7 +1,7 @@
 package cn.opentp.core.net.handler;
 
-import cn.opentp.core.auth.OpentpAuthentication;
-import cn.opentp.core.auth.OpentpLicense;
+import cn.opentp.core.auth.ClientInfo;
+import cn.opentp.core.auth.License;
 import cn.opentp.core.net.OpentpMessage;
 import cn.opentp.core.net.OpentpMessageConstant;
 import cn.opentp.core.net.OpentpMessageTypeEnum;
@@ -112,11 +112,11 @@ public class OpentpMessageDecoder extends LengthFieldBasedFrameDecoder {
                 opentpMessage.setData(threadPoolStates);
                 break;
             case AUTHENTICATION_REQ:
-                OpentpAuthentication opentpAuthentication = serializer.deserialize(bytes, OpentpAuthentication.class);
-                opentpMessage.setData(opentpAuthentication);
+                ClientInfo clientInfo = serializer.deserialize(bytes, ClientInfo.class);
+                opentpMessage.setData(clientInfo);
                 break;
             case AUTHENTICATION_RES:
-                OpentpLicense opentpLicense = serializer.deserialize(bytes, OpentpLicense.class);
+                License opentpLicense = serializer.deserialize(bytes, License.class);
                 opentpMessage.setData(opentpLicense);
                 break;
         }

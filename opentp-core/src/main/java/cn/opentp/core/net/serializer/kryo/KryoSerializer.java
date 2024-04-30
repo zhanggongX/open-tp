@@ -1,7 +1,7 @@
 package cn.opentp.core.net.serializer.kryo;
 
-import cn.opentp.core.auth.OpentpAuthentication;
-import cn.opentp.core.auth.OpentpLicense;
+import cn.opentp.core.auth.ClientInfo;
+import cn.opentp.core.auth.License;
 import cn.opentp.core.net.serializer.Serializer;
 import cn.opentp.core.thread.pool.ThreadPoolState;
 import com.esotericsoftware.kryo.Kryo;
@@ -32,8 +32,8 @@ public class KryoSerializer implements Serializer {
         kryo.register(ThreadPoolState.class);
         kryo.register(String.class);
         kryo.register(ArrayList.class);
-        kryo.register(OpentpAuthentication.class);
-        kryo.register(OpentpLicense.class);
+        kryo.register(ClientInfo.class);
+        kryo.register(License.class);
         return kryo;
     });
 

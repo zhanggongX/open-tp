@@ -1,7 +1,8 @@
 package cn.opentp.client.net.handler;
 
 import cn.opentp.client.configuration.Configuration;
-import cn.opentp.core.auth.OpentpLicense;
+import cn.opentp.core.auth.License;
+import cn.opentp.core.constant.OpentpCoreConstant;
 import cn.opentp.core.net.OpentpMessage;
 import cn.opentp.core.net.OpentpMessageConstant;
 import cn.opentp.core.net.OpentpMessageTypeEnum;
@@ -19,7 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ThreadPoolExecutor;
 
 
 public class OpentpClientHandler extends ChannelInboundHandlerAdapter {
@@ -59,10 +59,10 @@ public class OpentpClientHandler extends ChannelInboundHandlerAdapter {
                 threadPoolContext.flushTargetState(threadPoolState);
                 break;
             case AUTHENTICATION_RES:
-                OpentpLicense opentpLicense = (OpentpLicense) opentpMessage.getData();
+                License opentpLicense = (License) opentpMessage.getData();
                 Configuration configuration = Configuration.configuration();
                 // 认证成功，设置 license
-                configuration.threadPoolStateReportChannel().attr(Configuration.EXPORT_CHANNEL_ATTR_KEY).set(opentpLicense.getLicenseKey());
+                configuration.threadPoolStateReportChannel().attr(OpentpCoreConstant.EXPORT_CHANNEL_ATTR_KEY).set(opentpLicense.getLicenseKey());
                 break;
             default:
                 log.warn("未知的消息类型，不处理！");
@@ -75,7 +75,7 @@ public class OpentpClientHandler extends ChannelInboundHandlerAdapter {
             IdleState state = ((IdleStateEvent) evt).state();
 
             if (state == IdleState.WRITER_IDLE) {
-                OpentpMessage opentpMessage = Configuration.OPENTP_MSG_PROTO.clone();
+                OpentpMessage opentpMessage = OpentpCoreConstant.OPENTP_MSG_PROTO.clone();
                 OpentpMessage
                         .builder()
                         .messageType(OpentpMessageTypeEnum.HEART_PING.getCode())

@@ -3,6 +3,7 @@ package cn.opentp.client.net;
 import cn.opentp.client.configuration.Configuration;
 import cn.opentp.client.exception.ServerAddrUnDefineException;
 import cn.opentp.client.net.handler.OpentpClientHandler;
+import cn.opentp.core.constant.OpentpCoreConstant;
 import cn.opentp.core.net.OpentpMessage;
 import cn.opentp.core.net.OpentpMessageTypeEnum;
 import cn.opentp.core.net.handler.OpentpMessageDecoder;
@@ -69,17 +70,17 @@ public class NettyBootstrap {
 
                     // 记录 channel
                     Channel channel = channelFuture.channel();
-                    channel.attr(Configuration.EXPORT_CHANNEL_ATTR_KEY).set(Strings.EMPTY);
+                    channel.attr(OpentpCoreConstant.EXPORT_CHANNEL_ATTR_KEY).set(Strings.EMPTY);
                     Configuration.configuration().threadPoolStateReportChannel(channel);
 
                     // 发送权限验证
-                    OpentpMessage opentpMessage = Configuration.OPENTP_MSG_PROTO.clone();
+                    OpentpMessage opentpMessage = OpentpCoreConstant.OPENTP_MSG_PROTO.clone();
                     OpentpMessage
                             .builder()
                             .messageType(OpentpMessageTypeEnum.AUTHENTICATION_REQ.getCode())
                             .serializerType(SerializerTypeEnum.Kryo.getType())
                             .traceId(MessageTraceIdUtil.traceId())
-                            .data(configuration.opentpAuthentication())
+                            .data(configuration.clientInfo())
                             .buildTo(opentpMessage);
 
                     channelFuture.channel().writeAndFlush(opentpMessage);

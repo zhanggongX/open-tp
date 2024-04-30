@@ -2,15 +2,15 @@ package cn.opentp.core.auth;
 
 import java.io.Serializable;
 
-public class OpentpLicense implements Serializable {
+public class License implements Serializable {
 
     private String licenseKey;
 
-    public OpentpLicense(String licenseKey) {
+    public License(String licenseKey) {
         this.licenseKey = licenseKey;
     }
 
-    public OpentpLicense() {
+    public License() {
     }
 
     public String getLicenseKey() {

@@ -5,23 +5,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.UUID;
+import java.util.Objects;
 
 /**
  * 认证
  */
-public class OpentpAuthentication implements Serializable {
-
-    private final static String UUID_SPLITTER = "-";
+public class ClientInfo implements Serializable {
 
     private String appKey;
     private String appSecret;
     private String host;
     private String instance;
 
-    public OpentpAuthentication() {
+    public ClientInfo() {
         InetAddress localHost = null;
         try {
             localHost = InetAddress.getLocalHost();
@@ -31,11 +31,12 @@ public class OpentpAuthentication implements Serializable {
             log.warn("获取本机 IP 失败，使用空地址： ", e);
             this.host = Strings.EMPTY;
         }
-        // 本机实例
-        this.instance = UUID.randomUUID().toString().split(UUID_SPLITTER)[0];
+        // 本机实例，客户端的 pid
+        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+        this.instance = runtimeMXBean.getName().split("@")[0];
     }
 
-    public OpentpAuthentication(String appKey, String appSecret) {
+    public ClientInfo(String appKey, String appSecret) {
         this();
         this.appKey = appKey;
         this.appSecret = appSecret;
@@ -71,5 +72,22 @@ public class OpentpAuthentication implements Serializable {
 
     public void setInstance(String instance) {
         this.instance = instance;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ClientInfo that = (ClientInfo) o;
+        return Objects.equals(appKey, that.appKey) && Objects.equals(appSecret, that.appSecret) && Objects.equals(host, that.host) && Objects.equals(instance, that.instance);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(appKey, appSecret, host, instance);
+    }
+
+    public String clientName() {
+        return host + "-" + instance;
     }
 }

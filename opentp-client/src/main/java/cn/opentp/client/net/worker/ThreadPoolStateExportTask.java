@@ -2,6 +2,7 @@ package cn.opentp.client.net.worker;
 
 import cn.opentp.client.configuration.Configuration;
 import cn.opentp.client.configuration.ThreadPoolStateReportProperties;
+import cn.opentp.core.constant.OpentpCoreConstant;
 import cn.opentp.core.net.OpentpMessage;
 import cn.opentp.core.net.OpentpMessageTypeEnum;
 import cn.opentp.core.thread.pool.ThreadPoolContext;
@@ -49,7 +50,7 @@ public class ThreadPoolStateExportTask implements Runnable {
     public void run() {
         Channel channel = Configuration.configuration().threadPoolStateReportChannel();
         // 连接为空，连接断开，连接 licenseKey 为空，都不发送消息
-        if (channel == null || !channel.isActive() || channel.attr(Configuration.EXPORT_CHANNEL_ATTR_KEY).get().isEmpty()) {
+        if (channel == null || !channel.isActive() || channel.attr(OpentpCoreConstant.EXPORT_CHANNEL_ATTR_KEY).get().isEmpty()) {
             return;
         }
 
@@ -64,13 +65,13 @@ public class ThreadPoolStateExportTask implements Runnable {
         }
 
         // 克隆信息，自带魔数和版本号
-        OpentpMessage opentpMessage = Configuration.OPENTP_MSG_PROTO.clone();
+        OpentpMessage opentpMessage = OpentpCoreConstant.OPENTP_MSG_PROTO.clone();
         OpentpMessage
                 .builder()
                 .messageType(OpentpMessageTypeEnum.THREAD_POOL_EXPORT.getCode())
                 .serializerType(OpentpMessageTypeEnum.THREAD_POOL_EXPORT.getCode())
                 .traceId(MessageTraceIdUtil.traceId())
-                .licenseKey(channel.attr(Configuration.EXPORT_CHANNEL_ATTR_KEY).get())
+                .licenseKey(channel.attr(OpentpCoreConstant.EXPORT_CHANNEL_ATTR_KEY).get())
                 .data(threadPoolStates)
                 .buildTo(opentpMessage);
 

@@ -2,7 +2,7 @@ package cn.opentp.server;
 
 import cn.opentp.server.configuration.Configuration;
 import cn.opentp.server.configuration.OpentpProperties;
-import cn.opentp.server.constant.Constant;
+import cn.opentp.server.constant.OpentpServerConstant;
 import cn.opentp.server.report.ReportServer;
 import cn.opentp.server.rest.RestServer;
 import cn.opentp.server.rocksdb.OpentpRocksDB;
@@ -27,7 +27,7 @@ public class OpentpBootstrap {
         Configuration configuration = Configuration.configuration();
 
         // 加载配置
-        PropertiesUtil.loadProps(configuration.appClassLoader(), configuration.properties(), Constant.DEFAULT_CONFIG_FILE);
+        PropertiesUtil.loadProps(configuration.appClassLoader(), configuration.properties(), OpentpServerConstant.DEFAULT_CONFIG_FILE);
 
         // 加载参数配置
         if (!PropertiesUtil.loadCmdProps(configuration.properties(), args)) return;

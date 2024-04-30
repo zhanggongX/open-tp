@@ -2,7 +2,6 @@ package cn.opentp.server.transport;
 
 import cn.opentp.core.net.handler.OpentpMessageDecoder;
 import cn.opentp.core.net.handler.OpentpMessageEncoder;
-import cn.opentp.server.constant.Constant;
 import cn.opentp.server.transport.handler.TransportServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
