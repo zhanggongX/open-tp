@@ -3,7 +3,7 @@ package cn.opentp.server.configuration;
 import cn.opentp.core.net.OpentpMessage;
 import cn.opentp.core.net.OpentpMessageConstant;
 import cn.opentp.core.thread.pool.ThreadPoolState;
-import cn.opentp.server.rest.controller.HttpHandler;
+import cn.opentp.server.rest.EndpointMapping;
 import io.netty.channel.Channel;
 
 import java.util.Map;
@@ -25,10 +25,14 @@ public class Configuration {
 
     // 全局配置开始
     private final OpentpProperties props = new OpentpProperties();
+    // 节点状态
     private final Map<String, ThreadPoolState> threadPoolStateCache = new ConcurrentHashMap<>();
+    // 客户端链接
     private final Map<String, Channel> channelCache = new ConcurrentHashMap<>();
-    private final Map<String, HttpHandler> endPoints = new ConcurrentHashMap<>();
+    // app 类加载器
     private final ClassLoader appClassLoader = Configuration.class.getClassLoader();
+    // rest endpoint 映射
+    private final EndpointMapping endpointMapping = new EndpointMapping();
 
     // 全局配置结束
 
@@ -54,15 +58,15 @@ public class Configuration {
         return channelCache;
     }
 
-    public Map<String, HttpHandler> endPoints() {
-        return endPoints;
-    }
-
     public OpentpProperties properties() {
         return props;
     }
 
     public ClassLoader appClassLoader() {
         return appClassLoader;
+    }
+
+    public EndpointMapping endpointMapping() {
+        return endpointMapping;
     }
 }

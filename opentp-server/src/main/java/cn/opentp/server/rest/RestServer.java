@@ -1,7 +1,5 @@
 package cn.opentp.server.rest;
 
-import cn.opentp.server.constant.Constant;
-import cn.opentp.server.rest.handler.RestServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -23,7 +21,7 @@ public class RestServer implements Closeable {
 
     private void httpConfig() {
         serverBootstrap.group(bossGroup, workGroup)
-                .childOption(ChannelOption.SO_BACKLOG, 1024)
+                .option(ChannelOption.SO_BACKLOG, 1024)
                 .childOption(ChannelOption.SO_KEEPALIVE, true)
                 .channel(NioServerSocketChannel.class).childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
