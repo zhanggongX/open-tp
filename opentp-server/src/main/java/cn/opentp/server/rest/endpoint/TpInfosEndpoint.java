@@ -2,8 +2,8 @@ package cn.opentp.server.rest.endpoint;
 
 import cn.opentp.core.auth.ClientInfo;
 import cn.opentp.core.thread.pool.ThreadPoolState;
-import cn.opentp.server.rest.BaseRes;
 import cn.opentp.server.configuration.Configuration;
+import cn.opentp.server.rest.BaseRes;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -11,9 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 线程池数据增删改查
@@ -26,39 +25,57 @@ public class TpInfosEndpoint extends AbstractEndpointAdapter<Map<ClientInfo, Map
     @Override
     public BaseRes<Map<ClientInfo, Map<String, ThreadPoolState>>> doGet(FullHttpRequest httpRequest, FullHttpResponse httpResponse) {
 
-        Map<String, ThreadPoolState> map = new HashMap<>();
+        String uri = httpRequest.uri();
 
-        String uri = httpRequest.uri().substring(PRE_URI.length());
+        Configuration configuration = Configuration.configuration();
+        Map<ClientInfo, Map<String, ThreadPoolState>> clientThreadPoolStatesCache = configuration.clientThreadPoolStatesCache();
 
         String[] uris = uri.split("/");
-        if (uris[0].isEmpty()) {
+        // /tpInfos/ || /tpInfos
+        if (uris.length <= 2) {
             // todo 获取当前登录的 appKeys, 然后去获取该 appKeys 的线程池信息。
-            Configuration configuration = Configuration.configuration();
-            Map<ClientInfo, Map<String, ThreadPoolState>> clientThreadPoolStatesCache = configuration.clientThreadPoolStatesCache();
             return BaseRes.success(clientThreadPoolStatesCache);
         }
 
-        return BaseRes.success();
+        // /tpInfos/{appKey}
+        String appKey = uris[2];
+        // todo 目前只有一个 appKey 无需过滤。
 
-//        Map<String, ThreadPoolState> threadPoolStateCache = null; //Configuration.configuration().threadPoolStateCache();
-//
-//        String tpName = null;
-//        String[] urlPaths = uri.split("/");
-//        if (urlPaths.length == 2) {
-//            return BaseRes.success(threadPoolStateCache);
-//        }
-//
-//        if (urlPaths.length > 2) {
-//            tpName = urlPaths[2];
-//        }
-//        if (tpName == null || tpName.isEmpty()) {
-////            return BaseRes.fail(-1, "错误的tpName");
-//        }
-//
-//        ThreadPoolState threadPoolState = threadPoolStateCache.get(tpName);
-//        map.put(tpName, threadPoolState);
-//
-//        return BaseRes.success(map);
+        // /tpInfos/{appKey}/{ip}
+        if (uris.length > 3) {
+            String ip = uris[3];
+            clientThreadPoolStatesCache = clientThreadPoolStatesCache
+                    .entrySet().stream()
+                    .filter(e -> e.getKey().getHost().equals(ip))
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            Map.Entry::getValue));
+        }
+
+        // /tpInfos/{appKey}/{ip}/{instance}
+        if (uris.length > 4) {
+            String instance = uris[4];
+            clientThreadPoolStatesCache = clientThreadPoolStatesCache
+                    .entrySet().stream()
+                    .filter(e -> e.getKey().getInstance().equals(instance))
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            Map.Entry::getValue));
+        }
+
+        // /tpInfos/{appKey}/{ip}/{instance}/{tpName}
+        if (uris.length > 5) {
+            String tpName = uris[5];
+            for (Map.Entry<ClientInfo, Map<String, ThreadPoolState>> entry : clientThreadPoolStatesCache.entrySet()) {
+                Map<String, ThreadPoolState> threadPoolStateMap = entry.getValue();
+                threadPoolStateMap = threadPoolStateMap.entrySet().stream()
+                        .filter(e -> e.getKey().equals(tpName))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                entry.setValue(threadPoolStateMap);
+            }
+        }
+
+        return BaseRes.success(clientThreadPoolStatesCache);
     }
 
 
