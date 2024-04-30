@@ -90,4 +90,9 @@ public class ClientInfo implements Serializable {
     public String clientName() {
         return host + "-" + instance;
     }
+
+    @Override
+    public String toString() {
+        return appKey + "/" + host + "/" + instance;
+    }
 }

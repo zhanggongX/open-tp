@@ -35,7 +35,7 @@ public class ReportServer implements Closeable {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
                         // 20s 收不到心跳，就认为该 channel 断开。
-                        socketChannel.pipeline().addLast(new IdleStateHandler(30, 0, 0));
+                        socketChannel.pipeline().addLast(new IdleStateHandler(15, 0, 0));
                         socketChannel.pipeline().addLast(new OpentpMessageEncoder());
                         socketChannel.pipeline().addLast(new OpentpMessageDecoder());
                         socketChannel.pipeline().addLast(new ReportServerHandler());

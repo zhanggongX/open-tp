@@ -1,12 +1,10 @@
-package cn.opentp.server.rest;
+package cn.opentp.server.rest.handler;
 
-import cn.opentp.core.util.JSONUtils;
+import cn.opentp.server.rest.EndpointDispatcher;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.charset.StandardCharsets;
 
 public class RestServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 

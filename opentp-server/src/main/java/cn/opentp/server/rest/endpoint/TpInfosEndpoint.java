@@ -1,5 +1,6 @@
 package cn.opentp.server.rest.endpoint;
 
+import cn.opentp.core.auth.ClientInfo;
 import cn.opentp.core.thread.pool.ThreadPoolState;
 import cn.opentp.server.rest.BaseRes;
 import cn.opentp.server.configuration.Configuration;
@@ -17,39 +18,47 @@ import java.util.Map;
 /**
  * 线程池数据增删改查
  */
-public class OpentpEndpoint extends AbstractEndpointAdapter<Map<String, ThreadPoolState>> {
+public class TpInfosEndpoint extends AbstractEndpointAdapter<Map<ClientInfo, Map<String, ThreadPoolState>>> {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
+    private final static String PRE_URI = "/tpInfos";
 
     @Override
-    public BaseRes<Map<String, ThreadPoolState>> doGet(FullHttpRequest httpRequest, FullHttpResponse httpResponse) {
+    public BaseRes<Map<ClientInfo, Map<String, ThreadPoolState>>> doGet(FullHttpRequest httpRequest, FullHttpResponse httpResponse) {
 
         Map<String, ThreadPoolState> map = new HashMap<>();
 
-        String uri = httpRequest.uri();
-        if (!uri.startsWith("/opentp")) {
-            throw new IllegalArgumentException("错误的路径");
+        String uri = httpRequest.uri().substring(PRE_URI.length());
+
+        String[] uris = uri.split("/");
+        if (uris[0].isEmpty()) {
+            // todo 获取当前登录的 appKeys, 然后去获取该 appKeys 的线程池信息。
+            Configuration configuration = Configuration.configuration();
+            Map<ClientInfo, Map<String, ThreadPoolState>> clientThreadPoolStatesCache = configuration.clientThreadPoolStatesCache();
+            return BaseRes.success(clientThreadPoolStatesCache);
         }
 
-        Map<String, ThreadPoolState> threadPoolStateCache = null; //Configuration.configuration().threadPoolStateCache();
+        return BaseRes.success();
 
-        String tpName = null;
-        String[] urlPaths = uri.split("/");
-        if (urlPaths.length == 2) {
-            return BaseRes.success(threadPoolStateCache);
-        }
-
-        if (urlPaths.length > 2) {
-            tpName = urlPaths[2];
-        }
-        if (tpName == null || tpName.isEmpty()) {
-//            return BaseRes.fail(-1, "错误的tpName");
-        }
-
-        ThreadPoolState threadPoolState = threadPoolStateCache.get(tpName);
-        map.put(tpName, threadPoolState);
-
-        return BaseRes.success(map);
+//        Map<String, ThreadPoolState> threadPoolStateCache = null; //Configuration.configuration().threadPoolStateCache();
+//
+//        String tpName = null;
+//        String[] urlPaths = uri.split("/");
+//        if (urlPaths.length == 2) {
+//            return BaseRes.success(threadPoolStateCache);
+//        }
+//
+//        if (urlPaths.length > 2) {
+//            tpName = urlPaths[2];
+//        }
+//        if (tpName == null || tpName.isEmpty()) {
+////            return BaseRes.fail(-1, "错误的tpName");
+//        }
+//
+//        ThreadPoolState threadPoolState = threadPoolStateCache.get(tpName);
+//        map.put(tpName, threadPoolState);
+//
+//        return BaseRes.success(map);
     }
 
 

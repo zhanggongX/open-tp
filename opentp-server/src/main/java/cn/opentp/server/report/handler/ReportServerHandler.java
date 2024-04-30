@@ -91,7 +91,7 @@ public class ReportServerHandler extends ChannelInboundHandlerAdapter {
         ctx.channel().attr(OpentpCoreConstant.EXPORT_CHANNEL_ATTR_KEY).set(newLicenseKey);
         Configuration configuration = Configuration.configuration();
         // 记录 licenseKey <-> clientInfo
-        configuration.licenseKeyClientMap().putIfAbsent(newLicenseKey, clientInfo);
+        configuration.licenseKeyClientCache().putIfAbsent(newLicenseKey, clientInfo);
         // 记录 客户端信息 <-> 网络连接
         configuration.clientChannelCache().put(clientInfo, ctx.channel());
 
@@ -120,13 +120,13 @@ public class ReportServerHandler extends ChannelInboundHandlerAdapter {
         }
 
         Configuration configuration = Configuration.configuration();
-        if (!configuration.licenseKeyClientMap().containsKey(licenseKey)) {
+        if (!configuration.licenseKeyClientCache().containsKey(licenseKey)) {
             log.warn("licenseKey 异常或已过期，请重新连接");
             ctx.channel().close();
             return;
         }
 
-        ClientInfo clientInfo = configuration.licenseKeyClientMap().get(licenseKey);
+        ClientInfo clientInfo = configuration.licenseKeyClientCache().get(licenseKey);
         Map<ClientInfo, Map<String, ThreadPoolState>> clientThreadPoolStatesCache = configuration.clientThreadPoolStatesCache();
         clientThreadPoolStatesCache.putIfAbsent(clientInfo, new ConcurrentHashMap<>());
         Map<String, ThreadPoolState> threadPoolStateCache = clientThreadPoolStatesCache.get(clientInfo);
@@ -167,7 +167,7 @@ public class ReportServerHandler extends ChannelInboundHandlerAdapter {
     private void removeChannelInfo(Channel channel) {
         String licenseKey = channel.attr(OpentpCoreConstant.EXPORT_CHANNEL_ATTR_KEY).get();
         Configuration configuration = Configuration.configuration();
-        ClientInfo clientInfo = configuration.licenseKeyClientMap().get(licenseKey);
+        ClientInfo clientInfo = configuration.licenseKeyClientCache().get(licenseKey);
         configuration.clientChannelCache().remove(clientInfo);
         configuration.clientThreadPoolStatesCache().remove(clientInfo);
     }

@@ -55,8 +55,8 @@ public class OpentpAutoConfiguration implements InitializingBean {
         if (opentpProperties.getAppSecret() == null || opentpProperties.getAppSecret().isEmpty()) {
             throw new IllegalArgumentException("请配置 opentp appSecret");
         }
-        configuration.opentpAuthentication().setAppSecret(opentpProperties.getAppSecret());
-        configuration.opentpAuthentication().setAppKey(opentpProperties.getAppKey());
+        configuration.clientInfo().setAppSecret(opentpProperties.getAppSecret());
+        configuration.clientInfo().setAppKey(opentpProperties.getAppKey());
     }
 
     @ConditionalOnMissingBean(OpentpClientBootstrap.class)

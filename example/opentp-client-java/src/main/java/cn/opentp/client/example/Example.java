@@ -30,8 +30,11 @@ public class Example {
         Configuration.configuration().clientInfo().setAppSecret("opentp-secret");
 
         // 记录线程池信息
-        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(10, 20, 60, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1024));
-        Configuration.configuration().threadPoolContextCache().put("threadPool", new ThreadPoolContext(threadPoolExecutor));
+        ThreadPoolExecutor tp1 = new ThreadPoolExecutor(10, 20, 60, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1024));
+        Configuration.configuration().threadPoolContextCache().put("tp1", new ThreadPoolContext(tp1));
+
+        ThreadPoolExecutor tp2 = new ThreadPoolExecutor(10, 20, 60, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1024));
+        Configuration.configuration().threadPoolContextCache().put("tp2", new ThreadPoolContext(tp2));
 
         // 开启服务
         new OpentpClientBootstrap().start();

@@ -20,12 +20,13 @@ public class Configuration {
     // rest endpoint 映射
     private final EndpointMapping endpointMapping = new EndpointMapping();
     // key = appId, value = 所有连接上来的客户端
-    private final Map<String, List<ClientInfo>> appClientCache = new ConcurrentHashMap<>();
+    private final Map<String, List<ClientInfo>> appKeyClientCache = new ConcurrentHashMap<>();
     // key = 客户端, value = channel
     private final Map<ClientInfo, Channel> clientChannelCache = new ConcurrentHashMap<>();
     // key = 客户端, value = <key = threadKey, value = threadPoolSate>
     private final Map<ClientInfo, Map<String, ThreadPoolState>> clientThreadPoolStatesCache = new ConcurrentHashMap<>();
-    private final Map<String, ClientInfo> licenseKeyClientMap = new ConcurrentHashMap<>();
+    // key = licenseKey value = ClientInfo
+    private final Map<String, ClientInfo> licenseKeyClientCache = new ConcurrentHashMap<>();
 
     private Configuration() {
     }
@@ -53,8 +54,8 @@ public class Configuration {
         return endpointMapping;
     }
 
-    public Map<String, List<ClientInfo>> appClientCache() {
-        return appClientCache;
+    public Map<String, List<ClientInfo>> appKeyClientCache() {
+        return appKeyClientCache;
     }
 
     public Map<ClientInfo, Channel> clientChannelCache() {
@@ -65,7 +66,7 @@ public class Configuration {
         return clientThreadPoolStatesCache;
     }
 
-    public Map<String, ClientInfo> licenseKeyClientMap() {
-        return licenseKeyClientMap;
+    public Map<String, ClientInfo> licenseKeyClientCache() {
+        return licenseKeyClientCache;
     }
 }

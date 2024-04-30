@@ -1,10 +1,7 @@
 package cn.opentp.server.rest;
 
 import cn.opentp.server.exception.EndpointUnSupportException;
-import cn.opentp.server.rest.endpoint.DefaultEndpoint;
-import cn.opentp.server.rest.endpoint.Endpoint;
-import cn.opentp.server.rest.endpoint.FaviconEndpoint;
-import cn.opentp.server.rest.endpoint.OpentpEndpoint;
+import cn.opentp.server.rest.endpoint.*;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,9 +18,11 @@ public class EndpointMapping {
      */
     public EndpointMapping() {
         // 添加 handler
-        endPoints.put("favicon.ico", new FaviconEndpoint());
-        endPoints.put("opentp", new OpentpEndpoint());
         endPoints.put("", new DefaultEndpoint());
+        endPoints.put("favicon.ico", new FaviconEndpoint());
+
+        endPoints.put("appKeys", new AppKeysEndpoint());
+        endPoints.put("tpInfos", new TpInfosEndpoint());
     }
 
 
