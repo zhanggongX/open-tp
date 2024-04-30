@@ -35,17 +35,15 @@ public class RestServer implements Closeable {
                 });
     }
 
-    public void start(String bindPort) {
-        int port = bindPort == null ? Constant.DEFAULT_REST_SERVER_PORT : Integer.parseInt(bindPort);
-
+    public void start(int bindPort) {
         httpConfig();
 
-        ChannelFuture channelFuture = serverBootstrap.bind(port);
+        ChannelFuture channelFuture = serverBootstrap.bind(bindPort);
         channelFuture.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
-                    log.info("http rest api server start bind on {}", port);
+                    log.info("http rest api server start bind on {}", bindPort);
                 } else {
                     log.error("http rest server start error: ", future.cause());
                 }
