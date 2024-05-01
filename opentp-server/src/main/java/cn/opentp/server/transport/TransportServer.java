@@ -1,7 +1,7 @@
 package cn.opentp.server.transport;
 
-import cn.opentp.core.net.handler.OpentpMessageDecoder;
-import cn.opentp.core.net.handler.OpentpMessageEncoder;
+import cn.opentp.server.transport.codec.BroadcastMessageDecoder;
+import cn.opentp.server.transport.codec.BroadcastMessageEncoder;
 import cn.opentp.server.transport.handler.TransportServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -32,8 +32,8 @@ public class TransportServer implements Closeable {
                 .channel(NioServerSocketChannel.class).childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
-                        socketChannel.pipeline().addLast(new OpentpMessageDecoder());
-                        socketChannel.pipeline().addLast(new OpentpMessageEncoder());
+                        socketChannel.pipeline().addLast(new BroadcastMessageDecoder());
+                        socketChannel.pipeline().addLast(new BroadcastMessageEncoder());
                         socketChannel.pipeline().addLast(new TransportServerHandler());
                     }
                 });

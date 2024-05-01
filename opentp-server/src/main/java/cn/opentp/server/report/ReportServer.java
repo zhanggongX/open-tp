@@ -1,7 +1,7 @@
 package cn.opentp.server.report;
 
-import cn.opentp.core.net.handler.OpentpMessageDecoder;
-import cn.opentp.core.net.handler.OpentpMessageEncoder;
+import cn.opentp.core.net.codec.OpentpMessageDecoder;
+import cn.opentp.core.net.codec.OpentpMessageEncoder;
 import cn.opentp.server.report.handler.ReportServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;

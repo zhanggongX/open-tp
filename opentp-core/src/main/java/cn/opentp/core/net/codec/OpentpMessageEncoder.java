@@ -1,4 +1,4 @@
-package cn.opentp.core.net.handler;
+package cn.opentp.core.net.codec;
 
 import cn.opentp.core.net.OpentpMessage;
 import cn.opentp.core.net.OpentpMessageConstant;

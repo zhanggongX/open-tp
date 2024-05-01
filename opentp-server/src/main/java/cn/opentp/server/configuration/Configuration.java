@@ -1,6 +1,7 @@
 package cn.opentp.server.configuration;
 
 import cn.opentp.core.auth.ClientInfo;
+import cn.opentp.core.auth.ServerInfo;
 import cn.opentp.core.thread.pool.ThreadPoolState;
 import cn.opentp.server.rest.EndpointMapping;
 import io.netty.channel.Channel;
@@ -29,6 +30,9 @@ public class Configuration {
     private final Map<String, Map<String, ThreadPoolState>> clientKeyThreadPoolStatesCache = new ConcurrentHashMap<>();
     // key = licenseKey value = ClientInfo
     private final Map<String, ClientInfo> licenseKeyClientCache = new ConcurrentHashMap<>();
+    // 集群 key = 线程客户端信息， value = 所在的服务端信息
+    private final Map<ClientInfo, ServerInfo> clusterClientInfoCache = new ConcurrentHashMap<>();
+    private final Map<ServerInfo, List<ClientInfo>> clusterServerInfoCache = new ConcurrentHashMap<>();
 
     private Configuration() {
     }
@@ -78,5 +82,13 @@ public class Configuration {
 
     public Map<String, Channel> clientKeyChannelCache() {
         return clientKeyChannelCache;
+    }
+
+    public Map<ClientInfo, ServerInfo> clusterClientInfoCache() {
+        return clusterClientInfoCache;
+    }
+
+    public Map<ServerInfo, List<ClientInfo>> clusterServerInfoCache() {
+        return clusterServerInfoCache;
     }
 }

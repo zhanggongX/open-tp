@@ -2,6 +2,8 @@ package cn.opentp.core.net.serializer.kryo;
 
 import cn.opentp.core.auth.ClientInfo;
 import cn.opentp.core.auth.License;
+import cn.opentp.core.net.BroadcastMessage;
+import cn.opentp.core.net.BroadcastProtocol;
 import cn.opentp.core.net.serializer.Serializer;
 import cn.opentp.core.thread.pool.ThreadPoolState;
 import com.esotericsoftware.kryo.Kryo;
@@ -34,6 +36,8 @@ public class KryoSerializer implements Serializer {
         kryo.register(ArrayList.class);
         kryo.register(ClientInfo.class);
         kryo.register(License.class);
+        kryo.register(BroadcastProtocol.class);
+        kryo.register(BroadcastMessage.class);
         return kryo;
     });
 
