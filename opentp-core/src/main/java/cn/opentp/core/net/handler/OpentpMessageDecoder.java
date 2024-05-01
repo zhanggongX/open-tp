@@ -7,6 +7,7 @@ import cn.opentp.core.net.OpentpMessageConstant;
 import cn.opentp.core.net.OpentpMessageTypeEnum;
 import cn.opentp.core.net.serializer.Serializer;
 import cn.opentp.core.net.serializer.SerializerFactory;
+import cn.opentp.core.thread.pool.ThreadPoolState;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
@@ -107,9 +108,12 @@ public class OpentpMessageDecoder extends LengthFieldBasedFrameDecoder {
                 opentpMessage.setData(ping);
                 break;
             case THREAD_POOL_EXPORT:
-            case THREAD_POOL_UPDATE:
                 List<?> threadPoolStates = serializer.deserialize(bytes, ArrayList.class);
                 opentpMessage.setData(threadPoolStates);
+                break;
+            case THREAD_POOL_UPDATE:
+                ThreadPoolState threadPoolState = serializer.deserialize(bytes, ThreadPoolState.class);
+                opentpMessage.setData(threadPoolState);
                 break;
             case AUTHENTICATION_REQ:
                 ClientInfo clientInfo = serializer.deserialize(bytes, ClientInfo.class);

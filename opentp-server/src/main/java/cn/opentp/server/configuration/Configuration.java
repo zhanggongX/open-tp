@@ -23,8 +23,10 @@ public class Configuration {
     private final Map<String, List<ClientInfo>> appKeyClientCache = new ConcurrentHashMap<>();
     // key = 客户端, value = channel
     private final Map<ClientInfo, Channel> clientChannelCache = new ConcurrentHashMap<>();
+    private final Map<String, Channel> clientKeyChannelCache = new ConcurrentHashMap<>();
     // key = 客户端, value = <key = threadKey, value = threadPoolSate>
     private final Map<ClientInfo, Map<String, ThreadPoolState>> clientThreadPoolStatesCache = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, ThreadPoolState>> clientKeyThreadPoolStatesCache = new ConcurrentHashMap<>();
     // key = licenseKey value = ClientInfo
     private final Map<String, ClientInfo> licenseKeyClientCache = new ConcurrentHashMap<>();
 
@@ -68,5 +70,13 @@ public class Configuration {
 
     public Map<String, ClientInfo> licenseKeyClientCache() {
         return licenseKeyClientCache;
+    }
+
+    public Map<String, Map<String, ThreadPoolState>> clientKeyThreadPoolStatesCache() {
+        return clientKeyThreadPoolStatesCache;
+    }
+
+    public Map<String, Channel> clientKeyChannelCache() {
+        return clientKeyChannelCache;
     }
 }

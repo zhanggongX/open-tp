@@ -1,5 +1,7 @@
 package cn.opentp.core.thread.pool;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.io.Serializable;
 
 public class ThreadPoolState implements Serializable {
@@ -66,6 +68,18 @@ public class ThreadPoolState implements Serializable {
         this.queueSize = threadPoolState.getQueueSize();
         this.queueLength = threadPoolState.getQueueLength();
         this.largestPoolSize = threadPoolState.getLargestPoolSize();
+        this.threadPoolName = threadPoolState.getThreadPoolName();
+    }
+
+    public void flushRequest(JsonNode httpRequestJsonNode) {
+        this.coreSize = httpRequestJsonNode.get("coreSize") != null ? httpRequestJsonNode.get("coreSize").asInt() : -1;
+        this.maxSize = httpRequestJsonNode.get("maxSize") != null ? httpRequestJsonNode.get("maxSize").asInt() : -1;
+        this.poolSize = -1;
+        this.activeCount = -1;
+        this.completedCount = -1;
+        this.queueSize = -1;
+        this.queueLength = -1;
+        this.largestPoolSize = -1;
     }
 
     public int getCoreSize() {

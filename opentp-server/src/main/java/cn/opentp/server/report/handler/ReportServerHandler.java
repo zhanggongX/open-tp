@@ -94,6 +94,7 @@ public class ReportServerHandler extends ChannelInboundHandlerAdapter {
         configuration.licenseKeyClientCache().putIfAbsent(newLicenseKey, clientInfo);
         // 记录 客户端信息 <-> 网络连接
         configuration.clientChannelCache().put(clientInfo, ctx.channel());
+        configuration.clientKeyChannelCache().put(clientInfo.clientKey(), ctx.channel());
 
         OpentpMessage opentpMessageRes = OpentpCoreConstant.OPENTP_MSG_PROTO.clone();
         OpentpMessage
@@ -126,10 +127,17 @@ public class ReportServerHandler extends ChannelInboundHandlerAdapter {
             return;
         }
 
+        // clientInfo 缓存
         ClientInfo clientInfo = configuration.licenseKeyClientCache().get(licenseKey);
         Map<ClientInfo, Map<String, ThreadPoolState>> clientThreadPoolStatesCache = configuration.clientThreadPoolStatesCache();
         clientThreadPoolStatesCache.putIfAbsent(clientInfo, new ConcurrentHashMap<>());
         Map<String, ThreadPoolState> threadPoolStateCache = clientThreadPoolStatesCache.get(clientInfo);
+
+        // clientInfoKey 缓存
+        Map<String, Map<String, ThreadPoolState>> clientKeyThreadPoolStatesCache = configuration.clientKeyThreadPoolStatesCache();
+        clientKeyThreadPoolStatesCache.putIfAbsent(clientInfo.clientKey(), new ConcurrentHashMap<>());
+        Map<String, ThreadPoolState> keyThreadPoolStateCache = clientKeyThreadPoolStatesCache.get(clientInfo.clientKey());
+
 
         List<?> threadPoolStates = (List<?>) opentpMessage.getData();
         for (Object obj : threadPoolStates) {
@@ -138,6 +146,9 @@ public class ReportServerHandler extends ChannelInboundHandlerAdapter {
             threadPoolStateCache.putIfAbsent(threadPoolState.getThreadPoolName(), new ThreadPoolState());
             ThreadPoolState configThreadPoolState = threadPoolStateCache.get(threadPoolState.getThreadPoolName());
             configThreadPoolState.flushState(threadPoolState);
+
+            // clientInfoKey 缓存
+            keyThreadPoolStateCache.put(threadPoolState.getThreadPoolName(), configThreadPoolState);
 
             log.debug("上报线程池信息 : {}", configThreadPoolState.toString());
         }
@@ -166,9 +177,12 @@ public class ReportServerHandler extends ChannelInboundHandlerAdapter {
 
     private void removeChannelInfo(Channel channel) {
         String licenseKey = channel.attr(OpentpCoreConstant.EXPORT_CHANNEL_ATTR_KEY).get();
+        
         Configuration configuration = Configuration.configuration();
         ClientInfo clientInfo = configuration.licenseKeyClientCache().get(licenseKey);
         configuration.clientChannelCache().remove(clientInfo);
+        configuration.clientKeyChannelCache().remove(clientInfo.clientKey());
         configuration.clientThreadPoolStatesCache().remove(clientInfo);
+        configuration.clientKeyThreadPoolStatesCache().remove(clientInfo.clientKey());
     }
 }

@@ -87,12 +87,12 @@ public class ClientInfo implements Serializable {
         return Objects.hash(appKey, appSecret, host, instance);
     }
 
-    public String clientName() {
-        return host + "-" + instance;
-    }
-
     @Override
     public String toString() {
+        return appKey + "/" + host + "/" + instance;
+    }
+
+    public String clientKey() {
         return appKey + "/" + host + "/" + instance;
     }
 }

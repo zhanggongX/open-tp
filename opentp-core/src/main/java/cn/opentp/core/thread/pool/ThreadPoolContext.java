@@ -55,7 +55,7 @@ public class ThreadPoolContext implements Serializable {
             return;
         }
         // todo 暂时先支持修改核心线程数和最大线程数
-        target.setCorePoolSize(threadPoolState.getPoolSize() > 0 ? threadPoolState.getPoolSize() : target.getCorePoolSize());
-        target.setMaximumPoolSize(threadPoolState.getMaxSize() > 0 ? threadPoolState.getMaxSize() : target.getMaximumPoolSize());
+        target.setCorePoolSize(threadPoolState.getCoreSize() != -1 ? threadPoolState.getCoreSize() : target.getCorePoolSize());
+        target.setMaximumPoolSize(threadPoolState.getMaxSize() != -1 ? threadPoolState.getMaxSize() : target.getMaximumPoolSize());
     }
 }

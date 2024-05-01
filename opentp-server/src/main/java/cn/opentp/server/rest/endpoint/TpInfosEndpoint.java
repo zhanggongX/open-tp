@@ -1,16 +1,29 @@
 package cn.opentp.server.rest.endpoint;
 
 import cn.opentp.core.auth.ClientInfo;
+import cn.opentp.core.constant.OpentpCoreConstant;
+import cn.opentp.core.net.OpentpMessage;
+import cn.opentp.core.net.OpentpMessageConstant;
+import cn.opentp.core.net.OpentpMessageTypeEnum;
+import cn.opentp.core.net.serializer.SerializerTypeEnum;
 import cn.opentp.core.thread.pool.ThreadPoolState;
+import cn.opentp.core.util.JSONUtils;
+import cn.opentp.core.util.MessageTraceIdUtil;
 import cn.opentp.server.configuration.Configuration;
+import cn.opentp.server.exception.EndpointUnSupportException;
 import cn.opentp.server.rest.BaseRes;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -81,55 +94,59 @@ public class TpInfosEndpoint extends AbstractEndpointAdapter<Map<ClientInfo, Map
 
     @Override
     public BaseRes<Void> doPost(FullHttpRequest httpRequest, FullHttpResponse httpResponse) {
-        return BaseRes.success();
+        throw new EndpointUnSupportException();
     }
 
+    /**
+     * /tpInfos/{appKey}/{ip}/{instance}/{tpName}
+     * curl -X PUT -H "Content-Type: application/json" -d '{"coreSize":10}' http://localhost:8080/tpInfos/opentp/192.168.100.200/83280/tp1
+     */
     @Override
     public BaseRes<Void> doPut(FullHttpRequest httpRequest, FullHttpResponse httpResponse) {
 
         String uri = httpRequest.uri();
-        if (!uri.startsWith("/opentp")) {
-            throw new IllegalArgumentException("错误的路径");
-        }
-        String[] urlPaths = uri.split("/");
-        if (urlPaths.length != 5) {
-            return BaseRes.fail(-1, "错误的更新方法");
-        }
-        String theadPoolName = urlPaths[2];
-        String param = urlPaths[3];
-        int value = Integer.parseInt(urlPaths[4]);
-
-        Field declaredField = null;
-        try {
-            declaredField = ThreadPoolState.class.getDeclaredField(param);
-            declaredField.setAccessible(true);
-        } catch (NoSuchFieldException e) {
-            log.error("", e);
+        String[] uris = uri.split("/");
+        if (uris.length != 6) {
+            throw new IllegalArgumentException("路径错误");
         }
 
-        if (declaredField == null) {
-            return BaseRes.fail(-1, "无效的参数");
-        }
+        String appKey = uris[2];
+        String ip = uris[3];
+        String instance = uris[4];
+        String tpName = uris[5];
+        String clientInfoKey = appKey + "/" + ip + "/" + instance;
 
         Configuration configuration = Configuration.configuration();
-        Map<String, Channel> channelCache = null; //configuration.channelCache();
-        Channel channel = channelCache.get(theadPoolName);
-        ThreadPoolState threadPoolState = new ThreadPoolState();
-        threadPoolState.flushDefault(theadPoolName);
+        Map<String, Map<String, ThreadPoolState>> clientKeyThreadPoolStatesCache = configuration.clientKeyThreadPoolStatesCache();
+        ThreadPoolState threadPoolState = clientKeyThreadPoolStatesCache.get(clientInfoKey).get(tpName);
 
-        try {
-            declaredField.set(threadPoolState, value);
-        } catch (IllegalAccessException e) {
-            log.error("", e);
-        }
+        if (threadPoolState == null) throw new IllegalArgumentException("未知的线程池信息");
 
-        channel.writeAndFlush(threadPoolState);
+        String content = httpRequest.content().toString(CharsetUtil.UTF_8);
+        JsonNode jsonNode = JSONUtils.getNode(content);
+
+        ThreadPoolState newThreadPoolState = new ThreadPoolState();
+        newThreadPoolState.flushDefault(threadPoolState.getThreadPoolName());
+        newThreadPoolState.flushRequest(jsonNode);
+
+        Channel channel = configuration.clientKeyChannelCache().get(clientInfoKey);
+        log.debug("线程池更新任务下发： {}", JSONUtils.toJson(newThreadPoolState));
+        OpentpMessage opentpMessage = OpentpCoreConstant.OPENTP_MSG_PROTO.clone();
+        OpentpMessage
+                .builder()
+                .messageType(OpentpMessageTypeEnum.THREAD_POOL_UPDATE.getCode())
+                .serializerType(SerializerTypeEnum.Kryo.getType())
+                .data(newThreadPoolState)
+                .traceId(MessageTraceIdUtil.traceId())
+                .buildTo(opentpMessage);
+
+        channel.writeAndFlush(opentpMessage);
 
         return BaseRes.success();
     }
 
     @Override
     public BaseRes<Void> doDelete(FullHttpRequest httpRequest, FullHttpResponse httpResponse) {
-        return BaseRes.success();
+        throw new EndpointUnSupportException();
     }
 }
