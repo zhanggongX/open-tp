@@ -76,7 +76,7 @@
                     <archive>
                         <!-- 指定启动类 -->
                         <manifest>
-                            <mainClass>cn.opentp.server.OpentpBootstrap</mainClass>
+                            <mainClass>cn.opentp.server.Opentp</mainClass>
                         </manifest>
                     </archive>
                     <outputDirectory>./bin</outputDirectory>

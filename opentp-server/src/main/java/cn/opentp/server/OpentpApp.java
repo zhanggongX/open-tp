@@ -1,8 +1,9 @@
-package cn.opentp.server.configuration;
+package cn.opentp.server;
 
 import cn.opentp.core.auth.ClientInfo;
 import cn.opentp.core.auth.ServerInfo;
 import cn.opentp.core.thread.pool.ThreadPoolState;
+import cn.opentp.server.config.Config;
 import cn.opentp.server.rest.EndpointMapping;
 import io.netty.channel.Channel;
 
@@ -10,14 +11,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Configuration {
+public class OpentpApp {
 
-    private volatile static Configuration INSTANCE;
+    private volatile static OpentpApp INSTANCE;
 
     // 服务端属性信息
-    private final OpentpProperties props = new OpentpProperties();
+    private final Config _cfg = new Config();
     // app 类加载器
-    private final ClassLoader appClassLoader = Configuration.class.getClassLoader();
+    private final ClassLoader appClassLoader = OpentpApp.class.getClassLoader();
     // rest endpoint 映射
     private final EndpointMapping endpointMapping = new EndpointMapping();
     // key = appId, value = 所有连接上来的客户端
@@ -34,22 +35,22 @@ public class Configuration {
     private final Map<ClientInfo, ServerInfo> clusterClientInfoCache = new ConcurrentHashMap<>();
     private final Map<ServerInfo, List<ClientInfo>> clusterServerInfoCache = new ConcurrentHashMap<>();
 
-    private Configuration() {
+    private OpentpApp() {
     }
 
-    public static Configuration configuration() {
+    public static OpentpApp instance() {
         if (INSTANCE == null) {
-            synchronized (Configuration.class) {
+            synchronized (OpentpApp.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new Configuration();
+                    INSTANCE = new OpentpApp();
                 }
             }
         }
         return INSTANCE;
     }
 
-    public OpentpProperties properties() {
-        return props;
+    public Config cfg() {
+        return _cfg;
     }
 
     public ClassLoader appClassLoader() {

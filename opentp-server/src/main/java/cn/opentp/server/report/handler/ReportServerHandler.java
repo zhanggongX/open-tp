@@ -9,7 +9,7 @@ import cn.opentp.core.net.OpentpMessageTypeEnum;
 import cn.opentp.core.net.serializer.SerializerTypeEnum;
 import cn.opentp.core.thread.pool.ThreadPoolState;
 import cn.opentp.server.auth.LicenseKeyFactory;
-import cn.opentp.server.configuration.Configuration;
+import cn.opentp.server.OpentpApp;
 import cn.opentp.server.constant.OpentpServerConstant;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -51,7 +51,7 @@ public class ReportServerHandler extends ChannelInboundHandlerAdapter {
     private void channelRead0(ChannelHandlerContext ctx, OpentpMessage opentpMessage) {
 
         OpentpMessageTypeEnum opentpMessageTypeEnum = OpentpMessageTypeEnum.parse(opentpMessage.getMessageType());
-        Configuration configuration = null;
+        OpentpApp configuration = null;
 
         switch (Objects.requireNonNull(opentpMessageTypeEnum)) {
             case HEART_PING:
@@ -89,7 +89,7 @@ public class ReportServerHandler extends ChannelInboundHandlerAdapter {
 
         // 设置 licenseKey
         ctx.channel().attr(OpentpCoreConstant.EXPORT_CHANNEL_ATTR_KEY).set(newLicenseKey);
-        Configuration configuration = Configuration.configuration();
+        OpentpApp configuration = OpentpApp.instance();
         // 记录 licenseKey <-> clientInfo
         configuration.licenseKeyClientCache().putIfAbsent(newLicenseKey, clientInfo);
         // 记录 客户端信息 <-> 网络连接
@@ -120,21 +120,21 @@ public class ReportServerHandler extends ChannelInboundHandlerAdapter {
             return;
         }
 
-        Configuration configuration = Configuration.configuration();
-        if (!configuration.licenseKeyClientCache().containsKey(licenseKey)) {
+        OpentpApp opentpApp = OpentpApp.instance();
+        if (!opentpApp.licenseKeyClientCache().containsKey(licenseKey)) {
             log.warn("licenseKey 异常或已过期，请重新连接");
             ctx.channel().close();
             return;
         }
 
         // clientInfo 缓存
-        ClientInfo clientInfo = configuration.licenseKeyClientCache().get(licenseKey);
-        Map<ClientInfo, Map<String, ThreadPoolState>> clientThreadPoolStatesCache = configuration.clientThreadPoolStatesCache();
+        ClientInfo clientInfo = opentpApp.licenseKeyClientCache().get(licenseKey);
+        Map<ClientInfo, Map<String, ThreadPoolState>> clientThreadPoolStatesCache = opentpApp.clientThreadPoolStatesCache();
         clientThreadPoolStatesCache.putIfAbsent(clientInfo, new ConcurrentHashMap<>());
         Map<String, ThreadPoolState> threadPoolStateCache = clientThreadPoolStatesCache.get(clientInfo);
 
         // clientInfoKey 缓存
-        Map<String, Map<String, ThreadPoolState>> clientKeyThreadPoolStatesCache = configuration.clientKeyThreadPoolStatesCache();
+        Map<String, Map<String, ThreadPoolState>> clientKeyThreadPoolStatesCache = opentpApp.clientKeyThreadPoolStatesCache();
         clientKeyThreadPoolStatesCache.putIfAbsent(clientInfo.clientKey(), new ConcurrentHashMap<>());
         Map<String, ThreadPoolState> keyThreadPoolStateCache = clientKeyThreadPoolStatesCache.get(clientInfo.clientKey());
 
@@ -178,11 +178,11 @@ public class ReportServerHandler extends ChannelInboundHandlerAdapter {
     private void removeChannelInfo(Channel channel) {
         String licenseKey = channel.attr(OpentpCoreConstant.EXPORT_CHANNEL_ATTR_KEY).get();
         
-        Configuration configuration = Configuration.configuration();
-        ClientInfo clientInfo = configuration.licenseKeyClientCache().get(licenseKey);
-        configuration.clientChannelCache().remove(clientInfo);
-        configuration.clientKeyChannelCache().remove(clientInfo.clientKey());
-        configuration.clientThreadPoolStatesCache().remove(clientInfo);
-        configuration.clientKeyThreadPoolStatesCache().remove(clientInfo.clientKey());
+        OpentpApp opentpApp = OpentpApp.instance();
+        ClientInfo clientInfo = opentpApp.licenseKeyClientCache().get(licenseKey);
+        opentpApp.clientChannelCache().remove(clientInfo);
+        opentpApp.clientKeyChannelCache().remove(clientInfo.clientKey());
+        opentpApp.clientThreadPoolStatesCache().remove(clientInfo);
+        opentpApp.clientKeyThreadPoolStatesCache().remove(clientInfo.clientKey());
     }
 }

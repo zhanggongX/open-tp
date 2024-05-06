@@ -1,7 +1,7 @@
 package cn.opentp.server.util;
 
 import cn.opentp.server.command.CommandOptions;
-import cn.opentp.server.configuration.OpentpProperties;
+import cn.opentp.server.config.Config;
 import cn.opentp.server.exception.ResourceLoadException;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
@@ -18,8 +18,9 @@ import java.util.Properties;
 public class PropertiesUtil {
 
     private static final Logger log = LoggerFactory.getLogger(PropertiesUtil.class);
+    private static final String CONFIG_PREFIX = "opentp";
 
-    public static boolean loadCmdProps(OpentpProperties properties, String[] args) {
+    public static boolean loadCmdProps(Config properties, String[] args) {
 
         CommandLineParser parser = new DefaultParser();
         Options options = CommandOptions.opentpOption();
@@ -47,7 +48,7 @@ public class PropertiesUtil {
         }
     }
 
-    public static void loadProps(ClassLoader classLoader, OpentpProperties properties, String fileName) {
+    public static void loadProps(ClassLoader classLoader, Config config, String fileName) {
 
         URL resource = ResourceUtil.loadResource(classLoader, fileName);
         if (resource == null) {
@@ -62,22 +63,26 @@ public class PropertiesUtil {
                 String key = (String) entry.getKey();
                 String value = (String) entry.getValue();
 
+                String realKey = key;
                 if (key.contains("-")) {
-                    String camelKey = buildCamelKey(key);
+                    realKey = buildCamelKey(key);
+                }
+                if (realKey.equals(CONFIG_PREFIX)) {
+                    continue;
+                }
 
-                    Field field = null;
-                    try {
-                        field = OpentpProperties.class.getDeclaredField(camelKey);
-                        field.setAccessible(true);
-                        String name = field.getType().getName();
-                        if (name.equals("int")) {
-                            field.setInt(properties, Integer.parseInt(value));
-                        } else if (name.equals("java.lang.String")) {
-                            field.set(camelKey, value);
-                        }
-                    } catch (NoSuchFieldException | IllegalAccessException e) {
-                        log.error("", e);
+                Field field = null;
+                try {
+                    field = Config.class.getDeclaredField(realKey);
+                    field.setAccessible(true);
+                    String name = field.getType().getName();
+                    if (name.equals("int")) {
+                        field.setInt(config, Integer.parseInt(value));
+                    } else {
+                        field.set(config, String.valueOf(value));
                     }
+                } catch (NoSuchFieldException | IllegalAccessException e) {
+                    log.error("", e);
                 }
             }
         } catch (IOException e) {

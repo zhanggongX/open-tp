@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 
-public class ReportServer implements Closeable {
+public class ReceiveReportServer implements Closeable {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 

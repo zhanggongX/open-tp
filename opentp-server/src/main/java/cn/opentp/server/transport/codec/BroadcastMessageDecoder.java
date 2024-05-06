@@ -1,8 +1,6 @@
 package cn.opentp.server.transport.codec;
 
-import cn.opentp.core.auth.ClientInfo;
 import cn.opentp.core.net.BroadcastMessage;
-import cn.opentp.core.net.BroadcastProtocol;
 import cn.opentp.core.net.serializer.Serializer;
 import cn.opentp.core.net.serializer.SerializerFactory;
 import cn.opentp.core.net.serializer.SerializerTypeEnum;
@@ -10,7 +8,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class BroadcastMessageDecoder extends ByteToMessageDecoder {

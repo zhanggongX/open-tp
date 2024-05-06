@@ -3,7 +3,7 @@ package cn.opentp.server.transport.handler;
 import cn.opentp.core.auth.ClientInfo;
 import cn.opentp.core.auth.ServerInfo;
 import cn.opentp.core.net.BroadcastMessage;
-import cn.opentp.server.configuration.Configuration;
+import cn.opentp.server.OpentpApp;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
@@ -31,7 +31,7 @@ public class TransportServerHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void channelRead0(ChannelHandlerContext ctx, BroadcastMessage broadcastMessage) {
-        Configuration configuration = Configuration.configuration();
+        OpentpApp configuration = OpentpApp.instance();
         Map<ClientInfo, ServerInfo> clusterClientInfoCache = configuration.clusterClientInfoCache();
         Map<ServerInfo, List<ClientInfo>> clusterServerInfoCache = configuration.clusterServerInfoCache();
 

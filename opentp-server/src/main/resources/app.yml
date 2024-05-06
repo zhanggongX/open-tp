@@ -2,4 +2,7 @@ opentp:
   report-server-port: 9527
   http-server-port: 8080
   transport-server-port: 9528
+  deploy: cluster
+#  deploy: standalone
+#  master: localhost:9528
 

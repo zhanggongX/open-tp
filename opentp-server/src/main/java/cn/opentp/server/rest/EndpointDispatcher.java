@@ -1,7 +1,7 @@
 package cn.opentp.server.rest;
 
 import cn.opentp.core.util.JSONUtils;
-import cn.opentp.server.configuration.Configuration;
+import cn.opentp.server.OpentpApp;
 import cn.opentp.server.rest.endpoint.Endpoint;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -12,8 +12,6 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.charset.StandardCharsets;
 
 public class EndpointDispatcher {
 
@@ -30,7 +28,7 @@ public class EndpointDispatcher {
         String[] split = uri.split("/");
         String endPoint = split[0];
 
-        EndpointMapping endpointMapping = Configuration.configuration().endpointMapping();
+        EndpointMapping endpointMapping = OpentpApp.instance().endpointMapping();
         Endpoint httpHandler = endpointMapping.mappingHandler(endPoint);
 
         if (HttpMethod.GET.equals(method)) {

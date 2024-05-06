@@ -1,6 +1,5 @@
 package cn.opentp.server.rocksdb;
 
-import cn.opentp.server.configuration.Configuration;
 import org.apache.logging.log4j.util.Strings;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
