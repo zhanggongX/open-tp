@@ -1,14 +1,17 @@
 package cn.opentp.server;
 
-import cn.opentp.server.config.Config;
 import cn.opentp.server.constant.OpentpServerConstant;
 import cn.opentp.server.enums.DeployEnum;
 import cn.opentp.server.report.ReceiveReportServer;
 import cn.opentp.server.rest.RestServer;
+import cn.opentp.server.transport.TransportClient;
 import cn.opentp.server.transport.TransportServer;
 import cn.opentp.server.util.PropertiesUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.SocketAddress;
+import java.util.List;
 
 /**
  * opentp 启动类
@@ -25,17 +28,17 @@ public class Opentp {
 
     public static void main(String[] args) throws InterruptedException {
         // 加载配置
-        PropertiesUtil.loadProps(opentpApp.appClassLoader(), opentpApp.cfg(), OpentpServerConstant.DEFAULT_CONFIG_FILE);
+        PropertiesUtil.loadProps(opentpApp.appClassLoader(), opentpApp.properties(), OpentpServerConstant.DEFAULT_CONFIG_FILE);
 
         // 加载参数配置
-        if (!PropertiesUtil.loadCmdProps(opentpApp.cfg(), args)) return;
+        if (!PropertiesUtil.loadCmdProps(opentpApp.properties(), args)) return;
 
         startServers();
     }
 
     private static void startServers() {
 
-        Config config = opentpApp.cfg();
+        OpentpProperties config = opentpApp.properties();
 
         ShutdownHook hook = new ShutdownHook();
         // 启动接收上报信息服务
@@ -49,12 +52,19 @@ public class Opentp {
         hook.add(restServer);
 
         DeployEnum deploy = config.getDeploy();
-        String master = config.getMaster();
-        // 集群部署，且 master 配置信息为空，则认为是主节点，启动 TransportServer
-        if (deploy == DeployEnum.cluster && (master == null || !master.isEmpty())) {
-            TransportServer transportServer = new TransportServer();
-            transportServer.start(config.getTransportServerPort());
-            hook.add(transportServer);
+        // 集群部署，启动 TransportServer
+        if (deploy == DeployEnum.cluster) {
+            List<SocketAddress> clusterSocketAddresses = config.getCluster();
+            if (clusterSocketAddresses.isEmpty()) {
+                log.warn("集群模式下不配置集群地址，则等同于单机模式");
+            }else {
+                TransportServer transportServer = new TransportServer();
+                transportServer.start(config.getTransportServerPort());
+                hook.add(transportServer);
+
+                TransportClient transportClient = new TransportClient();
+                transportClient.startup();
+            }
         }
 
         Runtime.getRuntime().addShutdownHook(hook);

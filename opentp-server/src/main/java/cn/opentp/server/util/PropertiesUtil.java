@@ -1,7 +1,7 @@
 package cn.opentp.server.util;
 
 import cn.opentp.server.command.CommandOptions;
-import cn.opentp.server.config.Config;
+import cn.opentp.server.OpentpProperties;
 import cn.opentp.server.exception.ResourceLoadException;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
@@ -20,7 +20,7 @@ public class PropertiesUtil {
     private static final Logger log = LoggerFactory.getLogger(PropertiesUtil.class);
     private static final String CONFIG_PREFIX = "opentp";
 
-    public static boolean loadCmdProps(Config properties, String[] args) {
+    public static boolean loadCmdProps(OpentpProperties properties, String[] args) {
 
         CommandLineParser parser = new DefaultParser();
         Options options = CommandOptions.opentpOption();
@@ -48,7 +48,7 @@ public class PropertiesUtil {
         }
     }
 
-    public static void loadProps(ClassLoader classLoader, Config config, String fileName) {
+    public static void loadProps(ClassLoader classLoader, OpentpProperties config, String fileName) {
 
         URL resource = ResourceUtil.loadResource(classLoader, fileName);
         if (resource == null) {
@@ -73,7 +73,7 @@ public class PropertiesUtil {
 
                 Field field = null;
                 try {
-                    field = Config.class.getDeclaredField(realKey);
+                    field = OpentpProperties.class.getDeclaredField(realKey);
                     field.setAccessible(true);
                     String name = field.getType().getName();
                     if (name.equals("int")) {

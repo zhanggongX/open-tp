@@ -24,7 +24,7 @@ public class TransportServer implements Closeable {
     private final NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
     private final NioEventLoopGroup workGroup = new NioEventLoopGroup(1);
 
-    private void httpConfig() {
+    private void TransportServerConfig() {
 
         serverBootstrap.group(bossGroup, workGroup)
                 .option(ChannelOption.SO_BACKLOG, 1024)
@@ -40,7 +40,7 @@ public class TransportServer implements Closeable {
     }
 
     public void start(int bindPort) {
-        httpConfig();
+        TransportServerConfig();
 
         ChannelFuture channelFuture = serverBootstrap.bind(bindPort);
         channelFuture.addListener(new ChannelFutureListener() {

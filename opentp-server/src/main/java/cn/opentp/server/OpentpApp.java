@@ -3,20 +3,21 @@ package cn.opentp.server;
 import cn.opentp.core.auth.ClientInfo;
 import cn.opentp.core.auth.ServerInfo;
 import cn.opentp.core.thread.pool.ThreadPoolState;
-import cn.opentp.server.config.Config;
 import cn.opentp.server.rest.EndpointMapping;
 import io.netty.channel.Channel;
 
+import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class OpentpApp {
 
     private volatile static OpentpApp INSTANCE;
 
     // 服务端属性信息
-    private final Config _cfg = new Config();
+    private final OpentpProperties properties = new OpentpProperties();
     // app 类加载器
     private final ClassLoader appClassLoader = OpentpApp.class.getClassLoader();
     // rest endpoint 映射
@@ -35,6 +36,10 @@ public class OpentpApp {
     private final Map<ClientInfo, ServerInfo> clusterClientInfoCache = new ConcurrentHashMap<>();
     private final Map<ServerInfo, List<ClientInfo>> clusterServerInfoCache = new ConcurrentHashMap<>();
 
+
+    private final Map<SocketAddress, Channel> clusterConnected = new ConcurrentHashMap<>();
+    private final List<SocketAddress> clusterFailConnects = new CopyOnWriteArrayList<>();
+
     private OpentpApp() {
     }
 
@@ -49,8 +54,8 @@ public class OpentpApp {
         return INSTANCE;
     }
 
-    public Config cfg() {
-        return _cfg;
+    public OpentpProperties properties() {
+        return properties;
     }
 
     public ClassLoader appClassLoader() {
@@ -91,5 +96,13 @@ public class OpentpApp {
 
     public Map<ServerInfo, List<ClientInfo>> clusterServerInfoCache() {
         return clusterServerInfoCache;
+    }
+
+    public List<SocketAddress> clusterFailConnects() {
+        return clusterFailConnects;
+    }
+
+    public Map<SocketAddress, Channel> clusterConnected() {
+        return clusterConnected;
     }
 }
