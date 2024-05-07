@@ -14,6 +14,7 @@
 
     <modules>
         <module>opentp-client-spring-boot-example</module>
+        <module>opentp-client-java</module>
     </modules>
 
     <properties>

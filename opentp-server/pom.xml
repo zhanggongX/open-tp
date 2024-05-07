@@ -23,6 +23,11 @@
             <artifactId>opentp-core</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>cn.opentp</groupId>
+            <artifactId>opentp-gossip</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
         <!-- log start -->
         <dependency>
             <groupId>org.slf4j</groupId>

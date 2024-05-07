@@ -3,25 +3,26 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>cn.opentp</groupId>
+        <artifactId>open-tp</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
 
-    <groupId>cn.opentp</groupId>
-    <artifactId>open-tp</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
-
-    <modules>
-        <module>opentp-core</module>
-        <module>opentp-gossip</module>
-        <module>opentp-server</module>
-        <module>opentp-client</module>
-        <module>starter</module>
-        <module>example</module>
-    </modules>
+    <artifactId>opentp-gossip</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>cn.opentp</groupId>
+            <artifactId>opentp-core</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 
 </project>
