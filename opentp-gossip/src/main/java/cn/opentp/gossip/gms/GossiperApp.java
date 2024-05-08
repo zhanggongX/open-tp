@@ -1,25 +1,16 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package cn.opentp.gossip.gms;
 
+import cn.opentp.gossip.Gossiper;
+import cn.opentp.gossip.concurrent.DebuggableScheduledThreadPoolExecutor;
 import cn.opentp.gossip.enums.ApplicationStateEnum;
+import cn.opentp.gossip.io.util.FastByteArrayOutputStream;
+import cn.opentp.gossip.locator.IApplicationStateStarting;
+import cn.opentp.gossip.net.Message;
+import cn.opentp.gossip.net.MessageProducer;
+import cn.opentp.gossip.net.MessageVerb;
+import cn.opentp.gossip.net.MessagingService;
 import cn.opentp.gossip.util.FBUtilities;
+import cn.opentp.gossip.util.SocketAddressUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,19 +26,6 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.*;
 
-/**
- * This module is responsible for Gossiping information for the local endpoint. This abstraction
- * maintains the list of live and dead endpoints. Periodically i.e. every 1 second this module
- * chooses a random node and initiates a round of Gossip with it. A round of Gossip involves 3
- * rounds of messaging. For instance if node A wants to initiate a round of Gossip with node B
- * it starts off by sending node B a GossipDigestSynMessage. Node B on receipt of this message
- * sends node A a GossipDigestAckMessage. On receipt of this message node A sends node B a
- * GossipDigestAck2Message which completes a round of Gossip. This module as and when it hears one
- * of the three above mentioned messages updates the Failure Detector with the liveness information.
- * Upon hearing a GossipShutdownMessage, this module will instantly mark the remote node as down in
- * the Failure Detector.
- */
-
 public class GossiperApp implements IFailureDetectionEventListener, GossiperMBean {
 
     public static final GossiperApp instance = new GossiperApp();
@@ -61,7 +39,8 @@ public class GossiperApp implements IFailureDetectionEventListener, GossiperMBea
 
     private ScheduledFuture<?> scheduledGossipTask;
     public final static int intervalInMillis = 1000;
-    public final static int QUARANTINE_DELAY = GossiperDescriptor.getRing_delay() * 2;
+    public final static int QUARANTINE_DELAY = Gossiper.getRingDelay() * 2;
+
     private static Logger logger = LoggerFactory.getLogger(GossiperApp.class);
 
 
@@ -78,27 +57,18 @@ public class GossiperApp implements IFailureDetectionEventListener, GossiperMBea
         }
     };
 
-    /* subscribers for interest in EndpointState change */
     private List<IEndpointStateChangeSubscriber> subscribers = new CopyOnWriteArrayList<IEndpointStateChangeSubscriber>();
 
     private List<IApplicationStateStarting> applicationstatestartings = new CopyOnWriteArrayList<IApplicationStateStarting>();
 
-    /* live member set */
     private Set<InetSocketAddress> liveEndpoints = new ConcurrentSkipListSet<InetSocketAddress>(inetcomparator);
 
-    /* unreachable member set */
     private Map<InetSocketAddress, Long> unreachableEndpoints = new ConcurrentHashMap<InetSocketAddress, Long>();
 
-    /* initial seeds for joining the cluster */
     private Set<InetSocketAddress> seeds = new ConcurrentSkipListSet<InetSocketAddress>(inetcomparator);
 
-    /* map where key is the endpoint and value is the state associated with the endpoint */
     Map<InetSocketAddress, EndpointState> endpointStateMap = new ConcurrentHashMap<InetSocketAddress, EndpointState>();
 
-    /* map where key is endpoint and value is timestamp when this endpoint was removed from
-     * gossip. We will ignore any gossip regarding these endpoints for QUARANTINE_DELAY time
-     * after removal to prevent nodes from falsely reincarnating during the time when removal
-     * gossip gets propagated to all nodes */
     private Map<InetSocketAddress, Long> justRemovedEndpoints = new ConcurrentHashMap<InetSocketAddress, Long>();
 
 
@@ -165,7 +135,7 @@ public class GossiperApp implements IFailureDetectionEventListener, GossiperMBea
         // Register this instance with JMX
         try {
             MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-            mbs.registerMBean(this, new ObjectName(MBEAN_NAME));
+            mbs.registerMBean(this, new ObjectName(M_BEAN_NAME));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -180,11 +150,7 @@ public class GossiperApp implements IFailureDetectionEventListener, GossiperMBea
         subscribers.add(subscriber);
     }
 
-    /**
-     * Register for interesting state changes.
-     *
-     * @param subscriber module which implements the IEndpointStateChangeSubscriber
-     */
+
     public void register(IApplicationStateStarting applicationstatestarting) {
         applicationstatestartings.add(applicationstatestarting);
     }
@@ -319,7 +285,7 @@ public class GossiperApp implements IFailureDetectionEventListener, GossiperMBea
      */
 
     Message makeGossipDigestSynMessage(List<GossipDigest> gDigests) throws IOException {
-        GossipDigestSynMessage gDigestMessage = new GossipDigestSynMessage(GossiperDescriptor.getClusterName(), gDigests);
+        GossipDigestSynMessage gDigestMessage = new GossipDigestSynMessage(Gossiper.getClusterName(), gDigests);
         FastByteArrayOutputStream bos = new FastByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(bos);
         GossipDigestSynMessage.serializer().serialize(gDigestMessage, dos);
@@ -496,13 +462,13 @@ public class GossiperApp implements IFailureDetectionEventListener, GossiperMBea
                     logger.trace("local heartbeat version " + localHbVersion + " greater than " + version + " for " + forEndpoint);
             }
             /* Accumulate all application states whose versions are greater than "version" variable */
-            for (Entry<ApplicationState, VersionedValue> entry : epState.getApplicationStateMapEntrySet()) {
+            for (Entry<ApplicationStateEnum, VersionedValue> entry : epState.getApplicationStateMapEntrySet()) {
                 VersionedValue value = entry.getValue();
                 if (value.version > version) {
                     if (reqdEndpointState == null) {
                         reqdEndpointState = new EndpointState(epState.getHeartBeatState());
                     }
-                    final ApplicationState key = entry.getKey();
+                    final ApplicationStateEnum key = entry.getKey();
                     if (logger.isTraceEnabled())
                         logger.trace("Adding state " + key + ": " + value.value);
                     reqdEndpointState.addApplicationState(key, value);
@@ -597,9 +563,9 @@ public class GossiperApp implements IFailureDetectionEventListener, GossiperMBea
 
     //由ApplicationState.STATUS来判断节点是否死掉。（主动remove一个节点的时候）
     private Boolean isDeadState(EndpointState epState) {
-        if (epState.getApplicationState(ApplicationState.STATUS) == null)
+        if (epState.getApplicationState(ApplicationStateEnum.STATUS) == null)
             return false;
-        String value = epState.getApplicationState(ApplicationState.STATUS).value;
+        String value = epState.getApplicationState(ApplicationStateEnum.STATUS).value;
         String[] pieces = value.split(VersionedValue.DELIMITER_STR, -1);
         assert (pieces.length > 0);
         String state = pieces[0];
@@ -709,8 +675,8 @@ public class GossiperApp implements IFailureDetectionEventListener, GossiperMBea
         if (logger.isTraceEnabled())
             logger.trace("Updating heartbeat state version to " + localState.getHeartBeatState().getHeartBeatVersion() + " from " + oldVersion + " for " + addr + " ...");
 
-        for (Entry<ApplicationState, VersionedValue> remoteEntry : remoteState.getApplicationStateMapEntrySet()) {
-            ApplicationState remoteKey = remoteEntry.getKey();
+        for (Entry<ApplicationStateEnum, VersionedValue> remoteEntry : remoteState.getApplicationStateMapEntrySet()) {
+            ApplicationStateEnum remoteKey = remoteEntry.getKey();
             VersionedValue remoteValue = remoteEntry.getValue();
 
             assert remoteState.getHeartBeatState().getGeneration() == localState.getHeartBeatState().getGeneration();
@@ -805,7 +771,7 @@ public class GossiperApp implements IFailureDetectionEventListener, GossiperMBea
      */
     public void start(int generationNbr) {
         /* Get the seeds from the config and initialize them. */
-        Set<InetSocketAddress> seedHosts = GossiperDescriptor.getSeeds();
+        Set<InetSocketAddress> seedHosts = Gossiper.getSeeds();
         for (InetSocketAddress seed : seedHosts) {
             if (seed.equals(FBUtilities.getBroadcastAddress()))
                 continue;
@@ -926,17 +892,15 @@ public class GossiperApp implements IFailureDetectionEventListener, GossiperMBea
      * 尝试把HeartBeatState的Generation加一，不做其它处理？？？
      *
      * @param endpoint - the endpoint being removed
-     * @param token    - the token being removed
-     * @param mytoken  - my own token for replication coordination
      */
     public void advertiseRemoving(InetSocketAddress endpoint) {
         EndpointState epState = endpointStateMap.get(endpoint);
         // remember this node's generation
         int generation = epState.getHeartBeatState().getGeneration();
 //        logger.info("Removing token: " + token);
-        logger.info("Sleeping for " + GossiperDescriptor.getRing_delay() + "ms to ensure " + endpoint + " does not change");
+        logger.info("Sleeping for " + Gossiper.getRingDelay() + "ms to ensure " + endpoint + " does not change");
         try {
-            Thread.sleep(GossiperDescriptor.getRing_delay());
+            Thread.sleep(Gossiper.getRingDelay());
         } catch (InterruptedException e) {
             throw new AssertionError(e);
         }
@@ -988,7 +952,7 @@ public class GossiperApp implements IFailureDetectionEventListener, GossiperMBea
      * 尚无调用  实现GossiperMBean
      */
     public int getCurrentGenerationNumber(String address) throws UnknownHostException {
-        return getCurrentGenerationNumber(InetSocketAddressUtil.parseInetSocketAddress(address));
+        return getCurrentGenerationNumber(SocketAddressUtil.parseSocketAddress(address));
     }
 
     /**
@@ -1002,7 +966,7 @@ public class GossiperApp implements IFailureDetectionEventListener, GossiperMBea
      * 尚无调用  实现GossiperMBean
      */
     public long getEndpointDowntime(String address) throws UnknownHostException {
-        return getEndpointDowntime(InetSocketAddressUtil.parseInetSocketAddress(address));
+        return getEndpointDowntime(SocketAddressUtil.parseSocketAddress(address));
     }
 
     /**

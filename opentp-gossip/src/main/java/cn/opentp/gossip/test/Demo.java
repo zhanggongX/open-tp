@@ -4,6 +4,8 @@ import cn.opentp.gossip.Gossiper;
 import cn.opentp.gossip.configuration.GossipProperties;
 import cn.opentp.gossip.enums.ApplicationStateEnum;
 import cn.opentp.gossip.gms.VersionedValue;
+import cn.opentp.gossip.locator.EndpointSnitch;
+import cn.opentp.gossip.locator.IApplicationStateStarting;
 import cn.opentp.gossip.service.GossipService;
 
 import java.io.IOException;
@@ -22,7 +24,6 @@ public class Demo {
             public void gossiperStarting() {
                 service.getGossiper().addLocalApplicationState(ApplicationStateEnum.LOAD, VersionedValue.VersionedValueFactory.instance.load(7.1));
                 service.getGossiper().addLocalApplicationState(ApplicationStateEnum.WEIGHT, VersionedValue.VersionedValueFactory.instance.weight(5));
-
             }
         });
 

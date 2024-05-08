@@ -56,7 +56,7 @@ public class Gossiper {
         return properties.getRpcTimeoutInMs();
     }
 
-    public static Integer getRing_delay() {
+    public static Integer getRingDelay() {
         checkHadInit();
         return properties.getRingDelayInMs();
     }

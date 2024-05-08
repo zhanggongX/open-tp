@@ -6,9 +6,9 @@ import java.io.IOException;
 
 public interface IVersionedSerializer<T> {
 
-    public void serialize(T t, DataOutput dataOutput) throws IOException;
+    void serialize(T t, DataOutput dataOutput) throws IOException;
 
-    public T deserialize(DataInput dataInput) throws IOException;
+    T deserialize(DataInput dataInput) throws IOException;
 
-    public long serializedSize(T t);
+    long serializedSize(T t);
 }

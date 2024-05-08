@@ -5,7 +5,13 @@ import cn.opentp.gossip.io.IVersionedSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class EndpointState {
 
@@ -14,7 +20,9 @@ public class EndpointState {
     private final static IVersionedSerializer<EndpointState> serializer = new EndpointStateSerializer();
 
     private volatile HeartBeatState hbState;
-    final Map<ApplicationStateEnum, VersionedValue> applicationState = new NonBlockingHashMap<ApplicationState, VersionedValue>();
+    // todo
+//    final Map<ApplicationStateEnum, VersionedValue> applicationState = new NonBlockingHashMap<ApplicationStateEnum, VersionedValue>();
+    final Map<ApplicationStateEnum, VersionedValue> applicationState = new ConcurrentHashMap<>();
 
     /* fields below do not get serialized */
     private volatile long updateTimestamp;
@@ -39,7 +47,7 @@ public class EndpointState {
         hbState = newHbState;
     }
 
-    public VersionedValue getApplicationState(ApplicationState key) {
+    public VersionedValue getApplicationState(ApplicationStateEnum key) {
         return applicationState.get(key);
     }
 
@@ -47,7 +55,7 @@ public class EndpointState {
         return applicationState.values();
     }
 
-    public Set<Map.Entry<ApplicationState, VersionedValue>> getApplicationStateMapEntrySet() {
+    public Set<Map.Entry<ApplicationStateEnum, VersionedValue>> getApplicationStateMapEntrySet() {
         return applicationState.entrySet();
     }
 
@@ -88,7 +96,7 @@ class EndpointStateSerializer implements IVersionedSerializer<EndpointState> {
         /* serialize the map of ApplicationState objects */
         int size = epState.applicationState.size();
         dos.writeInt(size);
-        for (Map.Entry<ApplicationState, VersionedValue> entry : epState.applicationState.entrySet()) {
+        for (Map.Entry<ApplicationStateEnum, VersionedValue> entry : epState.applicationState.entrySet()) {
             VersionedValue value = entry.getValue();
             dos.writeInt(entry.getKey().ordinal());
             VersionedValue.serializer.serialize(value, dos);
@@ -103,7 +111,7 @@ class EndpointStateSerializer implements IVersionedSerializer<EndpointState> {
         for (int i = 0; i < appStateSize; ++i) {
             int key = dis.readInt();
             VersionedValue value = VersionedValue.serializer.deserialize(dis);
-            epState.addApplicationState(Gossiper.STATES[key], value);
+            epState.addApplicationState(GossiperApp.STATES[key], value);
         }
         return epState;
     }
