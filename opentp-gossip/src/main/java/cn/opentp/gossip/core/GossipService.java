@@ -9,9 +9,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
+/**
+ * Gossip 服务入口
+ */
 public class GossipService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GossipService.class);
+    private static final Logger log = LoggerFactory.getLogger(GossipService.class);
 
     public GossipService(String cluster, String ipAddress, Integer port, String id, List<SeedMember> seedMembers, GossipSettings settings, GossipListener listener) throws Exception {
         checkParams(cluster, ipAddress, port, seedMembers);
@@ -27,7 +30,7 @@ public class GossipService {
 
     public void start() {
         if (getGossipManager().isWorking()) {
-            LOGGER.info("jgossip is already working");
+            log.info("jgossip is already working");
             return;
         }
         GossipManager.getInstance().start();
