@@ -1,5 +1,7 @@
 package cn.opentp.core.util;
 
+import com.alibaba.fastjson2.JSON;
+
 import java.util.concurrent.atomic.AtomicLong;
 
 public class MessageTraceIdUtil {

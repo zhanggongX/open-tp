@@ -6,12 +6,12 @@ import cn.opentp.core.net.OpentpMessage;
 import cn.opentp.core.net.OpentpMessageTypeEnum;
 import cn.opentp.core.net.serializer.SerializerTypeEnum;
 import cn.opentp.core.thread.pool.ThreadPoolState;
-import cn.opentp.core.util.JSONUtils;
 import cn.opentp.core.util.MessageTraceIdUtil;
 import cn.opentp.server.OpentpApp;
 import cn.opentp.server.exception.EndpointUnSupportException;
 import cn.opentp.server.rest.BaseRes;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -118,14 +118,14 @@ public class TpInfosEndpoint extends AbstractEndpointAdapter<Map<ClientInfo, Map
         if (threadPoolState == null) throw new IllegalArgumentException("未知的线程池信息");
 
         String content = httpRequest.content().toString(CharsetUtil.UTF_8);
-        JsonNode jsonNode = JSONUtils.getNode(content);
+        JSONObject jsonObject = JSON.parseObject(content);
 
         ThreadPoolState newThreadPoolState = new ThreadPoolState();
         newThreadPoolState.flushDefault(threadPoolState.getThreadPoolName());
-        newThreadPoolState.flushRequest(jsonNode);
+        newThreadPoolState.flushRequest(jsonObject);
 
         Channel channel = opentpApp.clientKeyChannelCache().get(clientInfoKey);
-        log.debug("线程池更新任务下发： {}", JSONUtils.toJson(newThreadPoolState));
+        log.debug("线程池更新任务下发： {}", JSON.toJSONString(newThreadPoolState));
         OpentpMessage opentpMessage = OpentpCoreConstant.OPENTP_MSG_PROTO.clone();
         OpentpMessage
                 .builder()

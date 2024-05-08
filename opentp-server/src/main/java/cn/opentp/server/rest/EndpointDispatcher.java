@@ -1,8 +1,8 @@
 package cn.opentp.server.rest;
 
-import cn.opentp.core.util.JSONUtils;
 import cn.opentp.server.OpentpApp;
 import cn.opentp.server.rest.endpoint.Endpoint;
+import com.alibaba.fastjson2.JSON;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -51,7 +51,7 @@ public class EndpointDispatcher {
             log.error("endpoint handler exception, ", e);
             // 统一拦截 endpoint 处理抛出的异常
             BaseRes<Void> fail = BaseRes.fail(-1, e.getMessage());
-            String json = JSONUtils.toJson(fail);
+            String json = JSON.toJSONString(fail);
             ByteBuf byteBuf = Unpooled.copiedBuffer(json, CharsetUtil.UTF_8);
             httpResponse.content().writeBytes(byteBuf);
             httpResponse.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, byteBuf.writerIndex());
