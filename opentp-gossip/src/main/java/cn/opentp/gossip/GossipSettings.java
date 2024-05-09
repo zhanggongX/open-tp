@@ -53,7 +53,7 @@ public class GossipSettings {
         }
 
         // 解析 clusterNodes
-        GossipManager gossipManager = GossipManager.instance();
+        GossipManagement gossipManager = GossipManagement.instance();
         GossipSettings gossipSettings = gossipManager.setting();
         String clusterNodes = properties.getClusterNodes();
         String[] hosts = clusterNodes.split(",", -1);

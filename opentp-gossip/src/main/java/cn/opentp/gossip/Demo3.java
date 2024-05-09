@@ -22,7 +22,7 @@ public class Demo3 {
         try {
             while (true) {
                 Thread.sleep(5000);
-                GossipManager gossipManager = GossipManager.instance();
+                GossipManagement gossipManager = GossipManagement.instance();
                 gossipManager.publish("hello world");
             }
         } catch (Exception e) {

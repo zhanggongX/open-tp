@@ -1,6 +1,6 @@
 package cn.opentp.gossip.core;
 
-import cn.opentp.gossip.GossipManager;
+import cn.opentp.gossip.GossipManagement;
 import cn.opentp.gossip.enums.GossipStateEnum;
 import cn.opentp.gossip.enums.MessageTypeEnum;
 import cn.opentp.gossip.model.*;
@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 流言传播 Task
@@ -24,11 +23,8 @@ import java.util.concurrent.TimeUnit;
 public class GossipTask implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(GossipTask.class);
-    private static final GossipManager gossipApp = GossipManager.instance();
+    private static final GossipManagement gossipApp = GossipManagement.instance();
 
-    public static void startup() {
-        gossipApp.gossipScheduleExecutor().scheduleAtFixedRate(new GossipTask(), gossipApp.setting().getGossipInterval(), gossipApp.setting().getGossipInterval(), TimeUnit.MILLISECONDS);
-    }
 
     @Override
     public void run() {

@@ -1,6 +1,6 @@
 package cn.opentp.gossip.handler;
 
-import cn.opentp.gossip.GossipManager;
+import cn.opentp.gossip.GossipManagement;
 import cn.opentp.gossip.core.MessageManager;
 import cn.opentp.gossip.enums.GossipStateEnum;
 import cn.opentp.gossip.model.RegularMessage;
@@ -20,7 +20,7 @@ public class RegularMessageHandler implements MessageHandler {
     public void handle(String cluster, String data, String from) {
 
         RegularMessage msg = JSON.parseObject(data, RegularMessage.class);
-        MessageManager mm = GossipManager.instance().getMessageManager();
+        MessageManager mm = GossipManagement.instance().getMessageManager();
         String creatorId = msg.getCreator().getNodeId();
         if (!RECEIVED.containsKey(creatorId)) {
             RECEIVED.put(creatorId, msg.getId());
@@ -41,7 +41,7 @@ public class RegularMessageHandler implements MessageHandler {
         if (!mm.contains(msg.getId())) {
             msg.setForwardCount(0);
             mm.add(msg);
-            GossipManager.instance().fireGossipEvent(msg.getCreator(), GossipStateEnum.RCV, msg.getPayload());
+            GossipManagement.instance().fireGossipEvent(msg.getCreator(), GossipStateEnum.RCV, msg.getPayload());
         }
     }
 }

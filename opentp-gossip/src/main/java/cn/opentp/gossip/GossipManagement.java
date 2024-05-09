@@ -1,9 +1,6 @@
 package cn.opentp.gossip;
 
-import cn.opentp.gossip.core.GossipMessageFactory;
-import cn.opentp.gossip.core.InMemMessageManager;
-import cn.opentp.gossip.core.MessageManager;
-import cn.opentp.gossip.core.Serializer;
+import cn.opentp.gossip.core.*;
 import cn.opentp.gossip.enums.GossipStateEnum;
 import cn.opentp.gossip.enums.MessageTypeEnum;
 import cn.opentp.gossip.event.DefaultGossipListener;
@@ -12,14 +9,12 @@ import cn.opentp.gossip.model.*;
 import cn.opentp.gossip.net.MessageService;
 import cn.opentp.gossip.net.udp.UDPMessageService;
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.*;
@@ -28,11 +23,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * Gossip 全局唯一实例
  */
-public class GossipManager {
+public class GossipManagement {
 
-    private static final Logger log = LoggerFactory.getLogger(GossipManager.class);
+    private static final Logger log = LoggerFactory.getLogger(GossipManagement.class);
     // 实例
-    private static final GossipManager INSTANCE = new GossipManager();
+    private static final GossipManagement INSTANCE = new GossipManagement();
 
     private final ReentrantReadWriteLock globalLock = new ReentrantReadWriteLock();
     private final ScheduledExecutorService gossipScheduleExecutor = Executors.newScheduledThreadPool(1);
@@ -56,10 +51,10 @@ public class GossipManager {
     private MessageManager messageManager = new InMemMessageManager();
 
 
-    private GossipManager() {
+    private GossipManagement() {
     }
 
-    public static GossipManager instance() {
+    public static GossipManagement instance() {
         return INSTANCE;
     }
 
@@ -118,7 +113,7 @@ public class GossipManager {
         listener = gossipListener;
     }
 
-    public void startListen() {
+    public void netStartup() {
         messageService.listen(setting().getHost(), setting().getPort());
     }
 
@@ -347,5 +342,9 @@ public class GossipManager {
 
     public GossipSettings setting() {
         return gossipSettings;
+    }
+
+    public void gossipStartup() {
+        gossipScheduleExecutor.scheduleAtFixedRate(new GossipTask(), setting().getGossipInterval(), setting().getGossipInterval(), TimeUnit.MILLISECONDS);
     }
 }
