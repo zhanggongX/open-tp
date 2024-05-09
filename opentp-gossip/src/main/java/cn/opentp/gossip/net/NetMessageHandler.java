@@ -11,6 +11,6 @@ public class NetMessageHandler extends SimpleChannelInboundHandler<ByteBuf> {
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf) throws Exception {
         GossipManagement management = GossipManagement.instance();
         MessageService messageService = management.messageService();
-        messageService.handleMsg(byteBuf);
+        messageService.handle(byteBuf);
     }
 }

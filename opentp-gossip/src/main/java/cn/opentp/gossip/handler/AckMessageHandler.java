@@ -39,7 +39,7 @@ public class AckMessageHandler implements MessageHandler {
             ByteBuf byteBuf = GossipManagement.instance().encodeAck2Message(ack2Message);
             if (from != null) {
                 String[] host = from.split(":");
-                GossipManagement.instance().messageService().sendMsg(host[0], Integer.valueOf(host[1]), byteBuf);
+                GossipManagement.instance().messageService().send(host[0], Integer.valueOf(host[1]), byteBuf);
             }
         }
     }

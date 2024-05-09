@@ -245,7 +245,7 @@ public class GossipTask implements Runnable {
                     }
                 }
                 MessageService messageService = gossipApp.messageService();
-                messageService.sendMsg(target.getHost(), target.getPort(), buffer);
+                messageService.send(target.getHost(), target.getPort(), buffer);
                 return true;
             } catch (Exception e) {
                 log.error(e.getMessage());
@@ -335,7 +335,7 @@ public class GossipTask implements Runnable {
                         target = members.get((index + 1) % m_size);
                     }
                 }
-                gossipApp.messageService().sendMsg(target.getHost(), target.getPort(), buffer);
+                gossipApp.messageService().send(target.getHost(), target.getPort(), buffer);
                 return gossipApp.setting().getSendNodes().contains(gossipMember2SeedMember(target));
             } catch (Exception e) {
                 log.error(e.getMessage());

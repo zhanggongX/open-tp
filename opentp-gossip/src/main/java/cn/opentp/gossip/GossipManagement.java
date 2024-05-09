@@ -114,7 +114,7 @@ public class GossipManagement {
     }
 
     public void netStartup() {
-        messageService.listen(setting().getHost(), setting().getPort());
+        messageService.start(setting().getHost(), setting().getPort());
     }
 
     public void initMark() {
@@ -226,7 +226,7 @@ public class GossipManagement {
                         target = members.get((index + 1) % m_size);
                     }
                 }
-                messageService.sendMsg(target.getHost(), target.getPort(), buffer);
+                messageService.send(target.getHost(), target.getPort(), buffer);
                 return setting().getSendNodes().contains(gossipMember2SeedMember(target));
             } catch (Exception e) {
                 log.error(e.getMessage());
@@ -317,7 +317,7 @@ public class GossipManagement {
 
 
     protected void shutdown() {
-        messageService.unListen();
+        messageService.close();
         gossipScheduleExecutor.shutdown();
         try {
             Thread.sleep(setting().getGossipInterval());
