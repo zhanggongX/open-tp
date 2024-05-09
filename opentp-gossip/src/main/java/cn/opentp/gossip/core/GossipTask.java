@@ -358,4 +358,13 @@ public class GossipTask implements Runnable {
         }
         return gossipApp.getSeedNode();
     }
+
+    //    private void clearMember(GossipMember member) {
+//        rwlock.writeLock().lock();
+//        try {
+//            endpointMembers.remove(member);
+//        } finally {
+//            rwlock.writeLock().unlock();
+//        }
+//    }
 }
