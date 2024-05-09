@@ -1,23 +1,21 @@
-package cn.opentp.gossip.core;
+package cn.opentp.gossip;
 
-import cn.opentp.gossip.model.SeedMember;
-import cn.opentp.gossip.net.MsgService;
-import cn.opentp.gossip.net.udp.UDPMsgService;
+import cn.opentp.gossip.core.InMemMessageManager;
+import cn.opentp.gossip.core.MessageManager;
+import cn.opentp.gossip.model.SeedNode;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class GossipSettings {
+
     private int gossipInterval = 1000;
 
     private int networkDelay = 200;
 
-    private MsgService msgService = new UDPMsgService();
-
     private int deleteThreshold = 3;
 
-    private List<SeedMember> seedMembers;
+    private List<SeedNode> seedMembers;
 
     private MessageManager messageManager = new InMemMessageManager();
 
@@ -37,15 +35,15 @@ public class GossipSettings {
         this.networkDelay = networkDelay;
     }
 
-    public List<SeedMember> getSeedMembers() {
+    public List<SeedNode> getSeedMembers() {
         return seedMembers;
     }
 
-    public void setSeedMembers(List<SeedMember> seedMembers) {
-        List<SeedMember> _seedMembers = new ArrayList<>();
+    public void setSeedMembers(List<SeedNode> seedMembers) {
+        List<SeedNode> _seedMembers = new ArrayList<>();
         if (seedMembers != null && !seedMembers.isEmpty()) {
-            for (SeedMember seed : seedMembers) {
-                if (!seed.eigenvalue().equalsIgnoreCase(GossipManager.getInstance().getSelf().eigenvalue())) {
+            for (SeedNode seed : seedMembers) {
+                if (!seed.eigenvalue().equalsIgnoreCase(GossipManager.instance().getSelf().eigenvalue())) {
                     if (!_seedMembers.contains(seed)) {
                         _seedMembers.add(seed);
                     }
@@ -53,14 +51,6 @@ public class GossipSettings {
             }
         }
         this.seedMembers = seedMembers;
-    }
-
-    public MsgService getMsgService() {
-        return msgService;
-    }
-
-    public void setMsgService(MsgService msgService) {
-        this.msgService = msgService;
     }
 
     public int getDeleteThreshold() {

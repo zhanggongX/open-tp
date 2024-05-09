@@ -1,7 +1,7 @@
-package cn.opentp.gossip.core;
+package cn.opentp.gossip;
 
 import cn.opentp.gossip.event.GossipListener;
-import cn.opentp.gossip.model.SeedMember;
+import cn.opentp.gossip.model.SeedNode;
 import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,16 +16,16 @@ public class GossipService {
 
     private static final Logger log = LoggerFactory.getLogger(GossipService.class);
 
-    public GossipService(String cluster, String ipAddress, Integer port, String id, List<SeedMember> seedMembers, GossipSettings settings, GossipListener listener) throws Exception {
+    public GossipService(String cluster, String ipAddress, Integer port, String id, List<SeedNode> seedMembers, GossipSettings settings, GossipListener listener) throws Exception {
         checkParams(cluster, ipAddress, port, seedMembers);
         if (StringUtil.isNullOrEmpty(id)) {
             id = ipAddress.concat(":").concat(String.valueOf(port));
         }
-        GossipManager.getInstance().init(cluster, ipAddress, port, id, seedMembers, settings, listener);
+        GossipManager.instance().init(cluster, ipAddress, port, id, seedMembers, settings, listener);
     }
 
     public GossipManager getGossipManager() {
-        return GossipManager.getInstance();
+        return GossipManager.instance();
     }
 
     public void start() {
@@ -33,16 +33,16 @@ public class GossipService {
             log.info("jgossip is already working");
             return;
         }
-        GossipManager.getInstance().start();
+        GossipManager.instance().start();
     }
 
     public void shutdown() {
         if (getGossipManager().isWorking()) {
-            GossipManager.getInstance().shutdown();
+            GossipManager.instance().shutdown();
         }
     }
 
-    private void checkParams(String cluster, String ipAddress, Integer port, List<SeedMember> seedMembers) throws Exception {
+    private void checkParams(String cluster, String ipAddress, Integer port, List<SeedNode> seedMembers) throws Exception {
         String f = "[%s] is required!";
         String who = null;
         if (StringUtil.isNullOrEmpty(cluster)) {

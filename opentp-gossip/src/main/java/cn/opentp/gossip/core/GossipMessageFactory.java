@@ -1,7 +1,7 @@
 package cn.opentp.gossip.core;
 
 
-import cn.opentp.gossip.model.MessageType;
+import cn.opentp.gossip.enums.MessageTypeEnum;
 import com.alibaba.fastjson2.JSONObject;
 
 /**
@@ -21,7 +21,7 @@ public class GossipMessageFactory {
     private GossipMessageFactory() {
     }
 
-    public JSONObject makeMessage(MessageType type, String data, String cluster, String from) {
+    public JSONObject makeMessage(MessageTypeEnum type, String data, String cluster, String from) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put(KEY_MSG_TYPE, type);
         jsonObject.put(KEY_CLUSTER, cluster);

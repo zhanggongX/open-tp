@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author silv
  */
 public class InMemMessageManager implements MessageManager {
+
     private static final ConcurrentHashMap<String, RegularMessage> RegMessages = new ConcurrentHashMap<>();
 
     @Override

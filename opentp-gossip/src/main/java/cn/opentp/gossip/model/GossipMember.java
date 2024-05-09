@@ -1,5 +1,7 @@
 package cn.opentp.gossip.model;
 
+import cn.opentp.gossip.enums.GossipStateEnum;
+
 import java.io.Serializable;
 
 public class GossipMember implements Serializable {
@@ -7,12 +9,12 @@ public class GossipMember implements Serializable {
     private String ipAddress;
     private Integer port;
     private String id;
-    private GossipState state;
+    private GossipStateEnum state;
 
     public GossipMember() {
     }
 
-    public GossipMember(String cluster, String ipAddress, Integer port, String id, GossipState state) {
+    public GossipMember(String cluster, String ipAddress, Integer port, String id, GossipStateEnum state) {
         this.cluster = cluster;
         this.ipAddress = ipAddress;
         this.port = port;
@@ -20,11 +22,11 @@ public class GossipMember implements Serializable {
         this.state = state;
     }
 
-    public GossipState getState() {
+    public GossipStateEnum getState() {
         return state;
     }
 
-    public void setState(GossipState state) {
+    public void setState(GossipStateEnum state) {
         this.state = state;
     }
 

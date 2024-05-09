@@ -2,15 +2,12 @@ package cn.opentp.gossip.net.udp;
 
 
 import cn.opentp.gossip.handler.*;
-import cn.opentp.gossip.model.MessageType;
+import cn.opentp.gossip.enums.MessageTypeEnum;
 import cn.opentp.gossip.net.MsgService;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.DatagramChannel;
-import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,16 +67,16 @@ public class UDPMsgService implements MsgService {
         String from = "";
 
         MessageHandler handler = null;
-        MessageType type = MessageType.valueOf(msgType);
-        if (type == MessageType.SYNC_MESSAGE) {
+        MessageTypeEnum type = MessageTypeEnum.valueOf(msgType);
+        if (type == MessageTypeEnum.SYNC_MESSAGE) {
             handler = new SyncMessageHandler();
-        } else if (type == MessageType.ACK_MESSAGE) {
+        } else if (type == MessageTypeEnum.ACK_MESSAGE) {
             handler = new AckMessageHandler();
-        } else if (type == MessageType.ACK2_MESSAGE) {
+        } else if (type == MessageTypeEnum.ACK2_MESSAGE) {
             handler = new Ack2MessageHandler();
-        } else if (type == MessageType.SHUTDOWN) {
+        } else if (type == MessageTypeEnum.SHUTDOWN) {
             handler = new ShutdownMessageHandler();
-        } else if (type == MessageType.REG_MESSAGE) {
+        } else if (type == MessageTypeEnum.REG_MESSAGE) {
             handler = new RegularMessageHandler();
         } else {
             log.error("Not supported message type");

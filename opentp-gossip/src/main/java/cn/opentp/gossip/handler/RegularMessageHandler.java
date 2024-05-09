@@ -1,11 +1,10 @@
 package cn.opentp.gossip.handler;
 
-import cn.opentp.gossip.core.GossipManager;
+import cn.opentp.gossip.GossipManager;
 import cn.opentp.gossip.core.MessageManager;
-import cn.opentp.gossip.model.GossipState;
+import cn.opentp.gossip.enums.GossipStateEnum;
 import cn.opentp.gossip.model.RegularMessage;
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +20,7 @@ public class RegularMessageHandler implements MessageHandler {
     public void handle(String cluster, String data, String from) {
 
         RegularMessage msg = JSON.parseObject(data, RegularMessage.class);
-        MessageManager mm = GossipManager.getInstance().getSettings().getMessageManager();
+        MessageManager mm = GossipManager.instance().getSettings().getMessageManager();
         String creatorId = msg.getCreator().getId();
         if (!RECEIVED.containsKey(creatorId)) {
             RECEIVED.put(creatorId, msg.getId());
@@ -42,7 +41,7 @@ public class RegularMessageHandler implements MessageHandler {
         if (!mm.contains(msg.getId())) {
             msg.setForwardCount(0);
             mm.add(msg);
-            GossipManager.getInstance().fireGossipEvent(msg.getCreator(), GossipState.RCV, msg.getPayload());
+            GossipManager.instance().fireGossipEvent(msg.getCreator(), GossipStateEnum.RCV, msg.getPayload());
         }
     }
 }
