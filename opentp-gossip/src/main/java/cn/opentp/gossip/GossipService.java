@@ -52,7 +52,6 @@ public class GossipService {
         }
 
         GossipNode localNode = GOSSIP_MANAGEMENT.selfNode();
-
         log.info("Starting {} gossip, host:{}, port:{}, nodeId:{}",
                 localNode.getCluster(),
                 localNode.getHost(),

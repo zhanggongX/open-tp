@@ -23,16 +23,19 @@ import java.util.*;
 public class GossipTask implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(GossipTask.class);
-    private static final GossipManagement gossipApp = GossipManagement.instance();
+    private final GossipManagement gossipManagement = GossipManagement.instance();
 
 
     @Override
     public void run() {
         //Update local member version
-        long version = gossipApp.endpointMembers().get(gossipApp.selfNode()).updateVersion();
+        Map<GossipNode, HeartbeatState> endpointMembers = gossipManagement.endpointMembers();
+        HeartbeatState heartbeatState = endpointMembers.get(gossipManagement.selfNode());
 
-        if (isDiscoverable(gossipApp.selfNode())) {
-            up(gossipApp.selfNode());
+        long version = gossipManagement.endpointMembers().get(gossipManagement.selfNode()).updateVersion();
+
+        if (isDiscoverable(gossipManagement.selfNode())) {
+            up(gossipManagement.selfNode());
         }
         if (log.isTraceEnabled()) {
             log.trace("sync data");
@@ -50,12 +53,12 @@ public class GossipTask implements Runnable {
             checkStatus();
 
             if (log.isTraceEnabled()) {
-                log.trace("live member : {}", gossipApp.liveMembers());
-                log.trace("dead member : {}", gossipApp.deadMembers());
-                log.trace("endpoint : {}", gossipApp.endpointMembers());
+                log.trace("live member : {}", gossipManagement.liveMembers());
+                log.trace("dead member : {}", gossipManagement.deadMembers());
+                log.trace("endpoint : {}", gossipManagement.endpointMembers());
             }
             new Thread(() -> {
-                MessageManager mm = gossipApp.getMessageManager();
+                MessageManager mm = gossipManagement.getMessageManager();
                 if (!mm.isEmpty()) {
                     for (String id : mm.list()) {
                         RegularMessage msg = mm.acquire(id);
@@ -88,7 +91,7 @@ public class GossipTask implements Runnable {
         gossip2UndiscoverableMember(buf);
 
         //step3.
-        if (!b || gossipApp.liveMembers().size() <= gossipApp.setting().getSendNodes().size()) {
+        if (!b || gossipManagement.liveMembers().size() <= gossipManagement.setting().getSendNodes().size()) {
             gossip2Seed(buf);
         }
     }
@@ -96,18 +99,18 @@ public class GossipTask implements Runnable {
 
     private void up(GossipNode member) {
         try {
-            gossipApp.globalLock().writeLock().lock();
+            gossipManagement.globalLock().writeLock().lock();
             member.setState(GossipStateEnum.UP);
-            if (!gossipApp.liveMembers().contains(member)) {
-                gossipApp.liveMembers().add(member);
+            if (!gossipManagement.liveMembers().contains(member)) {
+                gossipManagement.liveMembers().add(member);
             }
-            if (gossipApp.candidateMembers().containsKey(member)) {
-                gossipApp.candidateMembers().remove(member);
+            if (gossipManagement.candidateMembers().containsKey(member)) {
+                gossipManagement.candidateMembers().remove(member);
             }
-            if (gossipApp.deadMembers().contains(member)) {
-                gossipApp.deadMembers().remove(member);
+            if (gossipManagement.deadMembers().contains(member)) {
+                gossipManagement.deadMembers().remove(member);
                 log.info("up ~~");
-                if (!member.equals(gossipApp.selfNode())) {
+                if (!member.equals(gossipManagement.selfNode())) {
                     fireGossipEvent(member, GossipStateEnum.UP);
                 }
             }
@@ -115,7 +118,7 @@ public class GossipTask implements Runnable {
         } catch (Exception e) {
             log.error(e.getMessage());
         } finally {
-            gossipApp.globalLock().writeLock().unlock();
+            gossipManagement.globalLock().writeLock().unlock();
         }
 
     }
@@ -125,10 +128,10 @@ public class GossipTask implements Runnable {
     }
 
     private void randomGossipDigest(List<GossipDigest> digests) throws UnknownHostException {
-        List<GossipNode> endpoints = new ArrayList<>(gossipApp.endpointMembers().keySet());
-        Collections.shuffle(endpoints, gossipApp.getRandom());
+        List<GossipNode> endpoints = new ArrayList<>(gossipManagement.endpointMembers().keySet());
+        Collections.shuffle(endpoints, gossipManagement.getRandom());
         for (GossipNode ep : endpoints) {
-            HeartbeatState hb = gossipApp.endpointMembers().get(ep);
+            HeartbeatState hb = gossipManagement.endpointMembers().get(ep);
             long hbTime = 0;
             long hbVersion = 0;
             if (hb != null) {
@@ -146,14 +149,14 @@ public class GossipTask implements Runnable {
             array.add(Serializer.getInstance().encode(e).toString());
         }
 
-        JSONObject jsonObject = GossipMessageFactory.getInstance().makeMessage(MessageTypeEnum.SYNC_MESSAGE, array.toJSONString(), gossipApp.setting().getCluster(), gossipApp.selfNode().socketAddress());
+        JSONObject jsonObject = GossipMessageFactory.getInstance().makeMessage(MessageTypeEnum.SYNC_MESSAGE, array.toJSONString(), gossipManagement.setting().getCluster(), gossipManagement.selfNode().socketAddress());
         return Unpooled.copiedBuffer(jsonObject.toString(), StandardCharsets.UTF_8);
     }
 
     private void checkStatus() {
         try {
-            GossipNode local = gossipApp.selfNode();
-            Map<GossipNode, HeartbeatState> endpoints = gossipApp.endpointMembers();
+            GossipNode local = gossipManagement.selfNode();
+            Map<GossipNode, HeartbeatState> endpoints = gossipManagement.endpointMembers();
             Set<GossipNode> epKeys = endpoints.keySet();
             for (GossipNode k : epKeys) {
                 if (!k.equals(local)) {
@@ -162,10 +165,10 @@ public class GossipTask implements Runnable {
                     long duration = now - state.getHeartbeatTime();
                     long convictedTime = convictedTime();
                     log.info("check : " + k + " state : " + state + " duration : " + duration + " convictedTime : " + convictedTime);
-                    if (duration > convictedTime && (isAlive(k) || gossipApp.liveMembers().contains(k))) {
+                    if (duration > convictedTime && (isAlive(k) || gossipManagement.liveMembers().contains(k))) {
                         downing(k, state);
                     }
-                    if (duration <= convictedTime && (isDiscoverable(k) || gossipApp.deadMembers().contains(k))) {
+                    if (duration <= convictedTime && (isDiscoverable(k) || gossipManagement.deadMembers().contains(k))) {
                         up(k);
                     }
                 }
@@ -177,7 +180,7 @@ public class GossipTask implements Runnable {
     }
 
     private int convergenceCount() {
-        int size = gossipApp.endpointMembers().size();
+        int size = gossipManagement.endpointMembers().size();
         return (int) Math.floor(Math.log10(size) + Math.log(size) + 1);
     }
 
@@ -185,48 +188,48 @@ public class GossipTask implements Runnable {
 
         String msg = JSON.toJSONString(regularMessage);
 
-        JSONObject jsonObject = GossipMessageFactory.getInstance().makeMessage(MessageTypeEnum.REG_MESSAGE, msg, gossipApp.setting().getCluster(), gossipApp.selfNode().socketAddress());
+        JSONObject jsonObject = GossipMessageFactory.getInstance().makeMessage(MessageTypeEnum.REG_MESSAGE, msg, gossipManagement.setting().getCluster(), gossipManagement.selfNode().socketAddress());
 
         return Unpooled.copiedBuffer(jsonObject.toJSONString(), StandardCharsets.UTF_8);
     }
 
     private boolean gossip2LiveMember(ByteBuf buffer) {
-        int liveSize = gossipApp.liveMembers().size();
+        int liveSize = gossipManagement.liveMembers().size();
         if (liveSize <= 0) {
             return false;
         }
         boolean b = false;
         int c = Math.min(liveSize, convergenceCount());
         for (int i = 0; i < c; i++) {
-            int index = gossipApp.getRandom().nextInt(liveSize);
-            b = b || sendGossip(buffer, gossipApp.liveMembers(), index);
+            int index = gossipManagement.getRandom().nextInt(liveSize);
+            b = b || sendGossip(buffer, gossipManagement.liveMembers(), index);
         }
         return b;
     }
 
     private void gossip2UndiscoverableMember(ByteBuf buffer) {
-        int deadSize = gossipApp.deadMembers().size();
+        int deadSize = gossipManagement.deadMembers().size();
         if (deadSize <= 0) {
             return;
         }
-        int index = (deadSize == 1) ? 0 : gossipApp.getRandom().nextInt(deadSize);
-        sendGossip(buffer, gossipApp.deadMembers(), index);
+        int index = (deadSize == 1) ? 0 : gossipManagement.getRandom().nextInt(deadSize);
+        sendGossip(buffer, gossipManagement.deadMembers(), index);
     }
 
     private void gossip2Seed(ByteBuf buffer) {
-        int size = gossipApp.setting().getSendNodes().size();
+        int size = gossipManagement.setting().getSendNodes().size();
         if (size > 0) {
             if (size == 1 && isSeedNode()) {
                 return;
             }
-            int index = (size == 1) ? 0 : gossipApp.getRandom().nextInt(size);
+            int index = (size == 1) ? 0 : gossipManagement.getRandom().nextInt(size);
             System.out.println("index = " + index);
-            if (gossipApp.liveMembers().size() == 1) {
-                sendGossip2Seed(buffer, gossipApp.setting().getSendNodes(), index);
+            if (gossipManagement.liveMembers().size() == 1) {
+                sendGossip2Seed(buffer, gossipManagement.setting().getSendNodes(), index);
             } else {
-                double prob = size / (double) gossipApp.liveMembers().size();
-                if (gossipApp.getRandom().nextDouble() < prob) {
-                    sendGossip2Seed(buffer, gossipApp.setting().getSendNodes(), index);
+                double prob = size / (double) gossipManagement.liveMembers().size();
+                if (gossipManagement.getRandom().nextDouble() < prob) {
+                    sendGossip2Seed(buffer, gossipManagement.setting().getSendNodes(), index);
                 }
             }
         }
@@ -237,14 +240,14 @@ public class GossipTask implements Runnable {
             try {
                 SeedNode target = members.get(index);
                 int m_size = members.size();
-                if (target.equals(gossipMember2SeedMember(gossipApp.selfNode()))) {
+                if (target.equals(gossipMember2SeedMember(gossipManagement.selfNode()))) {
                     if (m_size <= 1) {
                         return false;
                     } else {
                         target = members.get((index + 1) % m_size);
                     }
                 }
-                MessageService messageService = gossipApp.messageService();
+                MessageService messageService = gossipManagement.messageService();
                 messageService.send(target.getHost(), target.getPort(), buffer);
                 return true;
             } catch (Exception e) {
@@ -259,18 +262,18 @@ public class GossipTask implements Runnable {
     }
 
     public void fireGossipEvent(GossipNode member, GossipStateEnum state, Object payload) {
-        if (gossipApp.getListener() != null) {
+        if (gossipManagement.getListener() != null) {
             if (state == GossipStateEnum.RECEIVE) {
-                new Thread(() -> gossipApp.getListener().gossipEvent(member, state, payload)).start();
+                new Thread(() -> gossipManagement.getListener().gossipEvent(member, state, payload)).start();
             } else {
-                gossipApp.getListener().gossipEvent(member, state, payload);
+                gossipManagement.getListener().gossipEvent(member, state, payload);
             }
         }
     }
 
     private long convictedTime() {
         long executeGossipTime = 500;
-        return ((convergenceCount() * (gossipApp.setting().getNetworkDelay() * 3L + executeGossipTime)) << 1) + gossipApp.setting().getGossipInterval();
+        return ((convergenceCount() * (gossipManagement.setting().getNetworkDelay() * 3L + executeGossipTime)) << 1) + gossipManagement.setting().getGossipInterval();
     }
 
     private boolean isAlive(GossipNode member) {
@@ -280,15 +283,15 @@ public class GossipTask implements Runnable {
     private void downing(GossipNode member, HeartbeatState state) {
         log.info("downing ~~");
         try {//11
-            if (gossipApp.candidateMembers().containsKey(member)) {
-                CandidateMemberState cState = gossipApp.candidateMembers().get(member);
+            if (gossipManagement.candidateMembers().containsKey(member)) {
+                CandidateMemberState cState = gossipManagement.candidateMembers().get(member);
                 if (state.getHeartbeatTime() == cState.getHeartbeatTime()) {
                     cState.updateCount();
                 } else if (state.getHeartbeatTime() > cState.getHeartbeatTime()) {
-                    gossipApp.candidateMembers().remove(member);
+                    gossipManagement.candidateMembers().remove(member);
                 }
             } else {
-                gossipApp.candidateMembers().put(member, new CandidateMemberState(state.getHeartbeatTime()));
+                gossipManagement.candidateMembers().put(member, new CandidateMemberState(state.getHeartbeatTime()));
             }
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -296,11 +299,11 @@ public class GossipTask implements Runnable {
     }
 
     private void checkCandidate() {
-        Set<GossipNode> keys = gossipApp.candidateMembers().keySet();
+        Set<GossipNode> keys = gossipManagement.candidateMembers().keySet();
         for (GossipNode m : keys) {
-            if (gossipApp.candidateMembers().get(m).getDowningCount().get() >= convergenceCount()) {
+            if (gossipManagement.candidateMembers().get(m).getDowningCount().get() >= convergenceCount()) {
                 down(m);
-                gossipApp.candidateMembers().remove(m);
+                gossipManagement.candidateMembers().remove(m);
             }
         }
     }
@@ -308,18 +311,18 @@ public class GossipTask implements Runnable {
     public void down(GossipNode member) {
         log.info("down ~~");
         try {//
-            gossipApp.globalLock().writeLock().lock();
+            gossipManagement.globalLock().writeLock().lock();
             member.setState(GossipStateEnum.DOWN);
-            gossipApp.liveMembers().remove(member);
-            if (!gossipApp.deadMembers().contains(member)) {
-                gossipApp.deadMembers().add(member);
+            gossipManagement.liveMembers().remove(member);
+            if (!gossipManagement.deadMembers().contains(member)) {
+                gossipManagement.deadMembers().add(member);
             }
 //            clearExecutor.schedule(() -> clearMember(member), getSettings().getDeleteThreshold() * getSettings().getGossipInterval(), TimeUnit.MILLISECONDS);
             fireGossipEvent(member, GossipStateEnum.DOWN);
         } catch (Exception e) {
             log.error(e.getMessage());
         } finally {
-            gossipApp.globalLock().writeLock().unlock();
+            gossipManagement.globalLock().writeLock().unlock();
         }
     }
 
@@ -327,7 +330,7 @@ public class GossipTask implements Runnable {
         if (buffer != null && index >= 0) {
             try {
                 GossipNode target = members.get(index);
-                if (target.equals(gossipApp.selfNode())) {
+                if (target.equals(gossipManagement.selfNode())) {
                     int m_size = members.size();
                     if (m_size == 1) {
                         return false;
@@ -335,8 +338,8 @@ public class GossipTask implements Runnable {
                         target = members.get((index + 1) % m_size);
                     }
                 }
-                gossipApp.messageService().send(target.getHost(), target.getPort(), buffer);
-                return gossipApp.setting().getSendNodes().contains(gossipMember2SeedMember(target));
+                gossipManagement.messageService().send(target.getHost(), target.getPort(), buffer);
+                return gossipManagement.setting().getSendNodes().contains(gossipMember2SeedMember(target));
             } catch (Exception e) {
                 log.error(e.getMessage());
             }
@@ -349,10 +352,10 @@ public class GossipTask implements Runnable {
     }
 
     public boolean isSeedNode() {
-        if (gossipApp.getSeedNode() == null) {
-            return gossipApp.setting().getSendNodes().contains(gossipMember2SeedMember(gossipApp.selfNode()));
+        if (gossipManagement.getSeedNode() == null) {
+            return gossipManagement.setting().getSendNodes().contains(gossipMember2SeedMember(gossipManagement.selfNode()));
         }
-        return gossipApp.getSeedNode();
+        return gossipManagement.getSeedNode();
     }
 
     //    private void clearMember(GossipMember member) {

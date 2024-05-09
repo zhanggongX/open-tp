@@ -40,7 +40,7 @@ public class GossipSettings {
 
     // 本地节点
     private GossipNode localNode;
-    // 发送节点
+    // 集群节点
     private final List<SeedNode> sendNodes = new ArrayList<>();
 
     public static void parseConfig(GossipProperties properties) {
