@@ -1,7 +1,7 @@
 package cn.opentp.gossip;
 
 import cn.opentp.gossip.enums.GossipStateEnum;
-import cn.opentp.gossip.model.GossipMember;
+import cn.opentp.gossip.model.GossipNode;
 import cn.opentp.gossip.model.HeartbeatState;
 import cn.opentp.gossip.model.SeedNode;
 import cn.opentp.gossip.util.SocketAddressUtil;
@@ -13,6 +13,9 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 全局配置
+ */
 public class GossipSettings {
 
     private static final Logger log = LoggerFactory.getLogger(GossipSettings.class);
@@ -27,14 +30,16 @@ public class GossipSettings {
     private String nodeId;
     // 原配置集群节点 must
     private String originalClusterNodes;
+
     // 传播间隔，ms
     private int gossipInterval = 1000;
     // 传播延时，ms
     private int networkDelay = 200;
     // 服务断开阈值
     private int deleteThreshold = 3;
+
     // 本地节点
-    private GossipMember localGossipMember;
+    private GossipNode localGossipMember;
     // 发送节点
     private final List<SeedNode> sendNodes = new ArrayList<>();
 
@@ -42,7 +47,7 @@ public class GossipSettings {
         // 校验必要配置
         checkParams(properties);
 
-        // 默认NODE ID
+        // 默认 NODE ID
         if (properties.getNodeId() == null || properties.getNodeId().isEmpty()) {
             properties.setNodeId(properties.getHost() + ":" + properties.getPort());
         }
@@ -76,22 +81,22 @@ public class GossipSettings {
         gossipSettings.setDeleteThreshold(deleteThreshold);
 
         // 本地节点
-        GossipMember gossipMember = new GossipMember();
+        GossipNode gossipMember = new GossipNode();
         gossipMember.setCluster(properties.getCluster());
-        gossipMember.setIpAddress(properties.getHost());
+        gossipMember.setHost(properties.getHost());
         gossipMember.setPort(properties.getPort());
-        gossipMember.setId(properties.getNodeId());
+        gossipMember.setNodeId(properties.getNodeId());
         gossipMember.setState(GossipStateEnum.JOIN);
         gossipSettings.setLocalGossipMember(gossipMember);
 
         gossipManager.endpointMembers().put(gossipMember, new HeartbeatState());
     }
 
-    public GossipMember getLocalGossipMember() {
+    public GossipNode getLocalGossipMember() {
         return localGossipMember;
     }
 
-    public void setLocalGossipMember(GossipMember localGossipMember) {
+    public void setLocalGossipMember(GossipNode localGossipMember) {
         this.localGossipMember = localGossipMember;
     }
 
@@ -161,10 +166,6 @@ public class GossipSettings {
 
     public List<SeedNode> getSendNodes() {
         return sendNodes;
-    }
-
-    public String socketAddress() {
-        return host + ":" + port;
     }
 
     public static void checkParams(GossipProperties properties) {

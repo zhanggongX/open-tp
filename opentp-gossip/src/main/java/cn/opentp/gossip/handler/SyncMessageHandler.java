@@ -4,7 +4,7 @@ package cn.opentp.gossip.handler;
 import cn.opentp.gossip.GossipManager;
 import cn.opentp.gossip.model.AckMessage;
 import cn.opentp.gossip.model.GossipDigest;
-import cn.opentp.gossip.model.GossipMember;
+import cn.opentp.gossip.model.GossipNode;
 import cn.opentp.gossip.model.HeartbeatState;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
@@ -24,24 +24,24 @@ public class SyncMessageHandler implements MessageHandler {
             try {
                 JSONArray array = new JSONArray(data);
                 List<GossipDigest> olders = new ArrayList<>();
-                Map<GossipMember, HeartbeatState> newers = new HashMap<>();
-                List<GossipMember> gMemberList = new ArrayList<>();
+                Map<GossipNode, HeartbeatState> newers = new HashMap<>();
+                List<GossipNode> gMemberList = new ArrayList<>();
                 for (Object e : array) {
                     GossipDigest g = JSON.parseObject(e.toString(), GossipDigest.class);
 //                    GossipDigest g = Serializer.getInstance().decode(Buffer.buffer().appendString(e.toString()), GossipDigest.class);
-                    GossipMember member = new GossipMember();
+                    GossipNode member = new GossipNode();
                     member.setCluster(cluster);
-                    member.setIpAddress(g.getEndpoint().getAddress().getHostAddress());
+                    member.setHost(g.getEndpoint().getAddress().getHostAddress());
                     member.setPort(g.getEndpoint().getPort());
-                    member.setId(g.getId());
+                    member.setNodeId(g.getId());
                     gMemberList.add(member);
 
                     compareDigest(g, member, cluster, olders, newers);
                 }
                 // I have, you don't have
-                Map<GossipMember, HeartbeatState> endpoints = GossipManager.instance().endpointMembers();
-                Set<GossipMember> epKeys = endpoints.keySet();
-                for (GossipMember m : epKeys) {
+                Map<GossipNode, HeartbeatState> endpoints = GossipManager.instance().endpointMembers();
+                Set<GossipNode> epKeys = endpoints.keySet();
+                for (GossipNode m : epKeys) {
                     if (!gMemberList.contains(m)) {
                         newers.put(m, endpoints.get(m));
                     }
@@ -61,7 +61,7 @@ public class SyncMessageHandler implements MessageHandler {
         }
     }
 
-    private void compareDigest(GossipDigest g, GossipMember member, String cluster, List<GossipDigest> olders, Map<GossipMember, HeartbeatState> newers) {
+    private void compareDigest(GossipDigest g, GossipNode member, String cluster, List<GossipDigest> olders, Map<GossipNode, HeartbeatState> newers) {
 
         try {
             HeartbeatState hb = GossipManager.instance().endpointMembers().get(member);

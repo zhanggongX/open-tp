@@ -11,16 +11,16 @@ public class RegularMessage implements Serializable {
     private Object payload;
     private int forwardCount;
 
-    private GossipMember creator;
+    private GossipNode creator;
 
     public RegularMessage() {
     }
 
-    public RegularMessage(GossipMember creator, Object payload) {
+    public RegularMessage(GossipNode creator, Object payload) {
         this(creator, payload, DEFAULT_TTL);
     }
 
-    public RegularMessage(GossipMember creator, Object payload, Long ttl) {
+    public RegularMessage(GossipNode creator, Object payload, Long ttl) {
         long now = System.currentTimeMillis();
         this.ttl = ttl == null ? DEFAULT_TTL : ttl;
         this.creator = creator;
@@ -46,11 +46,11 @@ public class RegularMessage implements Serializable {
         this.ttl = ttl;
     }
 
-    public GossipMember getCreator() {
+    public GossipNode getCreator() {
         return creator;
     }
 
-    public void setCreator(GossipMember creator) {
+    public void setCreator(GossipNode creator) {
         this.creator = creator;
     }
 

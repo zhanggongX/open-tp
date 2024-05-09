@@ -8,12 +8,12 @@ import java.util.Map;
  */
 public class Ack2Message implements Serializable {
 
-    private Map<GossipMember, HeartbeatState> endpoints;
+    private Map<GossipNode, HeartbeatState> endpoints;
 
     public Ack2Message() {
     }
 
-    public Ack2Message(Map<GossipMember, HeartbeatState> endpoints) {
+    public Ack2Message(Map<GossipNode, HeartbeatState> endpoints) {
 
         this.endpoints = endpoints;
     }
@@ -25,11 +25,11 @@ public class Ack2Message implements Serializable {
                 '}';
     }
 
-    public Map<GossipMember, HeartbeatState> getEndpoints() {
+    public Map<GossipNode, HeartbeatState> getEndpoints() {
         return endpoints;
     }
 
-    public void setEndpoints(Map<GossipMember, HeartbeatState> endpoints) {
+    public void setEndpoints(Map<GossipNode, HeartbeatState> endpoints) {
         this.endpoints = endpoints;
     }
 }

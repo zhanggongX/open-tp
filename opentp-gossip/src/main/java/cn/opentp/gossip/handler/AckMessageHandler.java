@@ -16,17 +16,17 @@ public class AckMessageHandler implements MessageHandler {
         AckMessage ackMessage = JSON.parseObject(data, AckMessage.class);
 
         List<GossipDigest> olders = ackMessage.getOlders();
-        Map<GossipMember, HeartbeatState> newers = ackMessage.getNewers();
+        Map<GossipNode, HeartbeatState> newers = ackMessage.getNewers();
 
         //update local state
         if (newers.size() > 0) {
             GossipManager.instance().apply2LocalState(newers);
         }
 
-        Map<GossipMember, HeartbeatState> deltaEndpoints = new HashMap<>();
+        Map<GossipNode, HeartbeatState> deltaEndpoints = new HashMap<>();
         if (olders != null) {
             for (GossipDigest d : olders) {
-                GossipMember member = GossipManager.instance().createByDigest(d);
+                GossipNode member = GossipManager.instance().createByDigest(d);
                 HeartbeatState hb = GossipManager.instance().endpointMembers().get(member);
                 if (hb != null) {
                     deltaEndpoints.put(member, hb);

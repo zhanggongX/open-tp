@@ -23,11 +23,11 @@ public class GossipDigest implements Serializable, Comparable<GossipDigest> {
     public GossipDigest() {
     }
 
-    public GossipDigest(GossipMember endpoint, long heartbeatTime, long version) throws UnknownHostException {
-        this.endpoint = new InetSocketAddress(InetAddress.getByName(endpoint.getIpAddress()), endpoint.getPort());
+    public GossipDigest(GossipNode endpoint, long heartbeatTime, long version) throws UnknownHostException {
+        this.endpoint = new InetSocketAddress(InetAddress.getByName(endpoint.getHost()), endpoint.getPort());
         this.heartbeatTime = heartbeatTime;
         this.version = version;
-        this.id = endpoint.getId();
+        this.id = endpoint.getNodeId();
     }
 
     public InetSocketAddress getEndpoint() {

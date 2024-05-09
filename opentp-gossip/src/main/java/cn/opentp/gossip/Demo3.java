@@ -1,18 +1,11 @@
 package cn.opentp.gossip;
 
 
-import cn.opentp.gossip.event.GossipListener;
-import cn.opentp.gossip.model.GossipMember;
-import cn.opentp.gossip.enums.GossipStateEnum;
-import cn.opentp.gossip.model.SeedNode;
-
-import java.util.ArrayList;
-import java.util.List;
-
 public class Demo3 {
 
     public static void main(String[] args) {
 
+        // 常用配置
         GossipProperties properties = new GossipProperties();
         properties.setCluster("opentp");
         properties.setHost("localhost");
@@ -21,17 +14,7 @@ public class Demo3 {
         properties.setClusterNodes("localhost:9001,localhost:9002");
 
         // 初始化
-        GossipService.init(properties, new GossipListener() {
-            @Override
-            public void gossipEvent(GossipMember member, GossipStateEnum state, Object payload) {
-                if (state == GossipStateEnum.RCV) {
-                    System.out.println("member:" + member + "  state: " + state + " payload: " + payload);
-                }
-                if (state == GossipStateEnum.DOWN) {
-                    System.out.println("[[[[[[[[[member:" + member + "  was down!!! ]]]]]]]]]");
-                }
-            }
-        });
+        GossipService.init(properties);
 
         // 开启服务
         GossipService.start();

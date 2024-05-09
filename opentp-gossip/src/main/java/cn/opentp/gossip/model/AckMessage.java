@@ -11,12 +11,12 @@ import java.util.Map;
 public class AckMessage implements Serializable {
     private List<GossipDigest> olders;
 
-    private Map<GossipMember, HeartbeatState> newers;
+    private Map<GossipNode, HeartbeatState> newers;
 
     public AckMessage() {
     }
 
-    public AckMessage(List<GossipDigest> olders, Map<GossipMember, HeartbeatState> newers) {
+    public AckMessage(List<GossipDigest> olders, Map<GossipNode, HeartbeatState> newers) {
         this.olders = olders;
         this.newers = newers;
     }
@@ -29,11 +29,11 @@ public class AckMessage implements Serializable {
         this.olders = olders;
     }
 
-    public Map<GossipMember, HeartbeatState> getNewers() {
+    public Map<GossipNode, HeartbeatState> getNewers() {
         return newers;
     }
 
-    public void setNewers(Map<GossipMember, HeartbeatState> newers) {
+    public void setNewers(Map<GossipNode, HeartbeatState> newers) {
         this.newers = newers;
     }
 
