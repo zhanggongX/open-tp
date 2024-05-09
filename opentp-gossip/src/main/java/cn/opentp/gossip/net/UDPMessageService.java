@@ -1,9 +1,7 @@
-package cn.opentp.gossip.net.udp;
-
+package cn.opentp.gossip.net;
 
 import cn.opentp.gossip.handler.*;
 import cn.opentp.gossip.enums.MessageTypeEnum;
-import cn.opentp.gossip.net.MessageService;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
@@ -16,30 +14,32 @@ public class UDPMessageService implements MessageService {
 
     private final Logger log = LoggerFactory.getLogger(UDPMessageService.class);
 
-    private NioDatagramChannel socket;
+    private Channel channel;
     private EventLoopGroup eventLoopGroup;
 
     @Override
-    public void listen(String host, int port) {
+    public void start(String host, int port) {
+
         eventLoopGroup = new NioEventLoopGroup();
 
-        Bootstrap b = new Bootstrap();
-        b.group(eventLoopGroup).channel(NioDatagramChannel.class).option(ChannelOption.SO_BROADCAST, true)    //广播
-                .option(ChannelOption.SO_RCVBUF, 2048 * 1024)// 设置UDP读缓冲区为2M
-                .option(ChannelOption.SO_SNDBUF, 1024 * 1024)// 设置UDP写缓冲区为1M
+        Bootstrap bootstrap = new Bootstrap();
+        bootstrap.group(eventLoopGroup).channel(NioDatagramChannel.class).option(ChannelOption.SO_BROADCAST, true)
+                .option(ChannelOption.SO_RCVBUF, 2048 * 1024)
+                .option(ChannelOption.SO_SNDBUF, 1024 * 1024)
                 .handler(new ChannelInitializer<>() {
                     @Override
                     protected void initChannel(Channel channel) throws Exception {
-                        // todo
+                        channel.pipeline().addLast(new NetMessageHandler());
                     }
                 });
 
-        ChannelFuture channelFuture = b.bind(host, port);
+        ChannelFuture channelFuture = bootstrap.bind(host, port);
         channelFuture.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
                     log.info("Socket bind success!");
+                    channel = future.channel();
                 } else {
                     log.error("An error occurred while bind the socket: ", future.cause());
                 }
@@ -48,7 +48,7 @@ public class UDPMessageService implements MessageService {
     }
 
     @Override
-    public void handleMsg(ByteBuf data) {
+    public void handle(ByteBuf data) {
 //        JsonObject j = data.toJsonObject();
 //        String msgType = j.getString(GossipMessageFactory.KEY_MSG_TYPE);
 //        String _data = j.getString(GossipMessageFactory.KEY_DATA);
@@ -85,15 +85,16 @@ public class UDPMessageService implements MessageService {
     }
 
     @Override
-    public void sendMsg(String targetIp, Integer targetPort, ByteBuf data) {
+    public void send(String targetIp, Integer targetPort, ByteBuf data) {
 //        DatagramPacket datagramPacket = new DatagramPacket(data, packet.sender());
 //        socket.writeAndFlush(datagramPacket);
     }
 
     @Override
-    public void unListen() {
+    public void close() {
         eventLoopGroup.shutdownGracefully();
-        ChannelFuture channelFuture = socket.close();
+
+        ChannelFuture channelFuture = channel.close();
         channelFuture.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {

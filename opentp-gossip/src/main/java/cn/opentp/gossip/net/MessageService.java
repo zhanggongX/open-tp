@@ -4,11 +4,11 @@ import io.netty.buffer.ByteBuf;
 
 public interface MessageService {
 
-    void listen(String ipAddress, int port);
+    void start(String host, int port);
 
-    void handleMsg(ByteBuf data);
+    void handle(ByteBuf data);
 
-    void sendMsg(String targetIp, Integer targetPort, ByteBuf data);
+    void send(String targetIp, Integer targetPort, ByteBuf data);
 
-    void unListen();
+    void close();
 }

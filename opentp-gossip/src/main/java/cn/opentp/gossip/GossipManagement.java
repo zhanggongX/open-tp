@@ -7,7 +7,7 @@ import cn.opentp.gossip.event.DefaultGossipListener;
 import cn.opentp.gossip.event.GossipListener;
 import cn.opentp.gossip.model.*;
 import cn.opentp.gossip.net.MessageService;
-import cn.opentp.gossip.net.udp.UDPMessageService;
+import cn.opentp.gossip.net.UDPMessageService;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import io.netty.buffer.ByteBuf;
