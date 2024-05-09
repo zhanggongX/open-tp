@@ -45,7 +45,7 @@ public class SyncMessageHandler implements MessageHandler {
                     if (!gMemberList.contains(m)) {
                         newers.put(m, endpoints.get(m));
                     }
-                    if (m.equals(GossipManager.instance().getSelf())) {
+                    if (m.equals(GossipManager.instance().selfNode())) {
                         newers.put(m, endpoints.get(m));
                     }
                 }

@@ -20,29 +20,23 @@ public class Demo3 {
         properties.setNodeId(null);
         properties.setClusterNodes("localhost:9001,localhost:9002");
 
+        // 初始化
         GossipService.init(properties, new GossipListener() {
-
             @Override
             public void gossipEvent(GossipMember member, GossipStateEnum state, Object payload) {
-
+                if (state == GossipStateEnum.RCV) {
+                    System.out.println("member:" + member + "  state: " + state + " payload: " + payload);
+                }
+                if (state == GossipStateEnum.DOWN) {
+                    System.out.println("[[[[[[[[[member:" + member + "  was down!!! ]]]]]]]]]");
+                }
             }
         });
 
+        // 开启服务
+        GossipService.start();
+
         try {
-            GossipService gossipService = new GossipService(new GossipListener() {
-                @Override
-                public void gossipEvent(GossipMember member, GossipStateEnum state, Object payload) {
-                    if (state == GossipStateEnum.RCV) {
-                        System.out.println("member:" + member + "  state: " + state + " payload: " + payload);
-                    }
-                    if (state == GossipStateEnum.DOWN) {
-                        System.out.println("[[[[[[[[[member:" + member + "  was down!!! ]]]]]]]]]");
-                    }
-                }
-            });
-
-            gossipService.start();
-
             while (true) {
                 Thread.sleep(5000);
                 GossipManager gossipManager = GossipManager.instance();

@@ -1,9 +1,5 @@
 package cn.opentp.gossip;
 
-import cn.opentp.gossip.model.SeedNode;
-
-import java.util.List;
-
 public class GossipProperties {
     // 集群名
     private String cluster;
@@ -15,6 +11,12 @@ public class GossipProperties {
     private String nodeId;
     // 集群节点
     private String clusterNodes;
+    // 传播间隔，ms
+    private Integer gossipInterval = 1000;
+    // 传播延时，ms
+    private Integer networkDelay = 200;
+    // 服务断开阈值
+    private Integer deleteThreshold = 3;
 
     public String getCluster() {
         return cluster;
@@ -54,5 +56,29 @@ public class GossipProperties {
 
     public void setClusterNodes(String clusterNodes) {
         this.clusterNodes = clusterNodes;
+    }
+
+    public Integer getGossipInterval() {
+        return gossipInterval;
+    }
+
+    public void setGossipInterval(Integer gossipInterval) {
+        this.gossipInterval = gossipInterval;
+    }
+
+    public Integer getNetworkDelay() {
+        return networkDelay;
+    }
+
+    public void setNetworkDelay(Integer networkDelay) {
+        this.networkDelay = networkDelay;
+    }
+
+    public Integer getDeleteThreshold() {
+        return deleteThreshold;
+    }
+
+    public void setDeleteThreshold(Integer deleteThreshold) {
+        this.deleteThreshold = deleteThreshold;
     }
 }
