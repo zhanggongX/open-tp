@@ -39,8 +39,8 @@ public class GossipManagement {
     private Boolean seedNode = null;
 
     private final Map<GossipNode, HeartbeatState> endpointMembers = new ConcurrentHashMap<>();
-    private final List<GossipNode> liveMembers = new CopyOnWriteArrayList<>();
-    private final List<GossipNode> deadMembers = new CopyOnWriteArrayList<>();
+    private final List<GossipNode> liveNodes = new CopyOnWriteArrayList<>();
+    private final List<GossipNode> deadNodes = new CopyOnWriteArrayList<>();
     private final Map<GossipNode, CandidateMemberState> candidateMembers = new ConcurrentHashMap<>();
 
     private GossipSettings gossipSettings = new GossipSettings();
@@ -77,12 +77,12 @@ public class GossipManagement {
         return messageService;
     }
 
-    public List<GossipNode> liveMembers() {
-        return liveMembers;
+    public List<GossipNode> liveNodes() {
+        return liveNodes;
     }
 
-    public List<GossipNode> deadMembers() {
-        return deadMembers;
+    public List<GossipNode> deadNodes() {
+        return deadNodes;
     }
 
     public boolean working() {
@@ -276,9 +276,9 @@ public class GossipManagement {
         try {//
             globalLock.writeLock().lock();
             member.setState(GossipStateEnum.DOWN);
-            liveMembers.remove(member);
-            if (!deadMembers.contains(member)) {
-                deadMembers.add(member);
+            liveNodes.remove(member);
+            if (!deadNodes.contains(member)) {
+                deadNodes.add(member);
             }
 //            clearExecutor.schedule(() -> clearMember(member), getSettings().getDeleteThreshold() * getSettings().getGossipInterval(), TimeUnit.MILLISECONDS);
             fireGossipEvent(member, GossipStateEnum.DOWN);
@@ -293,14 +293,14 @@ public class GossipManagement {
         try {
             globalLock.writeLock().lock();
             member.setState(GossipStateEnum.UP);
-            if (!liveMembers.contains(member)) {
-                liveMembers.add(member);
+            if (!liveNodes.contains(member)) {
+                liveNodes.add(member);
             }
             if (candidateMembers.containsKey(member)) {
                 candidateMembers.remove(member);
             }
-            if (deadMembers.contains(member)) {
-                deadMembers.remove(member);
+            if (deadNodes.contains(member)) {
+                deadNodes.remove(member);
                 log.info("up ~~");
                 if (!member.equals(selfNode())) {
                     fireGossipEvent(member, GossipStateEnum.UP);
@@ -325,8 +325,8 @@ public class GossipManagement {
             throw new RuntimeException(e);
         }
         ByteBuf buffer = encodeShutdownMessage();
-        for (int i = 0; i < liveMembers().size(); i++) {
-            sendGossip(buffer, liveMembers(), i);
+        for (int i = 0; i < liveNodes().size(); i++) {
+            sendGossip(buffer, liveNodes(), i);
         }
         working = false;
     }
@@ -344,12 +344,13 @@ public class GossipManagement {
         return gossipSettings;
     }
 
-    public void startup(){
+    public void startup() {
         fireGossipEvent(setting().getLocalNode(), GossipStateEnum.JOIN);
         netStartup();
         gossipStartup();
         working = true;
     }
+
     public void gossipStartup() {
         gossipScheduleExecutor.scheduleAtFixedRate(new GossipTask(), setting().getGossipInterval(), setting().getGossipInterval(), TimeUnit.MILLISECONDS);
     }
