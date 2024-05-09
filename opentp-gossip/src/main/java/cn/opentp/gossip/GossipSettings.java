@@ -39,7 +39,7 @@ public class GossipSettings {
     private int deleteThreshold = 3;
 
     // 本地节点
-    private GossipNode localGossipMember;
+    private GossipNode localNode;
     // 发送节点
     private final List<SeedNode> sendNodes = new ArrayList<>();
 
@@ -81,23 +81,23 @@ public class GossipSettings {
         gossipSettings.setDeleteThreshold(deleteThreshold);
 
         // 本地节点
-        GossipNode gossipMember = new GossipNode();
-        gossipMember.setCluster(properties.getCluster());
-        gossipMember.setHost(properties.getHost());
-        gossipMember.setPort(properties.getPort());
-        gossipMember.setNodeId(properties.getNodeId());
-        gossipMember.setState(GossipStateEnum.JOIN);
-        gossipSettings.setLocalGossipMember(gossipMember);
+        GossipNode gossipNode = new GossipNode();
+        gossipNode.setCluster(properties.getCluster());
+        gossipNode.setHost(properties.getHost());
+        gossipNode.setPort(properties.getPort());
+        gossipNode.setNodeId(properties.getNodeId());
+        gossipNode.setState(GossipStateEnum.JOIN);
+        gossipSettings.setLocalNode(gossipNode);
 
-        gossipManager.endpointMembers().put(gossipMember, new HeartbeatState());
+        gossipManager.endpointMembers().put(gossipNode, new HeartbeatState());
     }
 
-    public GossipNode getLocalGossipMember() {
-        return localGossipMember;
+    public GossipNode getLocalNode() {
+        return localNode;
     }
 
-    public void setLocalGossipMember(GossipNode localGossipMember) {
-        this.localGossipMember = localGossipMember;
+    public void setLocalNode(GossipNode localNode) {
+        this.localNode = localNode;
     }
 
     public String getCluster() {

@@ -148,7 +148,7 @@ public class GossipManagement {
     }
 
     public GossipNode selfNode() {
-        return setting().getLocalGossipMember();
+        return setting().getLocalNode();
     }
 
     public void apply2LocalState(Map<GossipNode, HeartbeatState> endpointMembers) {
@@ -344,6 +344,12 @@ public class GossipManagement {
         return gossipSettings;
     }
 
+    public void startup(){
+        fireGossipEvent(setting().getLocalNode(), GossipStateEnum.JOIN);
+        netStartup();
+        gossipStartup();
+        working = true;
+    }
     public void gossipStartup() {
         gossipScheduleExecutor.scheduleAtFixedRate(new GossipTask(), setting().getGossipInterval(), setting().getGossipInterval(), TimeUnit.MILLISECONDS);
     }
