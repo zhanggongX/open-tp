@@ -20,7 +20,7 @@ public class RegularMessageHandler implements MessageHandler {
     public void handle(String cluster, String data, String from) {
 
         RegularMessage msg = JSON.parseObject(data, RegularMessage.class);
-        MessageManager mm = GossipManager.instance().getSettings().getMessageManager();
+        MessageManager mm = GossipManager.instance().getMessageManager();
         String creatorId = msg.getCreator().getId();
         if (!RECEIVED.containsKey(creatorId)) {
             RECEIVED.put(creatorId, msg.getId());

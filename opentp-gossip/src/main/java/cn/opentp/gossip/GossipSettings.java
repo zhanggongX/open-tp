@@ -8,16 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GossipSettings {
-
+    // 同步周期
     private int gossipInterval = 1000;
-
+    // 同步延时
     private int networkDelay = 200;
-
+    // 服务断开阈值
     private int deleteThreshold = 3;
-
-    private List<SeedNode> seedMembers;
-
-    private MessageManager messageManager = new InMemMessageManager();
+    // 发送节点
+    private final List<SeedNode> sendNodes = new ArrayList<>();
 
     public int getGossipInterval() {
         return gossipInterval;
@@ -35,24 +33,6 @@ public class GossipSettings {
         this.networkDelay = networkDelay;
     }
 
-    public List<SeedNode> getSeedMembers() {
-        return seedMembers;
-    }
-
-    public void setSeedMembers(List<SeedNode> seedMembers) {
-        List<SeedNode> _seedMembers = new ArrayList<>();
-        if (seedMembers != null && !seedMembers.isEmpty()) {
-            for (SeedNode seed : seedMembers) {
-                if (!seed.eigenvalue().equalsIgnoreCase(GossipManager.instance().getSelf().eigenvalue())) {
-                    if (!_seedMembers.contains(seed)) {
-                        _seedMembers.add(seed);
-                    }
-                }
-            }
-        }
-        this.seedMembers = seedMembers;
-    }
-
     public int getDeleteThreshold() {
         return deleteThreshold;
     }
@@ -61,11 +41,19 @@ public class GossipSettings {
         this.deleteThreshold = deleteThreshold;
     }
 
-    public MessageManager getMessageManager() {
-        return messageManager;
+    public List<SeedNode> getSendNodes() {
+        return sendNodes;
     }
 
-    public void setMessageManager(MessageManager messageManager) {
-        this.messageManager = messageManager;
+    public void setSeedMembers(List<SeedNode> addNodes) {
+        if (addNodes != null && !addNodes.isEmpty()) {
+            for (SeedNode seed : addNodes) {
+                if (!seed.eigenvalue().equalsIgnoreCase(GossipManager.instance().getSelf().eigenvalue())) {
+                    if (!this.sendNodes.contains(seed)) {
+                        this.sendNodes.add(seed);
+                    }
+                }
+            }
+        }
     }
 }

@@ -12,22 +12,18 @@ import java.util.List;
 public class Demo3 {
 
     public static void main(String[] args) {
-        List<SeedNode> seedNodes = new ArrayList<>();
-//        SeedNode seed1 = new SeedNode();
-//        seed1.setCluster("cluster");
-//        seed1.setIpAddress("localhost");
-//        seed1.setPort(9002);
-//
-//        SeedNode seed = new SeedNode();
-//        seed.setCluster("cluster");
-//        seed.setIpAddress("localhost");
-//        seed.setPort(9001);
-//
-//        seedNodes.add(seed);
-//        seedNodes.add(seed1);
+
+        GossipProperties properties = new GossipProperties();
+        properties.setCluster("opentp");
+        properties.setHost("localhost");
+        properties.setPort(9003);
+        properties.setNodeId(null);
+        properties.setClusterNode("localhost:9001,localhost:9002");
+
+        GossipManager.init(properties);
 
         try {
-            GossipService gossipService = new GossipService("cluster", "localhost", 9003, null, seedNodes, new GossipSettings(), new GossipListener() {
+            GossipService gossipService = new GossipService(new GossipListener() {
                 @Override
                 public void gossipEvent(GossipMember member, GossipStateEnum state, Object payload) {
                     if (state == GossipStateEnum.RCV) {
@@ -43,7 +39,8 @@ public class Demo3 {
 
             while (true) {
                 Thread.sleep(5000);
-                gossipService.getGossipManager().publish("hello world");
+                GossipManager gossipManager = GossipManager.instance();
+                gossipManager.publish("hello world");
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

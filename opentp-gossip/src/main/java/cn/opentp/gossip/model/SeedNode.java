@@ -11,6 +11,9 @@ public class SeedNode implements Serializable {
     private String host;
     private Integer port;
 
+    public SeedNode() {
+    }
+
     public SeedNode(String cluster, String nodeId, String host, Integer port) {
         this.cluster = cluster;
         this.nodeId = nodeId;

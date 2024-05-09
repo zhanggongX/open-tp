@@ -1,6 +1,7 @@
 package cn.opentp.gossip;
 
 import cn.opentp.gossip.core.GossipMessageFactory;
+import cn.opentp.gossip.core.InMemMessageManager;
 import cn.opentp.gossip.core.MessageManager;
 import cn.opentp.gossip.core.Serializer;
 import cn.opentp.gossip.enums.GossipStateEnum;
@@ -14,6 +15,7 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +55,8 @@ public class GossipManager {
     private GossipListener listener;
     private final Random random = new Random();
 
+    private MessageManager messageManager = new InMemMessageManager();
+
     private GossipManager() {
     }
 
@@ -60,20 +64,77 @@ public class GossipManager {
         return instance;
     }
 
-    public void init(String cluster, String ipAddress, Integer port, String id, List<SeedNode> seedMembers, GossipSettings settings, GossipListener listener) {
-        this.cluster = cluster;
-        this.localGossipMember = new GossipMember();
-        this.localGossipMember.setCluster(cluster);
-        this.localGossipMember.setIpAddress(ipAddress);
-        this.localGossipMember.setPort(port);
-        this.localGossipMember.setId(id);
-        this.localGossipMember.setState(GossipStateEnum.JOIN);
-        this.endpointMembers.put(localGossipMember, new HeartbeatState());
-        this.listener = listener;
-        this.settings = settings;
-        this.settings.setSeedMembers(seedMembers);
-        fireGossipEvent(localGossipMember, GossipStateEnum.JOIN);
+    public static void init(GossipProperties properties) {
+        checkParams(properties);
+//        todo
+//        if (StringUtil.isNullOrEmpty(id)) {
+//            id = ipAddress.concat(":").concat(String.valueOf(port));
+//        }
+
+        GossipManager thisManager = instance();
+        thisManager.cluster = properties.getCluster();
+
+        thisManager.localGossipMember = new GossipMember();
+        thisManager.localGossipMember.setCluster(properties.getCluster());
+        thisManager.localGossipMember.setIpAddress(properties.getHost());
+        thisManager.localGossipMember.setPort(properties.getPort());
+        thisManager.localGossipMember.setId(properties.getNodeId());
+        thisManager.localGossipMember.setState(GossipStateEnum.JOIN);
+        thisManager.endpointMembers.put(thisManager.localGossipMember, new HeartbeatState());
+//        thisManager.listener = listener;
+        thisManager.settings = new GossipSettings();
+        // todo 解析 nodes
+        List<SeedNode> seedNodes = new ArrayList<>();
+        SeedNode seed1 = new SeedNode();
+        seed1.setCluster("cluster");
+        seed1.setHost("localhost");
+        seed1.setPort(9002);
+
+        SeedNode seed = new SeedNode();
+        seed.setCluster("cluster");
+        seed.setHost("localhost");
+        seed.setPort(9001);
+
+        seedNodes.add(seed);
+        seedNodes.add(seed1);
+        thisManager.settings.setSeedMembers(seedNodes);
+//        fireGossipEvent(localGossipMember, GossipStateEnum.JOIN);
     }
+
+    private static void checkParams(GossipProperties properties) {
+        String f = "[%s] is required!";
+        String who = null;
+        if (StringUtil.isNullOrEmpty(properties.getCluster())) {
+            who = "cluster";
+        } else if (StringUtil.isNullOrEmpty(properties.getHost())) {
+            who = "ip";
+        } else if (StringUtil.isNullOrEmpty(String.valueOf(properties.getHost()))) {
+            who = "port";
+        }
+        // todo 解析
+//        } else if (seedMembers == null || seedMembers.isEmpty()) {
+//            who = "seed member";
+//        }
+        if (who != null) {
+            log.error(String.format(f, who));
+            System.exit(-1);
+        }
+    }
+
+//    public void init(String cluster, String ipAddress, Integer port, String id, List<SeedNode> seedMembers, GossipSettings settings, GossipListener listener) {
+//        this.cluster = cluster;
+//        this.localGossipMember = new GossipMember();
+//        this.localGossipMember.setCluster(cluster);
+//        this.localGossipMember.setIpAddress(ipAddress);
+//        this.localGossipMember.setPort(port);
+//        this.localGossipMember.setId(id);
+//        this.localGossipMember.setState(GossipStateEnum.JOIN);
+//        this.endpointMembers.put(localGossipMember, new HeartbeatState());
+//        this.listener = listener;
+//        this.settings = settings;
+//        this.settings.setSeedMembers(seedMembers);
+//        fireGossipEvent(localGossipMember, GossipStateEnum.JOIN);
+//    }
 
     protected void start() {
         log.info(String.format("Starting jgossip! cluster[%s] ip[%s] port[%d] id[%s]", localGossipMember.getCluster(), localGossipMember.getIpAddress(), localGossipMember.getPort(), localGossipMember.getId()
@@ -166,7 +227,7 @@ public class GossipManager {
                     log.trace("endpoint : " + getEndpointMembers());
                 }
                 new Thread(() -> {
-                    MessageManager mm = settings.getMessageManager();
+                    MessageManager mm = messageManager;
                     if (!mm.isEmpty()) {
                         for (String id : mm.list()) {
                             RegularMessage msg = mm.acquire(id);
@@ -199,7 +260,7 @@ public class GossipManager {
             gossip2UndiscoverableMember(buf);
 
             //step3.
-            if (!b || liveMembers.size() <= settings.getSeedMembers().size()) {
+            if (!b || liveMembers.size() <= settings.getSendNodes().size()) {
                 gossip2Seed(buf);
             }
         }
@@ -341,7 +402,7 @@ public class GossipManager {
     }
 
     private void gossip2Seed(ByteBuf buffer) {
-        int size = settings.getSeedMembers().size();
+        int size = settings.getSendNodes().size();
         if (size > 0) {
             if (size == 1 && isSeedNode()) {
                 return;
@@ -349,11 +410,11 @@ public class GossipManager {
             int index = (size == 1) ? 0 : random.nextInt(size);
             System.out.println("index = " + index);
             if (liveMembers.size() == 1) {
-                sendGossip2Seed(buffer, settings.getSeedMembers(), index);
+                sendGossip2Seed(buffer, settings.getSendNodes(), index);
             } else {
                 double prob = size / (double) liveMembers.size();
                 if (random.nextDouble() < prob) {
-                    sendGossip2Seed(buffer, settings.getSeedMembers(), index);
+                    sendGossip2Seed(buffer, settings.getSendNodes(), index);
                 }
             }
         }
@@ -372,7 +433,7 @@ public class GossipManager {
                     }
                 }
                 msgService.sendMsg(target.getIpAddress(), target.getPort(), buffer);
-                return settings.getSeedMembers().contains(gossipMember2SeedMember(target));
+                return settings.getSendNodes().contains(gossipMember2SeedMember(target));
             } catch (Exception e) {
                 log.error(e.getMessage());
             }
@@ -451,7 +512,7 @@ public class GossipManager {
 
     public boolean isSeedNode() {
         if (isSeedNode == null) {
-            isSeedNode = settings.getSeedMembers().contains(gossipMember2SeedMember(getSelf()));
+            isSeedNode = settings.getSendNodes().contains(gossipMember2SeedMember(getSelf()));
         }
         return isSeedNode;
     }
@@ -573,7 +634,15 @@ public class GossipManager {
 
     public void publish(Object payload) {
         RegularMessage msg = new RegularMessage(getSelf(), payload, convictedTime());
-        settings.getMessageManager().add(msg);
+        messageManager.add(msg);
+    }
+
+    public MessageManager getMessageManager() {
+        return messageManager;
+    }
+
+    public void setMessageManager(MessageManager messageManager) {
+        this.messageManager = messageManager;
     }
 
 }
