@@ -1,5 +1,6 @@
 package cn.opentp.gossip;
 
+import cn.opentp.gossip.core.GossipTask;
 import cn.opentp.gossip.event.GossipListener;
 import cn.opentp.gossip.model.GossipNode;
 import org.slf4j.Logger;
@@ -39,25 +40,37 @@ public class GossipService {
     /**
      * 服务开启
      */
-    public static void start() {
-        if (gossipApp.isWorking()) {
-            log.info("Gossip is already working");
+    public synchronized static void start() {
+
+        if (!gossipApp.hadInit()) {
+            log.info("Gossip 未初始化，请先执行: {}", "cn.opentp.gossip.GossipService.init()");
+            return;
+        }
+
+        if (gossipApp.working()) {
+            log.info("Gossip 已开启");
             return;
         }
 
         GossipNode localGossipNode = gossipApp.selfNode();
 
-        log.info("Starting {} gossip!, host:{}  port:{} nodeId:{}", localGossipNode.getCluster(), localGossipNode.getHost(), localGossipNode.getPort(), localGossipNode.getNodeId());
-        gossipApp.setWorking();
+        log.info("Starting {} gossip!, host:{}  port:{} nodeId:{}", localGossipNode.getCluster(),
+                localGossipNode.getHost(), localGossipNode.getPort(), localGossipNode.getNodeId());
+
+
         gossipApp.startListen();
-        gossipApp.startTask();
+
+        // 流言任务开始
+        GossipTask.startup();
+
+        gossipApp.workingMark();
     }
 
     /**
      * 服务关闭
      */
     public void shutdown() {
-        if (gossipApp.isWorking()) {
+        if (gossipApp.working()) {
             GossipManager.instance().shutdown();
         }
     }
