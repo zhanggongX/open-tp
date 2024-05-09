@@ -53,7 +53,7 @@ public class SyncMessageHandler implements MessageHandler {
                 ByteBuf ackBuffer = GossipManager.instance().encodeAckMessage(ackMessage);
                 if (from != null) {
                     String[] host = from.split(":");
-                    GossipManager.instance().getMsgService().sendMsg(host[0], Integer.valueOf(host[1]), ackBuffer);
+                    GossipManager.instance().messageService().sendMsg(host[0], Integer.valueOf(host[1]), ackBuffer);
                 }
             } catch (NumberFormatException e) {
                 log.error(e.getMessage());

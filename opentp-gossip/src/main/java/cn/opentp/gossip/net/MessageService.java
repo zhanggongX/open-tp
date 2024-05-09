@@ -2,7 +2,7 @@ package cn.opentp.gossip.net;
 
 import io.netty.buffer.ByteBuf;
 
-public interface MsgService {
+public interface MessageService {
 
     void listen(String ipAddress, int port);
 

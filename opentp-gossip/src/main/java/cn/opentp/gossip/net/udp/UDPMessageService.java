@@ -3,7 +3,7 @@ package cn.opentp.gossip.net.udp;
 
 import cn.opentp.gossip.handler.*;
 import cn.opentp.gossip.enums.MessageTypeEnum;
-import cn.opentp.gossip.net.MsgService;
+import cn.opentp.gossip.net.MessageService;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
@@ -12,9 +12,9 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UDPMsgService implements MsgService {
+public class UDPMessageService implements MessageService {
 
-    private Logger log = LoggerFactory.getLogger(UDPMsgService.class);
+    private final Logger log = LoggerFactory.getLogger(UDPMessageService.class);
 
     private NioDatagramChannel socket;
     private EventLoopGroup eventLoopGroup;
@@ -24,9 +24,7 @@ public class UDPMsgService implements MsgService {
         eventLoopGroup = new NioEventLoopGroup();
 
         Bootstrap b = new Bootstrap();
-        b.group(eventLoopGroup)
-                .channel(NioDatagramChannel.class)
-                .option(ChannelOption.SO_BROADCAST, true)    //广播
+        b.group(eventLoopGroup).channel(NioDatagramChannel.class).option(ChannelOption.SO_BROADCAST, true)    //广播
                 .option(ChannelOption.SO_RCVBUF, 2048 * 1024)// 设置UDP读缓冲区为2M
                 .option(ChannelOption.SO_SNDBUF, 1024 * 1024)// 设置UDP写缓冲区为1M
                 .handler(new ChannelInitializer<>() {

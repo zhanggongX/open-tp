@@ -8,8 +8,8 @@ import cn.opentp.gossip.enums.GossipStateEnum;
 import cn.opentp.gossip.enums.MessageTypeEnum;
 import cn.opentp.gossip.event.GossipListener;
 import cn.opentp.gossip.model.*;
-import cn.opentp.gossip.net.MsgService;
-import cn.opentp.gossip.net.udp.UDPMsgService;
+import cn.opentp.gossip.net.MessageService;
+import cn.opentp.gossip.net.udp.UDPMessageService;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
@@ -21,10 +21,7 @@ import org.slf4j.LoggerFactory;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -36,19 +33,20 @@ public class GossipManager {
     // 实例
     private static final GossipManager INSTANCE = new GossipManager();
 
-    private final MsgService msgService = new UDPMsgService();
+    private final ReentrantReadWriteLock globalLock = new ReentrantReadWriteLock();
+    private final ScheduledExecutorService gossipScheduleExecutor = Executors.newScheduledThreadPool(1);
+
+    private final MessageService messageService = new UDPMessageService();
 
     private boolean isWorking = false;
     private Boolean isSeedNode = null;
-    private final ReentrantReadWriteLock rwlock = new ReentrantReadWriteLock();
-    private final ScheduledExecutorService doGossipExecutor = Executors.newScheduledThreadPool(1);
 
-//    private ScheduledExecutorService clearExecutor = Executors.newSingleThreadScheduledExecutor();
 
     private final Map<GossipMember, HeartbeatState> endpointMembers = new ConcurrentHashMap<>();
-    private final List<GossipMember> liveMembers = new ArrayList<>();
-    private final List<GossipMember> deadMembers = new ArrayList<>();
+    private final List<GossipMember> liveMembers = new CopyOnWriteArrayList<>();
+    private final List<GossipMember> deadMembers = new CopyOnWriteArrayList<>();
     private final Map<GossipMember, CandidateMemberState> candidateMembers = new ConcurrentHashMap<>();
+
     private GossipSettings settings = new GossipSettings();
     private GossipListener listener;
     private GossipMember localGossipMember;
@@ -62,31 +60,6 @@ public class GossipManager {
     public static GossipManager instance() {
         return INSTANCE;
     }
-
-//    public static void init(GossipProperties properties) {
-//        checkParams(properties);
-//
-//        List<SeedNode> seedNodes = parseConfig(properties);
-//
-//        if (properties.getNodeId() == null || properties.getNodeId().isEmpty()) {
-//            properties.setNodeId(properties.getHost() + ":" + properties.getPort());
-//        }
-//
-//        GossipManager thisManager = instance();
-//        thisManager.cluster = properties.getCluster();
-//
-//        thisManager.localGossipMember = new GossipMember();
-//        thisManager.localGossipMember.setCluster(properties.getCluster());
-//        thisManager.localGossipMember.setIpAddress(properties.getHost());
-//        thisManager.localGossipMember.setPort(properties.getPort());
-//        thisManager.localGossipMember.setId(properties.getNodeId());
-//        thisManager.localGossipMember.setState(GossipStateEnum.JOIN);
-//        thisManager.endpointMembers.put(thisManager.localGossipMember, new HeartbeatState());
-////        thisManager.listener = listener;
-//
-//        thisManager.settings.setSeedMembers(seedNodes);
-////        fireGossipEvent(localGossipMember, GossipStateEnum.JOIN);
-//    }
 
 //    public void init(String cluster, String ipAddress, Integer port, String id, List<SeedNode> seedMembers, GossipSettings settings, GossipListener listener) {
 //        this.cluster = cluster;
@@ -103,8 +76,8 @@ public class GossipManager {
 //        fireGossipEvent(localGossipMember, GossipStateEnum.JOIN);
 //    }
 
-    public MsgService getMsgService() {
-        return msgService;
+    public MessageService messageService() {
+        return messageService;
     }
 
     public List<GossipMember> getLiveMembers() {
@@ -162,7 +135,7 @@ public class GossipManager {
         this.endpointMembers.put(localGossipMember, new HeartbeatState());
     }
 
-    public GossipMember getLocalGossipMember(){
+    public GossipMember getLocalGossipMember() {
         return localGossipMember;
     }
 
@@ -176,11 +149,11 @@ public class GossipManager {
 
     public void startListen() {
 
-        msgService.listen(getSelf().getIpAddress(), getSelf().getPort());
+        messageService.listen(getSelf().getIpAddress(), getSelf().getPort());
     }
 
     public void startTask() {
-        doGossipExecutor.scheduleAtFixedRate(new GossipManager.GossipTask(), settings.getGossipInterval(), settings.getGossipInterval(), TimeUnit.MILLISECONDS);
+        gossipScheduleExecutor.scheduleAtFixedRate(new GossipManager.GossipTask(), settings.getGossipInterval(), settings.getGossipInterval(), TimeUnit.MILLISECONDS);
     }
 
 
@@ -417,7 +390,7 @@ public class GossipManager {
                         target = members.get((index + 1) % m_size);
                     }
                 }
-                msgService.sendMsg(target.getIpAddress(), target.getPort(), buffer);
+                messageService.sendMsg(target.getIpAddress(), target.getPort(), buffer);
                 return settings.getSendNodes().contains(gossipMember2SeedMember(target));
             } catch (Exception e) {
                 log.error(e.getMessage());
@@ -438,7 +411,7 @@ public class GossipManager {
                         target = members.get((index + 1) % m_size);
                     }
                 }
-                msgService.sendMsg(target.getHost(), target.getPort(), buffer);
+                messageService.sendMsg(target.getHost(), target.getPort(), buffer);
                 return true;
             } catch (Exception e) {
                 log.error(e.getMessage());
@@ -532,7 +505,7 @@ public class GossipManager {
     public void down(GossipMember member) {
         log.info("down ~~");
         try {//
-            rwlock.writeLock().lock();
+            globalLock.writeLock().lock();
             member.setState(GossipStateEnum.DOWN);
             liveMembers.remove(member);
             if (!deadMembers.contains(member)) {
@@ -543,13 +516,13 @@ public class GossipManager {
         } catch (Exception e) {
             log.error(e.getMessage());
         } finally {
-            rwlock.writeLock().unlock();
+            globalLock.writeLock().unlock();
         }
     }
 
     private void up(GossipMember member) {
         try {
-            rwlock.writeLock().lock();
+            globalLock.writeLock().lock();
             member.setState(GossipStateEnum.UP);
             if (!liveMembers.contains(member)) {
                 liveMembers.add(member);
@@ -568,7 +541,7 @@ public class GossipManager {
         } catch (Exception e) {
             log.error(e.getMessage());
         } finally {
-            rwlock.writeLock().unlock();
+            globalLock.writeLock().unlock();
         }
 
     }
@@ -603,8 +576,8 @@ public class GossipManager {
 
 
     protected void shutdown() {
-        msgService.unListen();
-        doGossipExecutor.shutdown();
+        messageService.unListen();
+        gossipScheduleExecutor.shutdown();
         try {
             Thread.sleep(getSettings().getGossipInterval());
         } catch (InterruptedException e) {
