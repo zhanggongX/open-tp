@@ -39,7 +39,7 @@ public class SyncMessageHandler implements MessageHandler {
                     compareDigest(g, member, cluster, olders, newers);
                 }
                 // I have, you don't have
-                Map<GossipMember, HeartbeatState> endpoints = GossipManager.instance().getEndpointMembers();
+                Map<GossipMember, HeartbeatState> endpoints = GossipManager.instance().endpointMembers();
                 Set<GossipMember> epKeys = endpoints.keySet();
                 for (GossipMember m : epKeys) {
                     if (!gMemberList.contains(m)) {
@@ -64,7 +64,7 @@ public class SyncMessageHandler implements MessageHandler {
     private void compareDigest(GossipDigest g, GossipMember member, String cluster, List<GossipDigest> olders, Map<GossipMember, HeartbeatState> newers) {
 
         try {
-            HeartbeatState hb = GossipManager.instance().getEndpointMembers().get(member);
+            HeartbeatState hb = GossipManager.instance().endpointMembers().get(member);
             long remoteHeartbeatTime = g.getHeartbeatTime();
             long remoteVersion = g.getVersion();
             if (hb != null) {

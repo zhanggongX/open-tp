@@ -27,7 +27,7 @@ public class AckMessageHandler implements MessageHandler {
         if (olders != null) {
             for (GossipDigest d : olders) {
                 GossipMember member = GossipManager.instance().createByDigest(d);
-                HeartbeatState hb = GossipManager.instance().getEndpointMembers().get(member);
+                HeartbeatState hb = GossipManager.instance().endpointMembers().get(member);
                 if (hb != null) {
                     deltaEndpoints.put(member, hb);
                 }

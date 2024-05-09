@@ -18,9 +18,9 @@ public class Demo3 {
         properties.setHost("localhost");
         properties.setPort(9003);
         properties.setNodeId(null);
-        properties.setClusterNode("localhost:9001,localhost:9002");
+        properties.setClusterNodes("localhost:9001,localhost:9002");
 
-        GossipManager.init(properties);
+        GossipService.init(properties);
 
         try {
             GossipService gossipService = new GossipService(new GossipListener() {

@@ -15,7 +15,6 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,10 +48,9 @@ public class GossipManager {
     private final List<GossipMember> liveMembers = new ArrayList<>();
     private final List<GossipMember> deadMembers = new ArrayList<>();
     private final Map<GossipMember, CandidateMemberState> candidateMembers = new ConcurrentHashMap<>();
-    private GossipSettings settings;
-    private GossipMember localGossipMember;
-    private String cluster;
+    private GossipSettings settings = new GossipSettings();
     private GossipListener listener;
+    private GossipMember localGossipMember;
     private final Random random = new Random();
 
     private MessageManager messageManager = new InMemMessageManager();
@@ -64,62 +62,30 @@ public class GossipManager {
         return instance;
     }
 
-    public static void init(GossipProperties properties) {
-        checkParams(properties);
-//        todo
-//        if (StringUtil.isNullOrEmpty(id)) {
-//            id = ipAddress.concat(":").concat(String.valueOf(port));
+//    public static void init(GossipProperties properties) {
+//        checkParams(properties);
+//
+//        List<SeedNode> seedNodes = parseConfig(properties);
+//
+//        if (properties.getNodeId() == null || properties.getNodeId().isEmpty()) {
+//            properties.setNodeId(properties.getHost() + ":" + properties.getPort());
 //        }
-
-        GossipManager thisManager = instance();
-        thisManager.cluster = properties.getCluster();
-
-        thisManager.localGossipMember = new GossipMember();
-        thisManager.localGossipMember.setCluster(properties.getCluster());
-        thisManager.localGossipMember.setIpAddress(properties.getHost());
-        thisManager.localGossipMember.setPort(properties.getPort());
-        thisManager.localGossipMember.setId(properties.getNodeId());
-        thisManager.localGossipMember.setState(GossipStateEnum.JOIN);
-        thisManager.endpointMembers.put(thisManager.localGossipMember, new HeartbeatState());
-//        thisManager.listener = listener;
-        thisManager.settings = new GossipSettings();
-        // todo 解析 nodes
-        List<SeedNode> seedNodes = new ArrayList<>();
-        SeedNode seed1 = new SeedNode();
-        seed1.setCluster("cluster");
-        seed1.setHost("localhost");
-        seed1.setPort(9002);
-
-        SeedNode seed = new SeedNode();
-        seed.setCluster("cluster");
-        seed.setHost("localhost");
-        seed.setPort(9001);
-
-        seedNodes.add(seed);
-        seedNodes.add(seed1);
-        thisManager.settings.setSeedMembers(seedNodes);
-//        fireGossipEvent(localGossipMember, GossipStateEnum.JOIN);
-    }
-
-    private static void checkParams(GossipProperties properties) {
-        String f = "[%s] is required!";
-        String who = null;
-        if (StringUtil.isNullOrEmpty(properties.getCluster())) {
-            who = "cluster";
-        } else if (StringUtil.isNullOrEmpty(properties.getHost())) {
-            who = "ip";
-        } else if (StringUtil.isNullOrEmpty(String.valueOf(properties.getHost()))) {
-            who = "port";
-        }
-        // todo 解析
-//        } else if (seedMembers == null || seedMembers.isEmpty()) {
-//            who = "seed member";
-//        }
-        if (who != null) {
-            log.error(String.format(f, who));
-            System.exit(-1);
-        }
-    }
+//
+//        GossipManager thisManager = instance();
+//        thisManager.cluster = properties.getCluster();
+//
+//        thisManager.localGossipMember = new GossipMember();
+//        thisManager.localGossipMember.setCluster(properties.getCluster());
+//        thisManager.localGossipMember.setIpAddress(properties.getHost());
+//        thisManager.localGossipMember.setPort(properties.getPort());
+//        thisManager.localGossipMember.setId(properties.getNodeId());
+//        thisManager.localGossipMember.setState(GossipStateEnum.JOIN);
+//        thisManager.endpointMembers.put(thisManager.localGossipMember, new HeartbeatState());
+////        thisManager.listener = listener;
+//
+//        thisManager.settings.setSeedMembers(seedNodes);
+////        fireGossipEvent(localGossipMember, GossipStateEnum.JOIN);
+//    }
 
 //    public void init(String cluster, String ipAddress, Integer port, String id, List<SeedNode> seedMembers, GossipSettings settings, GossipListener listener) {
 //        this.cluster = cluster;
@@ -176,12 +142,8 @@ public class GossipManager {
         return isWorking;
     }
 
-    public Map<GossipMember, HeartbeatState> getEndpointMembers() {
+    public Map<GossipMember, HeartbeatState> endpointMembers() {
         return endpointMembers;
-    }
-
-    public String getCluster() {
-        return cluster;
     }
 
     private void randomGossipDigest(List<GossipDigest> digests) throws UnknownHostException {
@@ -198,6 +160,20 @@ public class GossipManager {
             digests.add(new GossipDigest(ep, hbTime, hbVersion));
         }
     }
+
+    public void setLocalGossipMember(GossipProperties properties) {
+        GossipMember localGossipMember = new GossipMember();
+        localGossipMember.setCluster(properties.getCluster());
+        localGossipMember.setIpAddress(properties.getHost());
+        localGossipMember.setPort(properties.getPort());
+        localGossipMember.setId(properties.getNodeId());
+        localGossipMember.setState(GossipStateEnum.JOIN);
+        this.localGossipMember = localGossipMember;
+
+        this.endpointMembers.put(localGossipMember, new HeartbeatState());
+    }
+
+
 
     class GossipTask implements Runnable {
 
@@ -224,7 +200,7 @@ public class GossipManager {
                 if (log.isTraceEnabled()) {
                     log.trace("live member : " + getLiveMembers());
                     log.trace("dead member : " + getDeadMembers());
-                    log.trace("endpoint : " + getEndpointMembers());
+                    log.trace("endpoint : " + endpointMembers());
                 }
                 new Thread(() -> {
                     MessageManager mm = messageManager;
@@ -273,25 +249,25 @@ public class GossipManager {
             array.add(Serializer.getInstance().encode(e).toString());
         }
 
-        JSONObject jsonObject = GossipMessageFactory.getInstance().makeMessage(MessageTypeEnum.SYNC_MESSAGE, array.toJSONString(), getCluster(), getSelf().ipAndPort());
+        JSONObject jsonObject = GossipMessageFactory.getInstance().makeMessage(MessageTypeEnum.SYNC_MESSAGE, array.toJSONString(), settings.getCluster(), getSelf().ipAndPort());
         return Unpooled.copiedBuffer(jsonObject.toString(), StandardCharsets.UTF_8);
     }
 
     public ByteBuf encodeAckMessage(AckMessage ackMessage) {
         String ackJson = JSON.toJSONString(ackMessage);
-        JSONObject jsonObject = GossipMessageFactory.getInstance().makeMessage(MessageTypeEnum.ACK_MESSAGE, ackJson, getCluster(), getSelf().ipAndPort());
+        JSONObject jsonObject = GossipMessageFactory.getInstance().makeMessage(MessageTypeEnum.ACK_MESSAGE, ackJson, settings.getCluster(), getSelf().ipAndPort());
         return Unpooled.copiedBuffer(jsonObject.toString(), StandardCharsets.UTF_8);
     }
 
     public ByteBuf encodeAck2Message(Ack2Message ack2Message) {
         String ack2Json = JSON.toJSONString(ack2Message);
-        JSONObject jsonObject = GossipMessageFactory.getInstance().makeMessage(MessageTypeEnum.ACK2_MESSAGE, ack2Json, getCluster(), getSelf().ipAndPort());
+        JSONObject jsonObject = GossipMessageFactory.getInstance().makeMessage(MessageTypeEnum.ACK2_MESSAGE, ack2Json, settings.getCluster(), getSelf().ipAndPort());
         return Unpooled.copiedBuffer(jsonObject.toString(), StandardCharsets.UTF_8);
     }
 
     private ByteBuf encodeShutdownMessage() {
         String self = JSON.toJSONString(getSelf());
-        JSONObject jsonObject = GossipMessageFactory.getInstance().makeMessage(MessageTypeEnum.SHUTDOWN, self, getCluster(), getSelf().ipAndPort());
+        JSONObject jsonObject = GossipMessageFactory.getInstance().makeMessage(MessageTypeEnum.SHUTDOWN, self, settings.getCluster(), getSelf().ipAndPort());
         return Unpooled.copiedBuffer(jsonObject.toJSONString(), StandardCharsets.UTF_8);
     }
 
@@ -299,7 +275,7 @@ public class GossipManager {
 
         String msg = JSON.toJSONString(regularMessage);
 
-        JSONObject jsonObject = GossipMessageFactory.getInstance().makeMessage(MessageTypeEnum.REG_MESSAGE, msg, getCluster(), getSelf().ipAndPort());
+        JSONObject jsonObject = GossipMessageFactory.getInstance().makeMessage(MessageTypeEnum.REG_MESSAGE, msg, settings.getCluster(), getSelf().ipAndPort());
 
         return Unpooled.copiedBuffer(jsonObject.toJSONString(), StandardCharsets.UTF_8);
     }
@@ -312,7 +288,7 @@ public class GossipManager {
             }
 
             try {
-                HeartbeatState localState = getEndpointMembers().get(m);
+                HeartbeatState localState = endpointMembers().get(m);
                 HeartbeatState remoteState = endpointMembers.get(m);
 
                 if (localState != null) {
@@ -353,9 +329,9 @@ public class GossipManager {
         GossipMember member = new GossipMember();
         member.setPort(digest.getEndpoint().getPort());
         member.setIpAddress(digest.getEndpoint().getAddress().getHostAddress());
-        member.setCluster(cluster);
+        member.setCluster(settings.getCluster());
 
-        Set<GossipMember> keys = getEndpointMembers().keySet();
+        Set<GossipMember> keys = endpointMembers().keySet();
         for (GossipMember m : keys) {
             if (m.equals(member)) {
                 member.setId(m.getId());
@@ -469,7 +445,7 @@ public class GossipManager {
     private void checkStatus() {
         try {
             GossipMember local = getSelf();
-            Map<GossipMember, HeartbeatState> endpoints = getEndpointMembers();
+            Map<GossipMember, HeartbeatState> endpoints = endpointMembers();
             Set<GossipMember> epKeys = endpoints.keySet();
             for (GossipMember k : epKeys) {
                 if (!k.equals(local)) {
@@ -493,7 +469,7 @@ public class GossipManager {
     }
 
     private int convergenceCount() {
-        int size = getEndpointMembers().size();
+        int size = endpointMembers().size();
         return (int) Math.floor(Math.log10(size) + Math.log(size) + 1);
     }
 

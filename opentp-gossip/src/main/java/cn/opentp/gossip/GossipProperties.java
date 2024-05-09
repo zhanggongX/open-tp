@@ -13,10 +13,8 @@ public class GossipProperties {
     private Integer port;
     // 节点名
     private String nodeId;
-
-    private String clusterNode;
-    // 发送节点
-    private List<SeedNode> seedNodes;
+    // 集群节点
+    private String clusterNodes;
 
     public String getCluster() {
         return cluster;
@@ -50,19 +48,11 @@ public class GossipProperties {
         this.nodeId = nodeId;
     }
 
-    public List<SeedNode> getSeedNodes() {
-        return seedNodes;
+    public String getClusterNodes() {
+        return clusterNodes;
     }
 
-    public void setSeedNodes(List<SeedNode> seedNodes) {
-        this.seedNodes = seedNodes;
-    }
-
-    public String getClusterNode() {
-        return clusterNode;
-    }
-
-    public void setClusterNode(String clusterNode) {
-        this.clusterNode = clusterNode;
+    public void setClusterNodes(String clusterNodes) {
+        this.clusterNodes = clusterNodes;
     }
 }

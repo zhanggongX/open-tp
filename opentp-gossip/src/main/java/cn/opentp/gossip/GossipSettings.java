@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GossipSettings {
+    private String cluster;
     // 同步周期
     private int gossipInterval = 1000;
     // 同步延时
@@ -43,6 +44,14 @@ public class GossipSettings {
 
     public List<SeedNode> getSendNodes() {
         return sendNodes;
+    }
+
+    public String getCluster() {
+        return cluster;
+    }
+
+    public void setCluster(String cluster) {
+        this.cluster = cluster;
     }
 
     public void setSeedMembers(List<SeedNode> addNodes) {
