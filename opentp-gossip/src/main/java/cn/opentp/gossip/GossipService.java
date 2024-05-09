@@ -1,12 +1,9 @@
 package cn.opentp.gossip;
 
-import cn.opentp.gossip.enums.GossipStateEnum;
 import cn.opentp.gossip.event.GossipListener;
 import cn.opentp.gossip.model.GossipMember;
-import cn.opentp.gossip.model.HeartbeatState;
 import cn.opentp.gossip.model.SeedNode;
 import cn.opentp.gossip.util.SocketAddressUtil;
-import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +12,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Gossip 服务入口
@@ -23,12 +21,12 @@ public class GossipService {
 
     private static final Logger log = LoggerFactory.getLogger(GossipService.class);
 
-    private static final GossipManager gm = GossipManager.instance();
+    private static final GossipManager gossipApp = GossipManager.instance();
 
     public GossipService(GossipListener listener) throws Exception {
     }
 
-    public static void init(GossipProperties properties) {
+    public static void init(GossipProperties properties, GossipListener gossipListener) {
         checkParams(properties);
 
         List<SeedNode> seedNodes = parseConfig(properties);
@@ -36,16 +34,13 @@ public class GossipService {
         if (properties.getNodeId() == null || properties.getNodeId().isEmpty()) {
             properties.setNodeId(properties.getHost() + ":" + properties.getPort());
         }
-        gm.getSettings().setCluster(properties.getCluster());
+        gossipApp.getSettings().setCluster(properties.getCluster());
 
+        gossipApp.setLocalGossipMember(properties);
 
-        gm.setLocalGossipMember(properties);
+        gossipApp.setGossipListener(gossipListener);
 
-
-//        thisManager.listener = listener;
-
-        gm.getSettings().setSeedMembers(seedNodes);
-//        fireGossipEvent(localGossipMember, GossipStateEnum.JOIN);
+        gossipApp.getSettings().setSeedMembers(seedNodes);
     }
 
     private static List<SeedNode> parseConfig(GossipProperties properties) {
@@ -84,15 +79,22 @@ public class GossipService {
     }
 
     public void start() {
-        if (gm.isWorking()) {
+        if (gossipApp.isWorking()) {
             log.info("Gossip is already working");
             return;
         }
-        GossipManager.instance().start();
+
+        GossipMember localGossipMember = gossipApp.getLocalGossipMember();
+
+        log.info(String.format("Starting jgossip! cluster[%s] ip[%s] port[%d] id[%s]", localGossipMember.getCluster(), localGossipMember.getIpAddress(), localGossipMember.getPort(), localGossipMember.getId()
+        ));
+        gossipApp.setWorking();
+        gossipApp.startListen();
+        gossipApp.startTask();
     }
 
     public void shutdown() {
-        if (gm.isWorking()) {
+        if (gossipApp.isWorking()) {
             GossipManager.instance().shutdown();
         }
     }

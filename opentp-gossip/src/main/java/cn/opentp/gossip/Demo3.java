@@ -20,7 +20,13 @@ public class Demo3 {
         properties.setNodeId(null);
         properties.setClusterNodes("localhost:9001,localhost:9002");
 
-        GossipService.init(properties);
+        GossipService.init(properties, new GossipListener() {
+
+            @Override
+            public void gossipEvent(GossipMember member, GossipStateEnum state, Object payload) {
+
+            }
+        });
 
         try {
             GossipService gossipService = new GossipService(new GossipListener() {

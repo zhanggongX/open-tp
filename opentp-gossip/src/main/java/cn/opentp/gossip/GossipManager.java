@@ -33,9 +33,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class GossipManager {
 
     private static final Logger log = LoggerFactory.getLogger(GossipManager.class);
-    private static final GossipManager instance = new GossipManager();
+    // 实例
+    private static final GossipManager INSTANCE = new GossipManager();
 
-    private MsgService msgService = new UDPMsgService();
+    private final MsgService msgService = new UDPMsgService();
 
     private boolean isWorking = false;
     private Boolean isSeedNode = null;
@@ -59,7 +60,7 @@ public class GossipManager {
     }
 
     public static GossipManager instance() {
-        return instance;
+        return INSTANCE;
     }
 
 //    public static void init(GossipProperties properties) {
@@ -102,20 +103,8 @@ public class GossipManager {
 //        fireGossipEvent(localGossipMember, GossipStateEnum.JOIN);
 //    }
 
-    protected void start() {
-        log.info(String.format("Starting jgossip! cluster[%s] ip[%s] port[%d] id[%s]", localGossipMember.getCluster(), localGossipMember.getIpAddress(), localGossipMember.getPort(), localGossipMember.getId()
-        ));
-        isWorking = true;
-        msgService.listen(getSelf().getIpAddress(), getSelf().getPort());
-        doGossipExecutor.scheduleAtFixedRate(new GossipTask(), settings.getGossipInterval(), settings.getGossipInterval(), TimeUnit.MILLISECONDS);
-    }
-
     public MsgService getMsgService() {
         return msgService;
-    }
-
-    public void setMsgService(MsgService msgService) {
-        this.msgService = msgService;
     }
 
     public List<GossipMember> getLiveMembers() {
@@ -173,6 +162,26 @@ public class GossipManager {
         this.endpointMembers.put(localGossipMember, new HeartbeatState());
     }
 
+    public GossipMember getLocalGossipMember(){
+        return localGossipMember;
+    }
+
+    public void setGossipListener(GossipListener gossipListener) {
+        listener = gossipListener;
+    }
+
+    public void setWorking() {
+        isWorking = true;
+    }
+
+    public void startListen() {
+
+        msgService.listen(getSelf().getIpAddress(), getSelf().getPort());
+    }
+
+    public void startTask() {
+        doGossipExecutor.scheduleAtFixedRate(new GossipManager.GossipTask(), settings.getGossipInterval(), settings.getGossipInterval(), TimeUnit.MILLISECONDS);
+    }
 
 
     class GossipTask implements Runnable {

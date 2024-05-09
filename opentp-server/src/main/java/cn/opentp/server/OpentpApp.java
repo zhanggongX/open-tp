@@ -14,7 +14,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class OpentpApp {
 
-    private volatile static OpentpApp INSTANCE;
+    private final static OpentpApp INSTANCE = new OpentpApp();
 
     // 服务端属性信息
     private final OpentpProperties properties = new OpentpProperties();
@@ -44,13 +44,6 @@ public class OpentpApp {
     }
 
     public static OpentpApp instance() {
-        if (INSTANCE == null) {
-            synchronized (OpentpApp.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new OpentpApp();
-                }
-            }
-        }
         return INSTANCE;
     }
 
