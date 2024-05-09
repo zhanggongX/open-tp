@@ -41,7 +41,7 @@ public class RegularMessageHandler implements MessageHandler {
         if (!mm.contains(msg.getId())) {
             msg.setForwardCount(0);
             mm.add(msg);
-            GossipManagement.instance().fireGossipEvent(msg.getCreator(), GossipStateEnum.RCV, msg.getPayload());
+            GossipManagement.instance().fireGossipEvent(msg.getCreator(), GossipStateEnum.RECEIVE, msg.getPayload());
         }
     }
 }

@@ -260,7 +260,7 @@ public class GossipTask implements Runnable {
 
     public void fireGossipEvent(GossipNode member, GossipStateEnum state, Object payload) {
         if (gossipApp.getListener() != null) {
-            if (state == GossipStateEnum.RCV) {
+            if (state == GossipStateEnum.RECEIVE) {
                 new Thread(() -> gossipApp.getListener().gossipEvent(member, state, payload)).start();
             } else {
                 gossipApp.getListener().gossipEvent(member, state, payload);

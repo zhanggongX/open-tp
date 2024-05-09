@@ -263,7 +263,7 @@ public class GossipManagement {
 
     public void fireGossipEvent(GossipNode member, GossipStateEnum state, Object payload) {
         if (getListener() != null) {
-            if (state == GossipStateEnum.RCV) {
+            if (state == GossipStateEnum.RECEIVE) {
                 new Thread(() -> getListener().gossipEvent(member, state, payload)).start();
             } else {
                 getListener().gossipEvent(member, state, payload);

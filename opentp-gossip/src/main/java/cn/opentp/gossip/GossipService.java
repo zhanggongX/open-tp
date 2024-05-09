@@ -51,10 +51,13 @@ public class GossipService {
             return;
         }
 
-        GossipNode localGossipNode = GOSSIP_MANAGEMENT.selfNode();
+        GossipNode localNode = GOSSIP_MANAGEMENT.selfNode();
 
-        log.info("Starting {} gossip!, host:{}  port:{} nodeId:{}",
-                localGossipNode.getCluster(), localGossipNode.getHost(), localGossipNode.getPort(), localGossipNode.getNodeId());
+        log.info("Starting {} gossip, host:{}, port:{}, nodeId:{}",
+                localNode.getCluster(),
+                localNode.getHost(),
+                localNode.getPort(),
+                localNode.getNodeId());
 
         // 服务器启动
         GOSSIP_MANAGEMENT.startup();

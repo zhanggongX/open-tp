@@ -20,7 +20,7 @@ public class UDPMessageService implements MessageService {
     private EventLoopGroup eventLoopGroup;
 
     @Override
-    public void listen(String ipAddress, int port) {
+    public void listen(String host, int port) {
         eventLoopGroup = new NioEventLoopGroup();
 
         Bootstrap b = new Bootstrap();
@@ -34,7 +34,7 @@ public class UDPMessageService implements MessageService {
                     }
                 });
 
-        ChannelFuture channelFuture = b.bind(7397);
+        ChannelFuture channelFuture = b.bind(host, port);
         channelFuture.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
