@@ -6,14 +6,14 @@ public class GossipMessage implements Serializable {
 
     // MessageTypeEnum
     public String type;
-    public Object data;
+    public String data;
     public String cluster;
     public String from;
 
     public GossipMessage() {
     }
 
-    public GossipMessage(String type, Object data, String cluster, String from) {
+    public GossipMessage(String type, String data, String cluster, String from) {
         this.type = type;
         this.data = data;
         this.cluster = cluster;
@@ -32,11 +32,11 @@ public class GossipMessage implements Serializable {
         this.type = type;
     }
 
-    public Object getData() {
+    public String getData() {
         return data;
     }
 
-    public void setData(Object data) {
+    public void setData(String data) {
         this.data = data;
     }
 

@@ -7,12 +7,12 @@ import com.alibaba.fastjson2.JSON;
 public class ShutdownMessageHandler implements MessageHandler {
 
     @Override
-    public void handle(String cluster, Object data, String from) {
+    public void handle(String cluster, String data, String from) {
 
-        GossipNode whoShutdown = (GossipNode) data;
+        GossipNode gossipNode = JSON.parseObject(data, GossipNode.class);
 
-        if (whoShutdown != null) {
-            GossipApp.instance().down(whoShutdown);
+        if (gossipNode != null) {
+            GossipApp.instance().down(gossipNode);
         }
     }
 }

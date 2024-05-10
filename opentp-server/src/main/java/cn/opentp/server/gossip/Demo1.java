@@ -28,7 +28,7 @@ public class Demo1 {
             while (true) {
                 Thread.sleep(5000);
                 GossipApp gossipApp = GossipApp.instance();
-                gossipApp.publish("nihao");
+                gossipApp.publish("demo1");
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

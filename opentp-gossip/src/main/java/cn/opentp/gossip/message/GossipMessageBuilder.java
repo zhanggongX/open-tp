@@ -6,7 +6,7 @@ public class GossipMessageBuilder {
 
     // MessageTypeEnum
     private String type;
-    private Object data;
+    private String data;
     private String cluster;
     private String from;
 
@@ -15,7 +15,7 @@ public class GossipMessageBuilder {
         return this;
     }
 
-    public GossipMessageBuilder data(Object data) {
+    public GossipMessageBuilder data(String data) {
         this.data = data;
         return this;
     }

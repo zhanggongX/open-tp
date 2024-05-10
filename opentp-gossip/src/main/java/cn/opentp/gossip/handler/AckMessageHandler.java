@@ -15,8 +15,8 @@ import java.util.Map;
 public class AckMessageHandler implements MessageHandler {
 
     @Override
-    public void handle(String cluster, Object data, String from) {
-        AckMessage ackMessage = (AckMessage) data;
+    public void handle(String cluster, String data, String from) {
+        AckMessage ackMessage = JSON.parseObject(data, AckMessage.class);
 
         List<GossipDigest> olders = ackMessage.getOlders();
         Map<GossipNode, HeartbeatState> newers = ackMessage.getNewers();

@@ -76,13 +76,18 @@ public class GossipNode implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        GossipNode that = (GossipNode) o;
-        return Objects.equals(cluster, that.cluster) && Objects.equals(host, that.host) && Objects.equals(port, that.port) && Objects.equals(nodeId, that.nodeId) && state == that.state;
+
+        GossipNode node = (GossipNode) o;
+
+        return port.equals(node.port) && cluster.equals(node.cluster) && host.equals(node.host);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(cluster, host, port, nodeId, state);
+        int result = cluster.hashCode();
+        result = 31 * result + host.hashCode();
+        result = 31 * result + port.hashCode();
+        return result;
     }
 
     @Override

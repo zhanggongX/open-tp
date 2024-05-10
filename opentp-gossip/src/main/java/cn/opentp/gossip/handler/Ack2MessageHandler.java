@@ -14,8 +14,9 @@ import java.util.Map;
 public class Ack2MessageHandler implements MessageHandler {
 
     @Override
-    public void handle(String cluster, Object data, String from) {
-        Ack2Message ack2Message = (Ack2Message) data;
+    public void handle(String cluster, String data, String from) {
+
+        Ack2Message ack2Message = JSON.parseObject(data, Ack2Message.class);
 
         Map<GossipNode, HeartbeatState> deltaEndpoints = ack2Message.getEndpoints();
         GossipApp.instance().apply2LocalState(deltaEndpoints);

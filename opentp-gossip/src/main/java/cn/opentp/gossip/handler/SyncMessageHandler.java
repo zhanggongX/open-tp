@@ -19,10 +19,10 @@ public class SyncMessageHandler implements MessageHandler {
     private static final Logger log = LoggerFactory.getLogger(SyncMessageHandler.class);
 
     @Override
-    public void handle(String cluster, Object data, String from) {
+    public void handle(String cluster, String data, String from) {
         if (data != null) {
             try {
-                List<GossipDigest> gossipDigests = (List<GossipDigest>) data;
+                List<GossipDigest> gossipDigests = JSON.parseArray(data, GossipDigest.class);
 
                 List<GossipDigest> olders = new ArrayList<>();
                 Map<GossipNode, HeartbeatState> newers = new HashMap<>();

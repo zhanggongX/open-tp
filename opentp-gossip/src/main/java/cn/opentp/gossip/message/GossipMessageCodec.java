@@ -23,19 +23,20 @@ public class GossipMessageCodec {
     private final GossipApp gossipApp = GossipApp.instance();
 
     public ByteBuf encodeRegularMessage(GossipRegularMessage gossipRegularMessage) {
-//        String regularMessage = JSON.toJSONString(gossipRegularMessage);
+        String regularMessage = JSON.toJSONString(gossipRegularMessage);
         GossipMessage gossipMessage = GossipMessage.builder()
                 .type(MessageTypeEnum.REG_MESSAGE)
-                .data(gossipRegularMessage)
+                .data(regularMessage)
                 .cluster(gossipApp.setting().getCluster())
                 .from(gossipApp.selfNode().socketAddress()).build();
         return Unpooled.copiedBuffer(JSON.toJSONString(gossipMessage), StandardCharsets.UTF_8);
     }
 
     public ByteBuf encodeSyncMessage(List<GossipDigest> digests) {
+        String digestsJson = JSON.toJSONString(digests);
         GossipMessage gossipMessage = GossipMessage.builder()
                 .type(MessageTypeEnum.SYNC_MESSAGE)
-                .data(digests)
+                .data(digestsJson)
                 .cluster(gossipApp.setting().getCluster())
                 .from(gossipApp.selfNode().socketAddress()).build();
         return Unpooled.copiedBuffer(JSON.toJSONString(gossipMessage), StandardCharsets.UTF_8);
@@ -45,7 +46,7 @@ public class GossipMessageCodec {
         String ackJson = JSON.toJSONString(ackMessage);
         GossipMessage gossipMessage = GossipMessage.builder()
                 .type(MessageTypeEnum.ACK_MESSAGE)
-                .data(ackMessage)
+                .data(ackJson)
                 .cluster(gossipApp.setting().getCluster())
                 .from(gossipApp.selfNode().socketAddress()).build();
         return Unpooled.copiedBuffer(JSON.toJSONString(gossipMessage), StandardCharsets.UTF_8);
@@ -55,16 +56,17 @@ public class GossipMessageCodec {
         String ack2Json = JSON.toJSONString(ack2Message);
         GossipMessage gossipMessage = GossipMessage.builder()
                 .type(MessageTypeEnum.ACK2_MESSAGE)
-                .data(ack2Message)
+                .data(ack2Json)
                 .cluster(gossipApp.setting().getCluster())
                 .from(gossipApp.selfNode().socketAddress()).build();
         return Unpooled.copiedBuffer(JSON.toJSONString(gossipMessage), StandardCharsets.UTF_8);
     }
 
     public ByteBuf encodeShutdownMessage() {
+        String selfNodeJson = JSON.toJSONString(gossipApp.selfNode());
         GossipMessage gossipMessage = GossipMessage.builder()
                 .type(MessageTypeEnum.SHUTDOWN)
-                .data(gossipApp.selfNode())
+                .data(selfNodeJson)
                 .cluster(gossipApp.setting().getCluster())
                 .from(gossipApp.selfNode().socketAddress()).build();
         return Unpooled.copiedBuffer(JSON.toJSONString(gossipMessage), StandardCharsets.UTF_8);
