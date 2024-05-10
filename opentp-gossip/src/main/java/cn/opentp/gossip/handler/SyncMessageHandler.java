@@ -2,6 +2,7 @@ package cn.opentp.gossip.handler;
 
 
 import cn.opentp.gossip.GossipApp;
+import cn.opentp.gossip.core.GossipMessage;
 import cn.opentp.gossip.model.AckMessage;
 import cn.opentp.gossip.model.GossipDigest;
 import cn.opentp.gossip.model.GossipNode;
@@ -20,23 +21,24 @@ public class SyncMessageHandler implements MessageHandler {
 
     @Override
     public void handle(String cluster, String data, String from) {
-        if (data != null) {
+        if (data != null && !data.isEmpty()) {
             try {
-                JSONArray array = new JSONArray(data);
+                List<GossipDigest> gossipDigests = JSON.parseArray(data, GossipDigest.class);
+
                 List<GossipDigest> olders = new ArrayList<>();
                 Map<GossipNode, HeartbeatState> newers = new HashMap<>();
+
                 List<GossipNode> gMemberList = new ArrayList<>();
-                for (Object e : array) {
-                    GossipDigest g = JSON.parseObject(e.toString(), GossipDigest.class);
+                for (GossipDigest gossipDigest : gossipDigests) {
 //                    GossipDigest g = Serializer.getInstance().decode(Buffer.buffer().appendString(e.toString()), GossipDigest.class);
                     GossipNode member = new GossipNode();
                     member.setCluster(cluster);
-                    member.setHost(g.getEndpoint().getAddress().getHostAddress());
-                    member.setPort(g.getEndpoint().getPort());
-                    member.setNodeId(g.getId());
+                    member.setHost(gossipDigest.getEndpoint().getAddress().getHostAddress());
+                    member.setPort(gossipDigest.getEndpoint().getPort());
+                    member.setNodeId(gossipDigest.getId());
                     gMemberList.add(member);
 
-                    compareDigest(g, member, cluster, olders, newers);
+                    compareDigest(gossipDigest, member, cluster, olders, newers);
                 }
                 // I have, you don't have
                 Map<GossipNode, HeartbeatState> endpoints = GossipApp.instance().endpointMembers();

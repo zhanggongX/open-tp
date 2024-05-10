@@ -1,7 +1,8 @@
 package cn.opentp.gossip.net;
 
-import cn.opentp.gossip.handler.*;
+import cn.opentp.gossip.core.GossipMessage;
 import cn.opentp.gossip.enums.MessageTypeEnum;
+import cn.opentp.gossip.handler.*;
 import com.alibaba.fastjson2.JSON;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -29,16 +30,12 @@ public class UDPMessageService implements MessageService {
         eventLoopGroup = new NioEventLoopGroup();
 
         Bootstrap bootstrap = new Bootstrap();
-        bootstrap.group(eventLoopGroup).channel(NioDatagramChannel.class)
-                .option(ChannelOption.SO_BROADCAST, false)
-                .option(ChannelOption.SO_RCVBUF, 2048 * 1024)
-                .option(ChannelOption.SO_SNDBUF, 1024 * 1024)
-                .handler(new ChannelInitializer<>() {
-                    @Override
-                    protected void initChannel(Channel channel) throws Exception {
-                        channel.pipeline().addLast(new NetMessageHandler());
-                    }
-                });
+        bootstrap.group(eventLoopGroup).channel(NioDatagramChannel.class).option(ChannelOption.SO_BROADCAST, false).option(ChannelOption.SO_RCVBUF, 2048 * 1024).option(ChannelOption.SO_SNDBUF, 1024 * 1024).handler(new ChannelInitializer<>() {
+            @Override
+            protected void initChannel(Channel channel) throws Exception {
+                channel.pipeline().addLast(new NetMessageHandler());
+            }
+        });
 
         ChannelFuture channelFuture = bootstrap.bind(host, port);
         channelFuture.addListener(new ChannelFutureListener() {
@@ -55,24 +52,13 @@ public class UDPMessageService implements MessageService {
     }
 
     @Override
-    public void handle(ByteBuf data) {
-//        JsonObject j = data.toJsonObject();
-//        String msgType = j.getString(GossipMessageFactory.KEY_MSG_TYPE);
-//        String _data = j.getString(GossipMessageFactory.KEY_DATA);
-//        String cluster = j.getString(GossipMessageFactory.KEY_CLUSTER);
-//        String from = j.getString(GossipMessageFactory.KEY_FROM);
-//        if ((null == cluster || cluster.isEmpty()) || !GossipManager.getInstance().getCluster().equals(cluster)) {
-//            log.error("This message shouldn't exist in my world!" + data);
-//            return;
-//        }
-
-        String msgType = "";
-        String cluster = "";
-        String _data = "";
-        String from = "";
+    public void handle(ByteBuf byteBuf) {
+        String data = byteBuf.toString(StandardCharsets.UTF_8);
+        log.debug("接收到消息：{}", data);
+        GossipMessage gossipMessage = JSON.parseObject(data, GossipMessage.class);
 
         MessageHandler handler = null;
-        MessageTypeEnum type = MessageTypeEnum.valueOf(msgType);
+        MessageTypeEnum type = MessageTypeEnum.findByType(gossipMessage.getType());
         if (type == MessageTypeEnum.SYNC_MESSAGE) {
             handler = new SyncMessageHandler();
         } else if (type == MessageTypeEnum.ACK_MESSAGE) {
@@ -87,15 +73,20 @@ public class UDPMessageService implements MessageService {
             log.error("Not supported message type");
         }
         if (handler != null) {
-            handler.handle(cluster, _data, from);
+            handler.handle(gossipMessage.getCluster(), gossipMessage.getData(), gossipMessage.getForm());
         }
     }
 
     @Override
     public void send(String targetHost, Integer targetPort, Object message) {
-        String json = JSON.toJSONString(message);
-        DatagramPacket datagramPacket = new DatagramPacket(Unpooled.copiedBuffer(json, StandardCharsets.UTF_8), new InetSocketAddress(targetHost, targetPort));
-        channel.writeAndFlush(datagramPacket);
+        if (message instanceof ByteBuf) {
+            DatagramPacket datagramPacket = new DatagramPacket((ByteBuf) message, new InetSocketAddress(targetHost, targetPort));
+            channel.writeAndFlush(datagramPacket);
+        } else {
+            String json = JSON.toJSONString(message);
+            DatagramPacket datagramPacket = new DatagramPacket(Unpooled.copiedBuffer(json, StandardCharsets.UTF_8), new InetSocketAddress(targetHost, targetPort));
+            channel.writeAndFlush(datagramPacket);
+        }
     }
 
     @Override

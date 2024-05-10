@@ -14,6 +14,15 @@ public enum MessageTypeEnum {
         this.type = type;
     }
 
+    public static MessageTypeEnum findByType(String type) {
+        for (MessageTypeEnum messageTypeEnum : MessageTypeEnum.values()) {
+            if (messageTypeEnum.getType().equals(type)) {
+                return messageTypeEnum;
+            }
+        }
+        return null;
+    }
+
     public String getType() {
         return type;
     }

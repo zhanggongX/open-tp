@@ -7,6 +7,7 @@ import java.net.UnknownHostException;
 
 
 public class GossipDigest implements Serializable, Comparable<GossipDigest> {
+
     private InetSocketAddress endpoint;
     private long heartbeatTime;
     private long version;

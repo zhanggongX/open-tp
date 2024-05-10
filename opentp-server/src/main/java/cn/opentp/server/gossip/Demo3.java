@@ -1,11 +1,11 @@
 package cn.opentp.server.gossip;
 
 
+import cn.opentp.gossip.Gossip;
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.GossipProperties;
-import cn.opentp.gossip.Gossip;
 
-public class Demo2 {
+public class Demo3 {
 
     public static void main(String[] args) {
 
@@ -13,9 +13,9 @@ public class Demo2 {
         GossipProperties properties = new GossipProperties();
         properties.setCluster("opentp");
         properties.setHost("localhost");
-        properties.setPort(9003);
+        properties.setPort(9004);
         properties.setNodeId(null);
-        properties.setClusterNodes("localhost:9001,localhost:9002");
+        properties.setClusterNodes("localhost:9001,localhost:9003");
 
         // 初始化
         Gossip.init(properties);
