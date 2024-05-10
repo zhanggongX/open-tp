@@ -5,6 +5,9 @@ import cn.opentp.gossip.enums.GossipStateEnum;
 import cn.opentp.gossip.enums.MessageTypeEnum;
 import cn.opentp.gossip.event.DefaultGossipListener;
 import cn.opentp.gossip.event.GossipListener;
+import cn.opentp.gossip.message.Ack2Message;
+import cn.opentp.gossip.message.AckMessage;
+import cn.opentp.gossip.message.GossipMessageCodec;
 import cn.opentp.gossip.model.*;
 import cn.opentp.gossip.net.MessageService;
 import cn.opentp.gossip.net.UDPMessageService;
@@ -50,7 +53,6 @@ public class GossipApp {
 
     private GossipMessageHolder messageHolder = new MemoryMessageHolder();
 
-
     private GossipApp() {
     }
 
@@ -58,7 +60,7 @@ public class GossipApp {
         return INSTANCE;
     }
 
-//    public void init(String cluster, String ipAddress, Integer port, String id, List<SeedNode> seedMembers, GossipSettings settings, GossipListener listener) {
+    //    public void init(String cluster, String ipAddress, Integer port, String id, List<SeedNode> seedMembers, GossipSettings settings, GossipListener listener) {
 //        this.cluster = cluster;
 //        this.localGossipMember = new GossipMember();
 //        this.localGossipMember.setCluster(cluster);
@@ -127,24 +129,6 @@ public class GossipApp {
 
     public boolean hadInit() {
         return hadInit;
-    }
-
-    public ByteBuf encodeAckMessage(AckMessage ackMessage) {
-        String ackJson = JSON.toJSONString(ackMessage);
-        JSONObject jsonObject = GossipMessageFactory.getInstance().makeMessage(MessageTypeEnum.ACK_MESSAGE, ackJson, setting().getCluster(), selfNode().socketAddress());
-        return Unpooled.copiedBuffer(jsonObject.toString(), StandardCharsets.UTF_8);
-    }
-
-    public ByteBuf encodeAck2Message(Ack2Message ack2Message) {
-        String ack2Json = JSON.toJSONString(ack2Message);
-        JSONObject jsonObject = GossipMessageFactory.getInstance().makeMessage(MessageTypeEnum.ACK2_MESSAGE, ack2Json, setting().getCluster(), selfNode().socketAddress());
-        return Unpooled.copiedBuffer(jsonObject.toString(), StandardCharsets.UTF_8);
-    }
-
-    private ByteBuf encodeShutdownMessage() {
-        String self = JSON.toJSONString(selfNode());
-        JSONObject jsonObject = GossipMessageFactory.getInstance().makeMessage(MessageTypeEnum.SHUTDOWN, self, setting().getCluster(), selfNode().socketAddress());
-        return Unpooled.copiedBuffer(jsonObject.toJSONString(), StandardCharsets.UTF_8);
     }
 
     public GossipNode selfNode() {
@@ -335,9 +319,9 @@ public class GossipApp {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        ByteBuf buffer = encodeShutdownMessage();
+        ByteBuf byteBuf = GossipMessageCodec.codec().encodeShutdownMessage();
         for (int i = 0; i < liveNodes().size(); i++) {
-            sendGossip(buffer, liveNodes(), i);
+            sendGossip(byteBuf, liveNodes(), i);
         }
         working = false;
     }

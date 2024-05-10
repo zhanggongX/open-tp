@@ -1,4 +1,7 @@
-package cn.opentp.gossip.model;
+package cn.opentp.gossip.message;
+
+import cn.opentp.gossip.model.GossipNode;
+import cn.opentp.gossip.model.HeartbeatState;
 
 import java.io.Serializable;
 import java.util.Map;

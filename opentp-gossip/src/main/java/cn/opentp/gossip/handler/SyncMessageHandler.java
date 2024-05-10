@@ -2,13 +2,12 @@ package cn.opentp.gossip.handler;
 
 
 import cn.opentp.gossip.GossipApp;
-import cn.opentp.gossip.core.GossipMessage;
-import cn.opentp.gossip.model.AckMessage;
+import cn.opentp.gossip.message.AckMessage;
+import cn.opentp.gossip.message.GossipMessageCodec;
 import cn.opentp.gossip.model.GossipDigest;
 import cn.opentp.gossip.model.GossipNode;
 import cn.opentp.gossip.model.HeartbeatState;
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,10 +19,10 @@ public class SyncMessageHandler implements MessageHandler {
     private static final Logger log = LoggerFactory.getLogger(SyncMessageHandler.class);
 
     @Override
-    public void handle(String cluster, String data, String from) {
-        if (data != null && !data.isEmpty()) {
+    public void handle(String cluster, Object data, String from) {
+        if (data != null) {
             try {
-                List<GossipDigest> gossipDigests = JSON.parseArray(data, GossipDigest.class);
+                List<GossipDigest> gossipDigests = (List<GossipDigest>) data;
 
                 List<GossipDigest> olders = new ArrayList<>();
                 Map<GossipNode, HeartbeatState> newers = new HashMap<>();
@@ -52,7 +51,7 @@ public class SyncMessageHandler implements MessageHandler {
                     }
                 }
                 AckMessage ackMessage = new AckMessage(olders, newers);
-                ByteBuf ackBuffer = GossipApp.instance().encodeAckMessage(ackMessage);
+                ByteBuf ackBuffer = GossipMessageCodec.codec().encodeAckMessage(ackMessage);
                 if (from != null) {
                     String[] host = from.split(":");
                     GossipApp.instance().messageService().send(host[0], Integer.valueOf(host[1]), ackBuffer);

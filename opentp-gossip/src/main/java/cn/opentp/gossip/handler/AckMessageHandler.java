@@ -1,6 +1,9 @@
 package cn.opentp.gossip.handler;
 
 import cn.opentp.gossip.GossipApp;
+import cn.opentp.gossip.message.Ack2Message;
+import cn.opentp.gossip.message.AckMessage;
+import cn.opentp.gossip.message.GossipMessageCodec;
 import cn.opentp.gossip.model.*;
 import com.alibaba.fastjson2.JSON;
 import io.netty.buffer.ByteBuf;
@@ -12,8 +15,8 @@ import java.util.Map;
 public class AckMessageHandler implements MessageHandler {
 
     @Override
-    public void handle(String cluster, String data, String from) {
-        AckMessage ackMessage = JSON.parseObject(data, AckMessage.class);
+    public void handle(String cluster, Object data, String from) {
+        AckMessage ackMessage = (AckMessage) data;
 
         List<GossipDigest> olders = ackMessage.getOlders();
         Map<GossipNode, HeartbeatState> newers = ackMessage.getNewers();
@@ -36,7 +39,7 @@ public class AckMessageHandler implements MessageHandler {
 
         if (!deltaEndpoints.isEmpty()) {
             Ack2Message ack2Message = new Ack2Message(deltaEndpoints);
-            ByteBuf byteBuf = GossipApp.instance().encodeAck2Message(ack2Message);
+            ByteBuf byteBuf = GossipMessageCodec.codec().encodeAck2Message(ack2Message);
             if (from != null) {
                 String[] host = from.split(":");
                 GossipApp.instance().messageService().send(host[0], Integer.valueOf(host[1]), byteBuf);

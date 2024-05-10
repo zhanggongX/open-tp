@@ -1,8 +1,8 @@
 package cn.opentp.gossip.net;
 
-import cn.opentp.gossip.core.GossipMessage;
 import cn.opentp.gossip.enums.MessageTypeEnum;
 import cn.opentp.gossip.handler.*;
+import cn.opentp.gossip.message.GossipMessage;
 import com.alibaba.fastjson2.JSON;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -73,7 +73,7 @@ public class UDPMessageService implements MessageService {
             log.error("Not supported message type");
         }
         if (handler != null) {
-            handler.handle(gossipMessage.getCluster(), gossipMessage.getData(), gossipMessage.getForm());
+            handler.handle(gossipMessage.getCluster(), gossipMessage.getData(), gossipMessage.getFrom());
         }
     }
 

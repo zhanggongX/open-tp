@@ -17,9 +17,10 @@ public class RegularMessageHandler implements MessageHandler {
     private static final ConcurrentHashMap<String, String> RECEIVED = new ConcurrentHashMap<>();
 
     @Override
-    public void handle(String cluster, String data, String from) {
+    public void handle(String cluster, Object data, String from) {
 
-        GossipRegularMessage msg = JSON.parseObject(data, GossipRegularMessage.class);
+        GossipRegularMessage msg = (GossipRegularMessage) data;
+
         GossipMessageHolder mm = GossipApp.instance().messageHolder();
         String creatorId = msg.getCreator().getNodeId();
         if (!RECEIVED.containsKey(creatorId)) {

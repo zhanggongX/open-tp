@@ -12,7 +12,7 @@ public class Gossip {
 
     private static final Logger log = LoggerFactory.getLogger(Gossip.class);
 
-    private static final GossipApp GOSSIP_MANAGEMENT = GossipApp.instance();
+    private static final GossipApp GOSSIP_APP = GossipApp.instance();
 
     /**
      * 系统初始化
@@ -22,7 +22,7 @@ public class Gossip {
     public static void init(GossipProperties properties) {
         GossipSettings.parseConfig(properties);
         // 标记配置完成
-        GOSSIP_MANAGEMENT.initMark();
+        GOSSIP_APP.initMark();
     }
 
     /**
@@ -32,7 +32,7 @@ public class Gossip {
      * @param gossipListener 自定义事件处理器
      */
     public static void init(GossipProperties properties, GossipListener gossipListener) {
-        GOSSIP_MANAGEMENT.setGossipListener(gossipListener);
+        GOSSIP_APP.setGossipListener(gossipListener);
         init(properties);
     }
 
@@ -41,17 +41,17 @@ public class Gossip {
      */
     public synchronized static void start() {
 
-        if (!GOSSIP_MANAGEMENT.hadInit()) {
+        if (!GOSSIP_APP.hadInit()) {
             log.info("Gossip 未初始化，请先执行: {}", "cn.opentp.gossip.GossipService.init()");
             System.exit(-1);
         }
 
-        if (GOSSIP_MANAGEMENT.working()) {
+        if (GOSSIP_APP.working()) {
             log.info("Gossip 请勿重复启动");
             System.exit(-1);
         }
 
-        GossipNode localNode = GOSSIP_MANAGEMENT.selfNode();
+        GossipNode localNode = GOSSIP_APP.selfNode();
         log.info("Starting {} gossip, host:{}, port:{}, nodeId:{}",
                 localNode.getCluster(),
                 localNode.getHost(),
@@ -59,15 +59,15 @@ public class Gossip {
                 localNode.getNodeId());
 
         // 服务器启动
-        GOSSIP_MANAGEMENT.startup();
+        GOSSIP_APP.startup();
     }
 
     /**
      * 服务关闭
      */
     public void shutdown() {
-        if (GOSSIP_MANAGEMENT.working()) {
-            GOSSIP_MANAGEMENT.shutdown();
+        if (GOSSIP_APP.working()) {
+            GOSSIP_APP.shutdown();
         }
     }
 }

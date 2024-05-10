@@ -1,23 +1,27 @@
-package cn.opentp.gossip.core;
+package cn.opentp.gossip.message;
 
-import cn.opentp.gossip.enums.MessageTypeEnum;
+import java.io.Serializable;
 
-public class GossipMessage {
+public class GossipMessage implements Serializable {
 
     // MessageTypeEnum
     public String type;
-    public String data;
+    public Object data;
     public String cluster;
-    public String form;
+    public String from;
 
     public GossipMessage() {
     }
 
-    public GossipMessage(String type, String data, String cluster, String form) {
+    public GossipMessage(String type, Object data, String cluster, String from) {
         this.type = type;
         this.data = data;
         this.cluster = cluster;
-        this.form = form;
+        this.from = from;
+    }
+
+    public static GossipMessageBuilder builder() {
+        return new GossipMessageBuilder();
     }
 
     public String getType() {
@@ -28,11 +32,11 @@ public class GossipMessage {
         this.type = type;
     }
 
-    public String getData() {
+    public Object getData() {
         return data;
     }
 
-    public void setData(String data) {
+    public void setData(Object data) {
         this.data = data;
     }
 
@@ -44,11 +48,11 @@ public class GossipMessage {
         this.cluster = cluster;
     }
 
-    public String getForm() {
-        return form;
+    public String getFrom() {
+        return from;
     }
 
-    public void setForm(String form) {
-        this.form = form;
+    public void setFrom(String from) {
+        this.from = from;
     }
 }

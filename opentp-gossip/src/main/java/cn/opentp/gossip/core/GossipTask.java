@@ -3,18 +3,18 @@ package cn.opentp.gossip.core;
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.enums.GossipStateEnum;
 import cn.opentp.gossip.enums.MessageTypeEnum;
+import cn.opentp.gossip.message.GossipMessage;
+import cn.opentp.gossip.message.GossipMessageBuilder;
+import cn.opentp.gossip.message.GossipMessageCodec;
 import cn.opentp.gossip.model.*;
 import cn.opentp.gossip.net.MessageService;
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.socket.DatagramPacket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -52,8 +52,8 @@ public class GossipTask implements Runnable {
         try {
             randomGossipDigest(digests);
             if (!digests.isEmpty()) {
-                ByteBuf syncMessageBuf = encodeSyncMessage(digests);
-                sendBuf(syncMessageBuf);
+                ByteBuf byteBuf = GossipMessageCodec.codec().encodeSyncMessage(digests);
+                sendBuf(byteBuf);
             }
 
             checkStatus();
@@ -74,7 +74,8 @@ public class GossipTask implements Runnable {
 //                                maxTry = convergenceCount();
 //                            }
                         if (c < maxTry) {
-                            sendBuf(encodeRegularMessage(msg));
+                            ByteBuf byteBuf = GossipMessageCodec.codec().encodeRegularMessage(msg);
+                            sendBuf(byteBuf);
                             msg.setForwardCount(c + 1);
                         }
                         if ((System.currentTimeMillis() - msg.getCreateTime()) >= msg.getTtl()) {
@@ -150,15 +151,6 @@ public class GossipTask implements Runnable {
         }
     }
 
-    private ByteBuf encodeSyncMessage(List<GossipDigest> digests) {
-
-        String data = JSON.toJSONString(digests);
-
-        GossipMessage gossipMessage = new GossipMessage(MessageTypeEnum.SYNC_MESSAGE.getType(), data, gossipApp.setting().getCluster(), gossipApp.selfNode().socketAddress());
-
-        return Unpooled.copiedBuffer(JSON.toJSONString(gossipMessage), StandardCharsets.UTF_8);
-    }
-
     private void checkStatus() {
         try {
             GossipNode local = gossipApp.selfNode();
@@ -188,15 +180,6 @@ public class GossipTask implements Runnable {
     private int convergenceCount() {
         int size = gossipApp.endpointMembers().size();
         return (int) Math.floor(Math.log10(size) + Math.log(size) + 1);
-    }
-
-    private ByteBuf encodeRegularMessage(GossipRegularMessage regularMessage) {
-
-        String msg = JSON.toJSONString(regularMessage);
-
-        JSONObject jsonObject = GossipMessageFactory.getInstance().makeMessage(MessageTypeEnum.REG_MESSAGE, msg, gossipApp.setting().getCluster(), gossipApp.selfNode().socketAddress());
-
-        return Unpooled.copiedBuffer(jsonObject.toJSONString(), StandardCharsets.UTF_8);
     }
 
     private boolean gossip2LiveMember(ByteBuf byteBuf) {
