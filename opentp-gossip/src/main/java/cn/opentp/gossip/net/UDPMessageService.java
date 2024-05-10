@@ -2,13 +2,19 @@ package cn.opentp.gossip.net;
 
 import cn.opentp.gossip.handler.*;
 import cn.opentp.gossip.enums.MessageTypeEnum;
+import com.alibaba.fastjson2.JSON;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 
 public class UDPMessageService implements MessageService {
 
@@ -23,7 +29,8 @@ public class UDPMessageService implements MessageService {
         eventLoopGroup = new NioEventLoopGroup();
 
         Bootstrap bootstrap = new Bootstrap();
-        bootstrap.group(eventLoopGroup).channel(NioDatagramChannel.class).option(ChannelOption.SO_BROADCAST, true)
+        bootstrap.group(eventLoopGroup).channel(NioDatagramChannel.class)
+                .option(ChannelOption.SO_BROADCAST, false)
                 .option(ChannelOption.SO_RCVBUF, 2048 * 1024)
                 .option(ChannelOption.SO_SNDBUF, 1024 * 1024)
                 .handler(new ChannelInitializer<>() {
@@ -85,9 +92,10 @@ public class UDPMessageService implements MessageService {
     }
 
     @Override
-    public void send(String targetIp, Integer targetPort, ByteBuf data) {
-//        DatagramPacket datagramPacket = new DatagramPacket(data, packet.sender());
-//        socket.writeAndFlush(datagramPacket);
+    public void send(String targetHost, Integer targetPort, Object message) {
+        String json = JSON.toJSONString(message);
+        DatagramPacket datagramPacket = new DatagramPacket(Unpooled.copiedBuffer(json, StandardCharsets.UTF_8), new InetSocketAddress(targetHost, targetPort));
+        channel.writeAndFlush(datagramPacket);
     }
 
     @Override

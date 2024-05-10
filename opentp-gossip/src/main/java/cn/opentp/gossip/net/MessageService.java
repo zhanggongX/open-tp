@@ -8,7 +8,7 @@ public interface MessageService {
 
     void handle(ByteBuf data);
 
-    void send(String targetIp, Integer targetPort, ByteBuf data);
+    void send(String targetIp, Integer targetPort, Object data);
 
     void close();
 }
