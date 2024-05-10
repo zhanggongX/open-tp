@@ -1,6 +1,6 @@
 package cn.opentp.gossip.core;
 
-import cn.opentp.gossip.GossipManagement;
+import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.enums.GossipStateEnum;
 import cn.opentp.gossip.enums.MessageTypeEnum;
 import cn.opentp.gossip.model.*;
@@ -25,7 +25,7 @@ public class GossipTask implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(GossipTask.class);
 
-    private final GossipManagement gossipManagement = GossipManagement.instance();
+    private final GossipApp gossipManagement = GossipApp.instance();
 
     @Override
     public void run() {
@@ -62,10 +62,10 @@ public class GossipTask implements Runnable {
                 log.trace("endpoint : {}", gossipManagement.endpointMembers());
             }
             new Thread(() -> {
-                MessageManager mm = gossipManagement.getMessageManager();
+                GossipMessageHolder mm = gossipManagement.messageHolder();
                 if (!mm.isEmpty()) {
                     for (String id : mm.list()) {
-                        RegularMessage msg = mm.acquire(id);
+                        GossipRegularMessage msg = mm.acquire(id);
                         int c = msg.getForwardCount();
                         int maxTry = convergenceCount();
 //                            if (isSeedNode()) {
@@ -188,7 +188,7 @@ public class GossipTask implements Runnable {
         return (int) Math.floor(Math.log10(size) + Math.log(size) + 1);
     }
 
-    private ByteBuf encodeRegularMessage(RegularMessage regularMessage) {
+    private ByteBuf encodeRegularMessage(GossipRegularMessage regularMessage) {
 
         String msg = JSON.toJSONString(regularMessage);
 

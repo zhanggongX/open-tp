@@ -1,10 +1,13 @@
-package cn.opentp.gossip.model;
+package cn.opentp.gossip.core;
+
+import cn.opentp.gossip.model.GossipNode;
 
 import java.io.Serializable;
 
-public class RegularMessage implements Serializable {
+public class GossipRegularMessage implements Serializable {
 
     private static final long DEFAULT_TTL = 300000;
+
     private String id;
     private long ttl;
     private long createTime;
@@ -13,14 +16,14 @@ public class RegularMessage implements Serializable {
 
     private GossipNode creator;
 
-    public RegularMessage() {
+    public GossipRegularMessage() {
     }
 
-    public RegularMessage(GossipNode creator, Object payload) {
+    public GossipRegularMessage(GossipNode creator, Object payload) {
         this(creator, payload, DEFAULT_TTL);
     }
 
-    public RegularMessage(GossipNode creator, Object payload, Long ttl) {
+    public GossipRegularMessage(GossipNode creator, Object payload, Long ttl) {
         long now = System.currentTimeMillis();
         this.ttl = ttl == null ? DEFAULT_TTL : ttl;
         this.creator = creator;
@@ -80,7 +83,7 @@ public class RegularMessage implements Serializable {
 
     @Override
     public String toString() {
-        return "RegularMessage{" +
+        return "GossipRegularMessage{" +
                 "id='" + id + '\'' +
                 ", ttl=" + ttl +
                 ", createTime=" + createTime +

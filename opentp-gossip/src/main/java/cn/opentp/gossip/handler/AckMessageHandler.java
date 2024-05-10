@@ -1,6 +1,6 @@
 package cn.opentp.gossip.handler;
 
-import cn.opentp.gossip.GossipManagement;
+import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.model.*;
 import com.alibaba.fastjson2.JSON;
 import io.netty.buffer.ByteBuf;
@@ -20,14 +20,14 @@ public class AckMessageHandler implements MessageHandler {
 
         //update local state
         if (newers.size() > 0) {
-            GossipManagement.instance().apply2LocalState(newers);
+            GossipApp.instance().apply2LocalState(newers);
         }
 
         Map<GossipNode, HeartbeatState> deltaEndpoints = new HashMap<>();
         if (olders != null) {
             for (GossipDigest d : olders) {
-                GossipNode member = GossipManagement.instance().createByDigest(d);
-                HeartbeatState hb = GossipManagement.instance().endpointMembers().get(member);
+                GossipNode member = GossipApp.instance().createByDigest(d);
+                HeartbeatState hb = GossipApp.instance().endpointMembers().get(member);
                 if (hb != null) {
                     deltaEndpoints.put(member, hb);
                 }
@@ -36,10 +36,10 @@ public class AckMessageHandler implements MessageHandler {
 
         if (!deltaEndpoints.isEmpty()) {
             Ack2Message ack2Message = new Ack2Message(deltaEndpoints);
-            ByteBuf byteBuf = GossipManagement.instance().encodeAck2Message(ack2Message);
+            ByteBuf byteBuf = GossipApp.instance().encodeAck2Message(ack2Message);
             if (from != null) {
                 String[] host = from.split(":");
-                GossipManagement.instance().messageService().send(host[0], Integer.valueOf(host[1]), byteBuf);
+                GossipApp.instance().messageService().send(host[0], Integer.valueOf(host[1]), byteBuf);
             }
         }
     }

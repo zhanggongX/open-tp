@@ -53,8 +53,8 @@ public class GossipSettings {
         }
 
         // 解析 clusterNodes
-        GossipManagement gossipManager = GossipManagement.instance();
-        GossipSettings gossipSettings = gossipManager.setting();
+        GossipApp gossipApp = GossipApp.instance();
+        GossipSettings gossipSettings = gossipApp.setting();
         String clusterNodes = properties.getClusterNodes();
         String[] hosts = clusterNodes.split(",", -1);
 
@@ -89,7 +89,7 @@ public class GossipSettings {
         gossipNode.setState(GossipStateEnum.JOIN);
         gossipSettings.setLocalNode(gossipNode);
 
-        gossipManager.endpointMembers().put(gossipNode, new HeartbeatState());
+        gossipApp.endpointMembers().put(gossipNode, new HeartbeatState());
     }
 
     public GossipNode getLocalNode() {

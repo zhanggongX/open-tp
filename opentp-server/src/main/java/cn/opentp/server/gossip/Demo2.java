@@ -1,9 +1,9 @@
 package cn.opentp.server.gossip;
 
 
-import cn.opentp.gossip.GossipManagement;
+import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.GossipProperties;
-import cn.opentp.gossip.GossipService;
+import cn.opentp.gossip.Gossip;
 
 public class Demo2 {
 
@@ -18,15 +18,15 @@ public class Demo2 {
         properties.setClusterNodes("localhost:9001,localhost:9003");
 
         // 初始化
-        GossipService.init(properties);
+        Gossip.init(properties);
 
         // 开启服务
-        GossipService.start();
+        Gossip.start();
 
         try {
             while (true) {
                 Thread.sleep(5000);
-                GossipManagement gossipManager = GossipManagement.instance();
+                GossipApp gossipManager = GossipApp.instance();
                 gossipManager.publish("hello world");
             }
         } catch (Exception e) {

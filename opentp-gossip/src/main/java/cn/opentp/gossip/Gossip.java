@@ -8,11 +8,11 @@ import org.slf4j.LoggerFactory;
 /**
  * Gossip 服务入口
  */
-public class GossipService {
+public class Gossip {
 
-    private static final Logger log = LoggerFactory.getLogger(GossipService.class);
+    private static final Logger log = LoggerFactory.getLogger(Gossip.class);
 
-    private static final GossipManagement GOSSIP_MANAGEMENT = GossipManagement.instance();
+    private static final GossipApp GOSSIP_MANAGEMENT = GossipApp.instance();
 
     /**
      * 系统初始化
@@ -43,12 +43,12 @@ public class GossipService {
 
         if (!GOSSIP_MANAGEMENT.hadInit()) {
             log.info("Gossip 未初始化，请先执行: {}", "cn.opentp.gossip.GossipService.init()");
-            return;
+            System.exit(-1);
         }
 
         if (GOSSIP_MANAGEMENT.working()) {
             log.info("Gossip 请勿重复启动");
-            return;
+            System.exit(-1);
         }
 
         GossipNode localNode = GOSSIP_MANAGEMENT.selfNode();

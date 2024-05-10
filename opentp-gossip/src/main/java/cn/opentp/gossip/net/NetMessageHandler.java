@@ -1,6 +1,6 @@
 package cn.opentp.gossip.net;
 
-import cn.opentp.gossip.GossipManagement;
+import cn.opentp.gossip.GossipApp;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.DatagramPacket;
@@ -11,7 +11,7 @@ public class NetMessageHandler extends SimpleChannelInboundHandler<DatagramPacke
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, DatagramPacket packet) throws Exception {
-        GossipManagement management = GossipManagement.instance();
+        GossipApp management = GossipApp.instance();
         MessageService messageService = management.messageService();
         String msg = packet.content().toString(StandardCharsets.UTF_8);
         System.out.println(msg);

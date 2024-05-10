@@ -1,7 +1,7 @@
 package cn.opentp.gossip.handler;
 
 
-import cn.opentp.gossip.GossipManagement;
+import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.model.AckMessage;
 import cn.opentp.gossip.model.GossipDigest;
 import cn.opentp.gossip.model.GossipNode;
@@ -39,21 +39,21 @@ public class SyncMessageHandler implements MessageHandler {
                     compareDigest(g, member, cluster, olders, newers);
                 }
                 // I have, you don't have
-                Map<GossipNode, HeartbeatState> endpoints = GossipManagement.instance().endpointMembers();
+                Map<GossipNode, HeartbeatState> endpoints = GossipApp.instance().endpointMembers();
                 Set<GossipNode> epKeys = endpoints.keySet();
                 for (GossipNode m : epKeys) {
                     if (!gMemberList.contains(m)) {
                         newers.put(m, endpoints.get(m));
                     }
-                    if (m.equals(GossipManagement.instance().selfNode())) {
+                    if (m.equals(GossipApp.instance().selfNode())) {
                         newers.put(m, endpoints.get(m));
                     }
                 }
                 AckMessage ackMessage = new AckMessage(olders, newers);
-                ByteBuf ackBuffer = GossipManagement.instance().encodeAckMessage(ackMessage);
+                ByteBuf ackBuffer = GossipApp.instance().encodeAckMessage(ackMessage);
                 if (from != null) {
                     String[] host = from.split(":");
-                    GossipManagement.instance().messageService().send(host[0], Integer.valueOf(host[1]), ackBuffer);
+                    GossipApp.instance().messageService().send(host[0], Integer.valueOf(host[1]), ackBuffer);
                 }
             } catch (NumberFormatException e) {
                 log.error(e.getMessage());
@@ -64,7 +64,7 @@ public class SyncMessageHandler implements MessageHandler {
     private void compareDigest(GossipDigest g, GossipNode member, String cluster, List<GossipDigest> olders, Map<GossipNode, HeartbeatState> newers) {
 
         try {
-            HeartbeatState hb = GossipManagement.instance().endpointMembers().get(member);
+            HeartbeatState hb = GossipApp.instance().endpointMembers().get(member);
             long remoteHeartbeatTime = g.getHeartbeatTime();
             long remoteVersion = g.getVersion();
             if (hb != null) {

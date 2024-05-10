@@ -23,11 +23,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * Gossip 全局唯一实例
  */
-public class GossipManagement {
+public class GossipApp {
 
-    private static final Logger log = LoggerFactory.getLogger(GossipManagement.class);
+    private static final Logger log = LoggerFactory.getLogger(GossipApp.class);
     // 实例
-    private static final GossipManagement INSTANCE = new GossipManagement();
+    private static final GossipApp INSTANCE = new GossipApp();
 
     private final ReentrantReadWriteLock globalLock = new ReentrantReadWriteLock();
     private final ScheduledExecutorService gossipScheduleExecutor = Executors.newScheduledThreadPool(1);
@@ -48,13 +48,13 @@ public class GossipManagement {
 
     private final Random random = new Random();
 
-    private MessageManager messageManager = new InMemMessageManager();
+    private GossipMessageHolder messageHolder = new MemoryMessageHolder();
 
 
-    private GossipManagement() {
+    private GossipApp() {
     }
 
-    public static GossipManagement instance() {
+    public static GossipApp instance() {
         return INSTANCE;
     }
 
@@ -239,15 +239,6 @@ public class GossipManagement {
         return new SeedNode(member.getCluster(), member.getNodeId(), member.getHost(), member.getPort());
     }
 
-    private int convergenceCount() {
-        int size = endpointMembers().size();
-        return (int) Math.floor(Math.log10(size) + Math.log(size) + 1);
-    }
-
-    private long convictedTime() {
-        long executeGossipTime = 500;
-        return ((convergenceCount() * (setting().getNetworkDelay() * 3L + executeGossipTime)) << 1) + setting().getGossipInterval();
-    }
 
     public Boolean getSeedNode() {
         return seedNode;
@@ -316,7 +307,27 @@ public class GossipManagement {
     }
 
 
-    protected void shutdown() {
+    /**
+     * 启动服务
+     */
+    public void startup() {
+        fireGossipEvent(setting().getLocalNode(), GossipStateEnum.JOIN);
+        netStartup();
+        gossipStartup();
+        working = true;
+    }
+
+    /**
+     * 启动流言发送线程
+     */
+    public void gossipStartup() {
+        gossipScheduleExecutor.scheduleAtFixedRate(new GossipTask(), setting().getGossipInterval(), setting().getGossipInterval(), TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * 关闭服务
+     */
+    public void shutdown() {
         messageService.close();
         gossipScheduleExecutor.shutdown();
         try {
@@ -331,27 +342,36 @@ public class GossipManagement {
         working = false;
     }
 
+    /**
+     * 发布流言
+     */
     public void publish(Object payload) {
-        RegularMessage msg = new RegularMessage(selfNode(), payload, convictedTime());
-        messageManager.add(msg);
+        GossipRegularMessage msg = new GossipRegularMessage(selfNode(), payload, convictedTime());
+        messageHolder.add(msg);
     }
 
-    public MessageManager getMessageManager() {
-        return messageManager;
+    /**
+     * 判定过期时间
+     */
+    private long convictedTime() {
+        long executeGossipTime = 500;
+        return ((convergenceCount() * (gossipSettings.getNetworkDelay() * 3L + executeGossipTime)) << 1) + setting().getGossipInterval();
+    }
+
+    /**
+     * 判定获取次数
+     */
+    private int convergenceCount() {
+        int size = endpointMembers().size();
+        return (int) Math.floor(Math.log10(size) + Math.log(size) + 1);
+    }
+
+
+    public GossipMessageHolder messageHolder() {
+        return messageHolder;
     }
 
     public GossipSettings setting() {
         return gossipSettings;
-    }
-
-    public void startup() {
-        fireGossipEvent(setting().getLocalNode(), GossipStateEnum.JOIN);
-        netStartup();
-        gossipStartup();
-        working = true;
-    }
-
-    public void gossipStartup() {
-        gossipScheduleExecutor.scheduleAtFixedRate(new GossipTask(), setting().getGossipInterval(), setting().getGossipInterval(), TimeUnit.MILLISECONDS);
     }
 }

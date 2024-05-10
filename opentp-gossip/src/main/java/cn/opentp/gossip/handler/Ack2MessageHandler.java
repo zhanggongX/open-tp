@@ -1,6 +1,6 @@
 package cn.opentp.gossip.handler;
 
-import cn.opentp.gossip.GossipManagement;
+import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.model.Ack2Message;
 import cn.opentp.gossip.model.GossipNode;
 import cn.opentp.gossip.model.HeartbeatState;
@@ -18,6 +18,6 @@ public class Ack2MessageHandler implements MessageHandler {
         Ack2Message ack2Message = JSON.parseObject(data, Ack2Message.class);
 
         Map<GossipNode, HeartbeatState> deltaEndpoints = ack2Message.getEndpoints();
-        GossipManagement.instance().apply2LocalState(deltaEndpoints);
+        GossipApp.instance().apply2LocalState(deltaEndpoints);
     }
 }
