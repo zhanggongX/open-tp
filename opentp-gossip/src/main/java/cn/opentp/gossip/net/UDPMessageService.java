@@ -52,9 +52,8 @@ public class UDPMessageService implements MessageService {
     }
 
     @Override
-    public void handle(ByteBuf byteBuf) {
-        String data = byteBuf.toString(StandardCharsets.UTF_8);
-        log.debug("接收到消息：{}", data);
+    public void handle(String data) {
+//        log.debug("接收到消息：{}", data);
         GossipMessage gossipMessage = JSON.parseObject(data, GossipMessage.class);
 
         MessageHandler handler = null;
@@ -79,8 +78,9 @@ public class UDPMessageService implements MessageService {
 
     @Override
     public void send(String targetHost, Integer targetPort, Object message) {
-        if (message instanceof ByteBuf) {
-            DatagramPacket datagramPacket = new DatagramPacket((ByteBuf) message, new InetSocketAddress(targetHost, targetPort));
+        if (message instanceof ByteBuf sendBuf) {
+            ByteBuf realSendBuf = sendBuf.copy();
+            DatagramPacket datagramPacket = new DatagramPacket(realSendBuf, new InetSocketAddress(targetHost, targetPort));
             channel.writeAndFlush(datagramPacket);
         } else {
             String json = JSON.toJSONString(message);

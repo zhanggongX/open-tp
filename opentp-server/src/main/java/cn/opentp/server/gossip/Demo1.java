@@ -17,6 +17,7 @@ public class Demo1 {
         properties.setPort(9001);
         properties.setNodeId(null);
         properties.setClusterNodes("localhost:9002,localhost:9003");
+//        properties.setGossipInterval(5000);
 
         // 初始化
         Gossip.init(properties);

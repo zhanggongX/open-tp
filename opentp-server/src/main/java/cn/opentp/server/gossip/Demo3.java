@@ -27,7 +27,7 @@ public class Demo3 {
             while (true) {
                 Thread.sleep(5000);
                 GossipApp gossipManager = GossipApp.instance();
-                gossipManager.publish("hello world");
+                gossipManager.publish("demo2");
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

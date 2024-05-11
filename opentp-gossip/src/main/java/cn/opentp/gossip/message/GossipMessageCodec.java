@@ -8,12 +8,15 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class GossipMessageCodec {
 
+    private static final Logger log = LoggerFactory.getLogger(GossipMessageCodec.class);
     private static final GossipMessageCodec codec = new GossipMessageCodec();
 
     public static GossipMessageCodec codec() {
