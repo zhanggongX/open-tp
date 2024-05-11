@@ -1,11 +1,13 @@
-package cn.opentp.gossip.message;
+package cn.opentp.gossip.message.codec;
 
 import cn.opentp.gossip.GossipApp;
-import cn.opentp.gossip.core.GossipRegularMessage;
 import cn.opentp.gossip.enums.MessageTypeEnum;
+import cn.opentp.gossip.message.Ack2Message;
+import cn.opentp.gossip.message.AckMessage;
+import cn.opentp.gossip.message.GossipMessage;
+import cn.opentp.gossip.message.MessagePayload;
 import cn.opentp.gossip.model.GossipDigest;
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.slf4j.Logger;
@@ -25,10 +27,10 @@ public class GossipMessageCodec {
 
     private final GossipApp gossipApp = GossipApp.instance();
 
-    public ByteBuf encodeRegularMessage(GossipRegularMessage gossipRegularMessage) {
+    public ByteBuf encodeRegularMessage(GossipMessage gossipRegularMessage) {
         String regularMessage = JSON.toJSONString(gossipRegularMessage);
-        GossipMessage gossipMessage = GossipMessage.builder()
-                .type(MessageTypeEnum.REG_MESSAGE)
+        MessagePayload gossipMessage = MessagePayload.builder()
+                .type(MessageTypeEnum.GOSSIP)
                 .data(regularMessage)
                 .cluster(gossipApp.setting().getCluster())
                 .from(gossipApp.selfNode().socketAddress()).build();
@@ -37,8 +39,8 @@ public class GossipMessageCodec {
 
     public ByteBuf encodeSyncMessage(List<GossipDigest> digests) {
         String digestsJson = JSON.toJSONString(digests);
-        GossipMessage gossipMessage = GossipMessage.builder()
-                .type(MessageTypeEnum.SYNC_MESSAGE)
+        MessagePayload gossipMessage = MessagePayload.builder()
+                .type(MessageTypeEnum.SYNC)
                 .data(digestsJson)
                 .cluster(gossipApp.setting().getCluster())
                 .from(gossipApp.selfNode().socketAddress()).build();
@@ -47,8 +49,8 @@ public class GossipMessageCodec {
 
     public ByteBuf encodeAckMessage(AckMessage ackMessage) {
         String ackJson = JSON.toJSONString(ackMessage);
-        GossipMessage gossipMessage = GossipMessage.builder()
-                .type(MessageTypeEnum.ACK_MESSAGE)
+        MessagePayload gossipMessage = MessagePayload.builder()
+                .type(MessageTypeEnum.ACK)
                 .data(ackJson)
                 .cluster(gossipApp.setting().getCluster())
                 .from(gossipApp.selfNode().socketAddress()).build();
@@ -57,8 +59,8 @@ public class GossipMessageCodec {
 
     public ByteBuf encodeAck2Message(Ack2Message ack2Message) {
         String ack2Json = JSON.toJSONString(ack2Message);
-        GossipMessage gossipMessage = GossipMessage.builder()
-                .type(MessageTypeEnum.ACK2_MESSAGE)
+        MessagePayload gossipMessage = MessagePayload.builder()
+                .type(MessageTypeEnum.ACK2)
                 .data(ack2Json)
                 .cluster(gossipApp.setting().getCluster())
                 .from(gossipApp.selfNode().socketAddress()).build();
@@ -67,7 +69,7 @@ public class GossipMessageCodec {
 
     public ByteBuf encodeShutdownMessage() {
         String selfNodeJson = JSON.toJSONString(gossipApp.selfNode());
-        GossipMessage gossipMessage = GossipMessage.builder()
+        MessagePayload gossipMessage = MessagePayload.builder()
                 .type(MessageTypeEnum.SHUTDOWN)
                 .data(selfNodeJson)
                 .cluster(gossipApp.setting().getCluster())

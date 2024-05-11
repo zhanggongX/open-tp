@@ -1,4 +1,4 @@
-package cn.opentp.gossip.net;
+package cn.opentp.gossip.message.service;
 
 public interface MessageService {
 

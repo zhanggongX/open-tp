@@ -9,9 +9,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @author lvsq
- */
+
 public class AckMessage implements Serializable {
     private List<GossipDigest> olders;
 

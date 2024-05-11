@@ -1,6 +1,7 @@
-package cn.opentp.gossip.net;
+package cn.opentp.gossip.message.service.netty;
 
 import cn.opentp.gossip.GossipApp;
+import cn.opentp.gossip.message.service.MessageService;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.DatagramPacket;
@@ -9,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 
-public class NetMessageHandler extends SimpleChannelInboundHandler<DatagramPacket> {
+public class NettyMessageHandler extends SimpleChannelInboundHandler<DatagramPacket> {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 

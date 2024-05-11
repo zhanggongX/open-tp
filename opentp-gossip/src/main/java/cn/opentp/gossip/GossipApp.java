@@ -2,23 +2,19 @@ package cn.opentp.gossip;
 
 import cn.opentp.gossip.core.*;
 import cn.opentp.gossip.enums.GossipStateEnum;
-import cn.opentp.gossip.enums.MessageTypeEnum;
 import cn.opentp.gossip.event.DefaultGossipListener;
 import cn.opentp.gossip.event.GossipListener;
-import cn.opentp.gossip.message.Ack2Message;
-import cn.opentp.gossip.message.AckMessage;
-import cn.opentp.gossip.message.GossipMessageCodec;
+import cn.opentp.gossip.message.GossipMessage;
+import cn.opentp.gossip.message.codec.GossipMessageCodec;
+import cn.opentp.gossip.message.holder.GossipMessageContext;
+import cn.opentp.gossip.message.holder.MemoryGossipMessageContext;
 import cn.opentp.gossip.model.*;
-import cn.opentp.gossip.net.MessageService;
-import cn.opentp.gossip.net.UDPMessageService;
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
+import cn.opentp.gossip.message.service.MessageService;
+import cn.opentp.gossip.message.service.UDPMessageService;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -41,7 +37,7 @@ public class GossipApp {
     private boolean working = false;
     private Boolean seedNode = null;
 
-    private final Map<GossipNode, HeartbeatState> endpointMembers = new ConcurrentHashMap<>();
+    private final Map<GossipNode, HeartbeatState> endpointNodeCache = new ConcurrentHashMap<>();
     private final List<GossipNode> liveNodes = new CopyOnWriteArrayList<>();
     private final List<GossipNode> deadNodes = new CopyOnWriteArrayList<>();
     private final Map<GossipNode, CandidateMemberState> candidateMembers = new ConcurrentHashMap<>();
@@ -51,7 +47,7 @@ public class GossipApp {
 
     private final Random random = new Random();
 
-    private GossipMessageHolder messageHolder = new MemoryMessageHolder();
+    private GossipMessageContext messageHolder = new MemoryGossipMessageContext();
 
     private GossipApp() {
     }
@@ -91,8 +87,8 @@ public class GossipApp {
         return working;
     }
 
-    public Map<GossipNode, HeartbeatState> endpointMembers() {
-        return endpointMembers;
+    public Map<GossipNode, HeartbeatState> endpointNodeCache() {
+        return endpointNodeCache;
     }
 
     public ReentrantReadWriteLock globalLock() {
@@ -143,7 +139,7 @@ public class GossipApp {
             }
 
             try {
-                HeartbeatState localState = endpointMembers().get(m);
+                HeartbeatState localState = endpointNodeCache().get(m);
                 HeartbeatState remoteState = endpointMembers.get(m);
 
                 if (localState != null) {
@@ -174,10 +170,10 @@ public class GossipApp {
         if (member.getState() == GossipStateEnum.DOWN) {
             down(member);
         }
-        if (endpointMembers.containsKey(member)) {
-            endpointMembers.remove(member);
+        if (endpointNodeCache.containsKey(member)) {
+            endpointNodeCache.remove(member);
         }
-        endpointMembers.put(member, remoteState);
+        endpointNodeCache.put(member, remoteState);
     }
 
     public GossipNode createByDigest(GossipDigest digest) {
@@ -186,7 +182,7 @@ public class GossipApp {
         member.setHost(digest.getEndpoint().getAddress().getHostAddress());
         member.setCluster(setting().getCluster());
 
-        Set<GossipNode> keys = endpointMembers().keySet();
+        Set<GossipNode> keys = endpointNodeCache().keySet();
         for (GossipNode m : keys) {
             if (m.equals(member)) {
                 member.setNodeId(m.getNodeId());
@@ -330,7 +326,7 @@ public class GossipApp {
      * 发布流言
      */
     public void publish(Object payload) {
-        GossipRegularMessage msg = new GossipRegularMessage(selfNode(), payload, convictedTime());
+        GossipMessage msg = new GossipMessage(selfNode(), payload, convictedTime());
         messageHolder.add(msg);
     }
 
@@ -346,12 +342,12 @@ public class GossipApp {
      * 判定获取次数
      */
     private int convergenceCount() {
-        int size = endpointMembers().size();
+        int size = endpointNodeCache().size();
         return (int) Math.floor(Math.log10(size) + Math.log(size) + 1);
     }
 
 
-    public GossipMessageHolder messageHolder() {
+    public GossipMessageContext messageHolder() {
         return messageHolder;
     }
 

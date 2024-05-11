@@ -2,9 +2,11 @@ package cn.opentp.gossip.core;
 
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.enums.GossipStateEnum;
-import cn.opentp.gossip.message.GossipMessageCodec;
+import cn.opentp.gossip.message.GossipMessage;
+import cn.opentp.gossip.message.codec.GossipMessageCodec;
+import cn.opentp.gossip.message.holder.GossipMessageContext;
 import cn.opentp.gossip.model.*;
-import cn.opentp.gossip.net.MessageService;
+import cn.opentp.gossip.message.service.MessageService;
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +27,7 @@ public class GossipTask implements Runnable {
     @Override
     public void run() {
         //Update local member version
-        Map<GossipNode, HeartbeatState> endpointMembers = gossipApp.endpointMembers();
+        Map<GossipNode, HeartbeatState> endpointMembers = gossipApp.endpointNodeCache();
         HeartbeatState heartbeatState = endpointMembers.get(gossipApp.selfNode());
 
         long version = heartbeatState.updateVersion();
@@ -54,7 +56,7 @@ public class GossipTask implements Runnable {
             if (log.isTraceEnabled()) {
                 log.trace("live member : {}", gossipApp.liveNodes());
                 log.trace("dead member : {}", gossipApp.deadNodes());
-                log.trace("endpoint : {}", gossipApp.endpointMembers());
+                log.trace("endpoint : {}", gossipApp.endpointNodeCache());
             }
 //            new Thread(() -> {
 //                GossipMessageHolder mm = gossipApp.messageHolder();
@@ -78,10 +80,10 @@ public class GossipTask implements Runnable {
 //                }
 //            }).start();
 
-            GossipMessageHolder mm = gossipApp.messageHolder();
+            GossipMessageContext mm = gossipApp.messageHolder();
             if (!mm.isEmpty()) {
                 for (String id : mm.list()) {
-                    GossipRegularMessage msg = mm.acquire(id);
+                    GossipMessage msg = mm.acquire(id);
                     int c = msg.getForwardCount();
                     int maxTry = convergenceCount();
 //                            if (isSeedNode()) {
@@ -149,11 +151,11 @@ public class GossipTask implements Runnable {
     }
 
     private void randomGossipDigest(List<GossipDigest> digests) throws UnknownHostException {
-        List<GossipNode> endpoints = new ArrayList<>(gossipApp.endpointMembers().keySet());
+        List<GossipNode> endpoints = new ArrayList<>(gossipApp.endpointNodeCache().keySet());
         Collections.shuffle(endpoints, gossipApp.getRandom());
 
         for (GossipNode gossipNode : endpoints) {
-            HeartbeatState heartbeatState = gossipApp.endpointMembers().get(gossipNode);
+            HeartbeatState heartbeatState = gossipApp.endpointNodeCache().get(gossipNode);
             long hbTime = 0;
             long hbVersion = 0;
             if (heartbeatState != null) {
@@ -167,7 +169,7 @@ public class GossipTask implements Runnable {
     private void checkStatus() {
         try {
             GossipNode local = gossipApp.selfNode();
-            Map<GossipNode, HeartbeatState> endpoints = gossipApp.endpointMembers();
+            Map<GossipNode, HeartbeatState> endpoints = gossipApp.endpointNodeCache();
             Set<GossipNode> epKeys = endpoints.keySet();
             for (GossipNode k : epKeys) {
                 if (!k.equals(local)) {
@@ -191,9 +193,16 @@ public class GossipTask implements Runnable {
     }
 
     private int convergenceCount() {
-        int size = gossipApp.endpointMembers().size();
+        // 计算流言传播度
+        int size = gossipApp.endpointNodeCache().size();
         return (int) Math.floor(Math.log10(size) + Math.log(size) + 1);
     }
+//
+//    public static void main(String[] args) {
+//        for (int size = 0; size < 10000; size++) {
+//            System.out.println((int) Math.floor(Math.log10(size) + Math.log(size) + 1));
+//        }
+//    }
 
     private boolean gossip2LiveMember(ByteBuf byteBuf) {
         int liveSize = gossipApp.liveNodes().size();

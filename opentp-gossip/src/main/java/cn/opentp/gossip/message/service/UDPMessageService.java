@@ -1,8 +1,9 @@
-package cn.opentp.gossip.net;
+package cn.opentp.gossip.message.service;
 
 import cn.opentp.gossip.enums.MessageTypeEnum;
-import cn.opentp.gossip.handler.*;
-import cn.opentp.gossip.message.GossipMessage;
+import cn.opentp.gossip.message.MessagePayload;
+import cn.opentp.gossip.message.handler.*;
+import cn.opentp.gossip.message.service.netty.NettyMessageHandler;
 import com.alibaba.fastjson2.JSON;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -33,7 +34,7 @@ public class UDPMessageService implements MessageService {
         bootstrap.group(eventLoopGroup).channel(NioDatagramChannel.class).option(ChannelOption.SO_BROADCAST, false).option(ChannelOption.SO_RCVBUF, 2048 * 1024).option(ChannelOption.SO_SNDBUF, 1024 * 1024).handler(new ChannelInitializer<>() {
             @Override
             protected void initChannel(Channel channel) throws Exception {
-                channel.pipeline().addLast(new NetMessageHandler());
+                channel.pipeline().addLast(new NettyMessageHandler());
             }
         });
 
@@ -54,19 +55,19 @@ public class UDPMessageService implements MessageService {
     @Override
     public void handle(String data) {
 //        log.debug("接收到消息：{}", data);
-        GossipMessage gossipMessage = JSON.parseObject(data, GossipMessage.class);
+        MessagePayload gossipMessage = JSON.parseObject(data, MessagePayload.class);
 
         MessageHandler handler = null;
         MessageTypeEnum type = MessageTypeEnum.findByType(gossipMessage.getType());
-        if (type == MessageTypeEnum.SYNC_MESSAGE) {
+        if (type == MessageTypeEnum.SYNC) {
             handler = new SyncMessageHandler();
-        } else if (type == MessageTypeEnum.ACK_MESSAGE) {
+        } else if (type == MessageTypeEnum.ACK) {
             handler = new AckMessageHandler();
-        } else if (type == MessageTypeEnum.ACK2_MESSAGE) {
+        } else if (type == MessageTypeEnum.ACK2) {
             handler = new Ack2MessageHandler();
         } else if (type == MessageTypeEnum.SHUTDOWN) {
             handler = new ShutdownMessageHandler();
-        } else if (type == MessageTypeEnum.REG_MESSAGE) {
+        } else if (type == MessageTypeEnum.GOSSIP) {
             handler = new RegularMessageHandler();
         } else {
             log.error("Not supported message type");

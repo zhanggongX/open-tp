@@ -1,28 +1,28 @@
-package cn.opentp.gossip.core;
+package cn.opentp.gossip.message.holder;
 
+
+import cn.opentp.gossip.message.GossipMessage;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * @author silv
- */
-public class MemoryMessageHolder implements GossipMessageHolder {
 
-    private static final ConcurrentHashMap<String, GossipRegularMessage> messageCache = new ConcurrentHashMap<>();
+public class MemoryGossipMessageContext implements GossipMessageContext {
+
+    private static final ConcurrentHashMap<String, GossipMessage> messageCache = new ConcurrentHashMap<>();
 
     @Override
-    public void add(GossipRegularMessage msg) {
+    public void add(GossipMessage msg) {
         messageCache.putIfAbsent(msg.getId(), msg);
     }
 
     @Override
-    public GossipRegularMessage acquire(String id) {
+    public GossipMessage acquire(String id) {
         return messageCache.get(id);
     }
 
     @Override
-    public GossipRegularMessage remove(String id) {
+    public GossipMessage remove(String id) {
         return messageCache.remove(id);
     }
 

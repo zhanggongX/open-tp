@@ -1,9 +1,9 @@
-package cn.opentp.gossip.handler;
+package cn.opentp.gossip.message.handler;
 
 import cn.opentp.gossip.GossipApp;
-import cn.opentp.gossip.core.GossipMessageHolder;
+import cn.opentp.gossip.message.holder.GossipMessageContext;
 import cn.opentp.gossip.enums.GossipStateEnum;
-import cn.opentp.gossip.core.GossipRegularMessage;
+import cn.opentp.gossip.message.GossipMessage;
 import com.alibaba.fastjson2.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,9 +19,9 @@ public class RegularMessageHandler implements MessageHandler {
     @Override
     public void handle(String cluster, String data, String from) {
 
-        GossipRegularMessage gossipRegularMessage = JSON.parseObject(data, GossipRegularMessage.class);
+        GossipMessage gossipRegularMessage = JSON.parseObject(data, GossipMessage.class);
 
-        GossipMessageHolder mm = GossipApp.instance().messageHolder();
+        GossipMessageContext mm = GossipApp.instance().messageHolder();
         String creatorId = gossipRegularMessage.getCreator().getNodeId();
         if (!RECEIVED.containsKey(creatorId)) {
             RECEIVED.put(creatorId, gossipRegularMessage.getId());

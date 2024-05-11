@@ -1,4 +1,4 @@
-package cn.opentp.gossip.handler;
+package cn.opentp.gossip.message.handler;
 
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.message.Ack2Message;
@@ -8,9 +8,6 @@ import com.alibaba.fastjson2.JSON;
 
 import java.util.Map;
 
-/**
- * @author lvsq
- */
 public class Ack2MessageHandler implements MessageHandler {
 
     @Override

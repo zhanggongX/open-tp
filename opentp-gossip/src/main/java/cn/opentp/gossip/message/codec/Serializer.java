@@ -1,11 +1,10 @@
-package cn.opentp.gossip.core;
+package cn.opentp.gossip.message.codec;
 
 import com.alibaba.fastjson2.JSON;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
 import java.io.Serializable;
-import java.nio.Buffer;
 import java.nio.charset.StandardCharsets;
 
 public class Serializer {

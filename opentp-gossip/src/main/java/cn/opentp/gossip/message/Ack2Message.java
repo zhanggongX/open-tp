@@ -6,9 +6,7 @@ import cn.opentp.gossip.model.HeartbeatState;
 import java.io.Serializable;
 import java.util.Map;
 
-/**
- * @author lvsq
- */
+
 public class Ack2Message implements Serializable {
 
     private Map<GossipNode, HeartbeatState> endpoints;
@@ -23,9 +21,7 @@ public class Ack2Message implements Serializable {
 
     @Override
     public String toString() {
-        return "GossipDigestAck2Message{" +
-                "endpoints=" + endpoints +
-                '}';
+        return "GossipDigestAck2Message{" + "endpoints=" + endpoints + '}';
     }
 
     public Map<GossipNode, HeartbeatState> getEndpoints() {

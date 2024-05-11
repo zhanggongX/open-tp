@@ -1,4 +1,4 @@
-package cn.opentp.gossip.handler;
+package cn.opentp.gossip.message.handler;
 
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.model.GossipNode;

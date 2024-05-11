@@ -4,7 +4,6 @@ package cn.opentp.server.gossip;
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.GossipProperties;
 import cn.opentp.gossip.Gossip;
-import cn.opentp.gossip.net.MessageService;
 
 public class Demo1 {
 

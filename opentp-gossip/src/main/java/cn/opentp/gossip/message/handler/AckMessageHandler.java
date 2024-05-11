@@ -1,9 +1,9 @@
-package cn.opentp.gossip.handler;
+package cn.opentp.gossip.message.handler;
 
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.message.Ack2Message;
 import cn.opentp.gossip.message.AckMessage;
-import cn.opentp.gossip.message.GossipMessageCodec;
+import cn.opentp.gossip.message.codec.GossipMessageCodec;
 import cn.opentp.gossip.model.*;
 import com.alibaba.fastjson2.JSON;
 import io.netty.buffer.ByteBuf;
@@ -30,7 +30,7 @@ public class AckMessageHandler implements MessageHandler {
         if (olders != null) {
             for (GossipDigest d : olders) {
                 GossipNode member = GossipApp.instance().createByDigest(d);
-                HeartbeatState hb = GossipApp.instance().endpointMembers().get(member);
+                HeartbeatState hb = GossipApp.instance().endpointNodeCache().get(member);
                 if (hb != null) {
                     deltaEndpoints.put(member, hb);
                 }

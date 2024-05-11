@@ -1,4 +1,4 @@
-package cn.opentp.gossip.handler;
+package cn.opentp.gossip.message.handler;
 
 public interface MessageHandler {
 
