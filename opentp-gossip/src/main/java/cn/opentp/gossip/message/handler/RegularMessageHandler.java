@@ -21,7 +21,7 @@ public class RegularMessageHandler implements MessageHandler {
 
         GossipMessage gossipRegularMessage = JSON.parseObject(data, GossipMessage.class);
 
-        GossipMessageContext mm = GossipApp.instance().messageHolder();
+        GossipMessageContext mm = GossipApp.instance().gossipMessageContext();
         String creatorId = gossipRegularMessage.getCreator().getNodeId();
         if (!RECEIVED.containsKey(creatorId)) {
             RECEIVED.put(creatorId, gossipRegularMessage.getId());

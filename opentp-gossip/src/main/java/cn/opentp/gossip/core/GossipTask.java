@@ -80,7 +80,7 @@ public class GossipTask implements Runnable {
 //                }
 //            }).start();
 
-            GossipMessageContext mm = gossipApp.messageHolder();
+            GossipMessageContext mm = gossipApp.gossipMessageContext();
             if (!mm.isEmpty()) {
                 for (String id : mm.list()) {
                     GossipMessage msg = mm.acquire(id);

@@ -47,7 +47,7 @@ public class GossipApp {
 
     private final Random random = new Random();
 
-    private GossipMessageContext messageHolder = new MemoryGossipMessageContext();
+    private GossipMessageContext gossipMessageContext = new MemoryGossipMessageContext();
 
     private GossipApp() {
     }
@@ -327,7 +327,7 @@ public class GossipApp {
      */
     public void publish(Object payload) {
         GossipMessage msg = new GossipMessage(selfNode(), payload, convictedTime());
-        messageHolder.add(msg);
+        gossipMessageContext.add(msg);
     }
 
     /**
@@ -347,8 +347,8 @@ public class GossipApp {
     }
 
 
-    public GossipMessageContext messageHolder() {
-        return messageHolder;
+    public GossipMessageContext gossipMessageContext() {
+        return gossipMessageContext;
     }
 
     public GossipSettings setting() {
