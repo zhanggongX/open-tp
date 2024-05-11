@@ -7,7 +7,7 @@ public enum MessageTypeEnum {
     SHUTDOWN,
     GOSSIP;
 
-    public static MessageTypeEnum findByType(String type) {
+    public static MessageTypeEnum parse(String type) {
         for (MessageTypeEnum messageTypeEnum : MessageTypeEnum.values()) {
             if (messageTypeEnum.name().equals(type)) {
                 return messageTypeEnum;

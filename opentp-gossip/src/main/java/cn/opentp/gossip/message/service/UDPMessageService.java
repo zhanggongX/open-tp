@@ -58,7 +58,7 @@ public class UDPMessageService implements MessageService {
         MessagePayload gossipMessage = JSON.parseObject(data, MessagePayload.class);
 
         MessageHandler handler = null;
-        MessageTypeEnum type = MessageTypeEnum.findByType(gossipMessage.getType());
+        MessageTypeEnum type = MessageTypeEnum.parse(gossipMessage.getType());
         if (type == MessageTypeEnum.SYNC) {
             handler = new SyncMessageHandler();
         } else if (type == MessageTypeEnum.ACK) {
