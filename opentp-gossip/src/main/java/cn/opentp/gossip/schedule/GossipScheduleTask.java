@@ -40,16 +40,15 @@ public class GossipScheduleTask implements Runnable {
             nodeContext.up(selfNode);
         }
 
-        List<GossipNodeDigest> nodeDigests = new ArrayList<>();
         try {
-            nodeDigests.addAll(nodeContext.randomGossipNodeDigest());
+            // 获取当前所有节点的摘要信息，并同步出去
+            List<GossipNodeDigest> nodeDigests = nodeContext.randomGossipNodeDigest();
+            if (!nodeDigests.isEmpty()) {
+                ByteBuf byteBuf = GossipMessageCodec.codec().encodeSyncMessage(nodeDigests);
+                sendBuf(byteBuf);
+            }
         } catch (UnknownHostException e) {
             log.error("获取节点摘要异常：", e);
-        }
-
-        if (!nodeDigests.isEmpty()) {
-            ByteBuf byteBuf = GossipMessageCodec.codec().encodeSyncMessage(nodeDigests);
-            sendBuf(byteBuf);
         }
 
         checkStatus();
