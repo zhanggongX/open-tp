@@ -1,10 +1,10 @@
-package cn.opentp.gossip.core;
+package cn.opentp.gossip.schedule;
 
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.enums.GossipStateEnum;
 import cn.opentp.gossip.message.GossipMessage;
 import cn.opentp.gossip.message.codec.GossipMessageCodec;
-import cn.opentp.gossip.message.holder.GossipMessageContext;
+import cn.opentp.gossip.message.holder.GossipMessageHolder;
 import cn.opentp.gossip.model.*;
 import cn.opentp.gossip.message.service.MessageService;
 import io.netty.buffer.ByteBuf;
@@ -13,14 +13,15 @@ import org.slf4j.LoggerFactory;
 
 import java.net.UnknownHostException;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * 流言传播 Task
  */
-public class GossipTask implements Runnable {
+public class GossipScheduleTask implements Runnable {
 
-    private static final Logger log = LoggerFactory.getLogger(GossipTask.class);
+    private static final Logger log = LoggerFactory.getLogger(GossipScheduleTask.class);
 
     private final GossipApp gossipApp = GossipApp.instance();
 
@@ -80,7 +81,7 @@ public class GossipTask implements Runnable {
 //                }
 //            }).start();
 
-            GossipMessageContext mm = gossipApp.gossipMessageContext();
+            GossipMessageHolder mm = gossipApp.gossipMessageHolder();
             if (!mm.isEmpty()) {
                 for (String id : mm.list()) {
                     GossipMessage msg = mm.acquire(id);
@@ -120,7 +121,7 @@ public class GossipTask implements Runnable {
 
 
     private void up(GossipNode gossipNode) {
-        ReentrantReadWriteLock.WriteLock writeLock = gossipApp.globalLock().writeLock();
+        ReentrantReadWriteLock.WriteLock writeLock = gossipApp.lock().writeLock();
 
         try {
             writeLock.lock();
@@ -146,13 +147,12 @@ public class GossipTask implements Runnable {
     }
 
     private boolean discoverable(GossipNode gossipNode) {
-        return gossipNode.getState() == GossipStateEnum.JOIN
-                || gossipNode.getState() == GossipStateEnum.DOWN;
+        return gossipNode.getState() == GossipStateEnum.JOIN || gossipNode.getState() == GossipStateEnum.DOWN;
     }
 
     private void randomGossipDigest(List<GossipDigest> digests) throws UnknownHostException {
         List<GossipNode> endpoints = new ArrayList<>(gossipApp.endpointNodeCache().keySet());
-        Collections.shuffle(endpoints, gossipApp.getRandom());
+        Collections.shuffle(endpoints, ThreadLocalRandom.current());
 
         for (GossipNode gossipNode : endpoints) {
             HeartbeatState heartbeatState = gossipApp.endpointNodeCache().get(gossipNode);
@@ -213,7 +213,7 @@ public class GossipTask implements Runnable {
         boolean success = false;
         int c = Math.min(liveSize, convergenceCount());
         for (int i = 0; i < c; i++) {
-            int index = gossipApp.getRandom().nextInt(liveSize);
+            int index = ThreadLocalRandom.current().nextInt(liveSize);
             success = success || sendGossip(byteBuf, gossipApp.liveNodes(), index);
         }
         return success;
@@ -224,7 +224,7 @@ public class GossipTask implements Runnable {
         if (deadSize == 0) {
             return;
         }
-        int index = (deadSize == 1) ? 0 : gossipApp.getRandom().nextInt(deadSize);
+        int index = (deadSize == 1) ? 0 : ThreadLocalRandom.current().nextInt(deadSize);
         sendGossip(buffer, gossipApp.deadNodes(), index);
     }
 
@@ -234,12 +234,12 @@ public class GossipTask implements Runnable {
             if (size == 1 && isSeedNode()) {
                 return;
             }
-            int index = (size == 1) ? 0 : gossipApp.getRandom().nextInt(size);
+            int index = (size == 1) ? 0 : ThreadLocalRandom.current().nextInt(size);
             if (gossipApp.liveNodes().size() == 1) {
                 sendGossip2Seed(byteBuf, gossipApp.setting().getSendNodes(), index);
             } else {
                 double prob = size / (double) gossipApp.liveNodes().size();
-                if (gossipApp.getRandom().nextDouble() < prob) {
+                if (ThreadLocalRandom.current().nextDouble() < prob) {
                     sendGossip2Seed(byteBuf, gossipApp.setting().getSendNodes(), index);
                 }
             }
@@ -274,11 +274,11 @@ public class GossipTask implements Runnable {
     }
 
     public void fireGossipEvent(GossipNode member, GossipStateEnum state, Object payload) {
-        if (gossipApp.getListener() != null) {
+        if (gossipApp.gossipListener() != null) {
             if (state == GossipStateEnum.RECEIVE) {
-                new Thread(() -> gossipApp.getListener().gossipEvent(member, state, payload)).start();
+                new Thread(() -> gossipApp.gossipListener().gossipEvent(member, state, payload)).start();
             } else {
-                gossipApp.getListener().gossipEvent(member, state, payload);
+                gossipApp.gossipListener().gossipEvent(member, state, payload);
             }
         }
     }
@@ -322,19 +322,18 @@ public class GossipTask implements Runnable {
 
     public void down(GossipNode member) {
         log.info("down ~~");
-        try {//
-            gossipApp.globalLock().writeLock().lock();
+        try {
+            gossipApp.lock().writeLock().lock();
             member.setState(GossipStateEnum.DOWN);
             gossipApp.liveNodes().remove(member);
             if (!gossipApp.deadNodes().contains(member)) {
                 gossipApp.deadNodes().add(member);
             }
-//            clearExecutor.schedule(() -> clearMember(member), getSettings().getDeleteThreshold() * getSettings().getGossipInterval(), TimeUnit.MILLISECONDS);
             fireGossipEvent(member, GossipStateEnum.DOWN);
         } catch (Exception e) {
             log.error(e.getMessage());
         } finally {
-            gossipApp.globalLock().writeLock().unlock();
+            gossipApp.lock().writeLock().unlock();
         }
     }
 
@@ -369,13 +368,4 @@ public class GossipTask implements Runnable {
         }
         return gossipApp.getSeedNode();
     }
-
-    //    private void clearMember(GossipMember member) {
-//        rwlock.writeLock().lock();
-//        try {
-//            endpointMembers.remove(member);
-//        } finally {
-//            rwlock.writeLock().unlock();
-//        }
-//    }
 }

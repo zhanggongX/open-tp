@@ -23,6 +23,8 @@ public class NettyMessageHandler extends SimpleChannelInboundHandler<DatagramPac
         messageService.handle(data);
     }
 
+
+
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         log.error("NetMessageHandler cathe error: ", cause.getCause());

@@ -4,7 +4,7 @@ import cn.opentp.gossip.message.GossipMessage;
 
 import java.util.Set;
 
-public interface GossipMessageContext {
+public interface GossipMessageHolder {
 
     void add(GossipMessage msg);
 

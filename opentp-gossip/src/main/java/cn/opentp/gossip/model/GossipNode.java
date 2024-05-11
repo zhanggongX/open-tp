@@ -3,7 +3,6 @@ package cn.opentp.gossip.model;
 import cn.opentp.gossip.enums.GossipStateEnum;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 public class GossipNode implements Serializable {
 

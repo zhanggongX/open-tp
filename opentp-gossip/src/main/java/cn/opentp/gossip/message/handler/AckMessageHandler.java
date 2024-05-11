@@ -11,8 +11,9 @@ import io.netty.buffer.ByteBuf;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-public class AckMessageHandler implements MessageHandler {
+public class AckMessageHandler extends AbstractMessageHandler implements MessageHandler {
 
     @Override
     public void handle(String cluster, String data, String from) {
@@ -22,14 +23,14 @@ public class AckMessageHandler implements MessageHandler {
         Map<GossipNode, HeartbeatState> newers = ackMessage.getNewers();
 
         //update local state
-        if (newers.size() > 0) {
-            GossipApp.instance().apply2LocalState(newers);
+        if (!newers.isEmpty()) {
+            apply2LocalState(newers);
         }
 
         Map<GossipNode, HeartbeatState> deltaEndpoints = new HashMap<>();
         if (olders != null) {
             for (GossipDigest d : olders) {
-                GossipNode member = GossipApp.instance().createByDigest(d);
+                GossipNode member = createByDigest(d);
                 HeartbeatState hb = GossipApp.instance().endpointNodeCache().get(member);
                 if (hb != null) {
                     deltaEndpoints.put(member, hb);
@@ -45,5 +46,23 @@ public class AckMessageHandler implements MessageHandler {
                 GossipApp.instance().messageService().send(host[0], Integer.valueOf(host[1]), byteBuf);
             }
         }
+    }
+
+    public GossipNode createByDigest(GossipDigest digest) {
+        GossipNode member = new GossipNode();
+        member.setPort(digest.getEndpoint().getPort());
+        member.setHost(digest.getEndpoint().getAddress().getHostAddress());
+        member.setCluster(GossipApp.instance().setting().getCluster());
+
+        Set<GossipNode> keys = GossipApp.instance().endpointNodeCache().keySet();
+        for (GossipNode m : keys) {
+            if (m.equals(member)) {
+                member.setNodeId(m.getNodeId());
+                member.setState(m.getState());
+                break;
+            }
+        }
+
+        return member;
     }
 }

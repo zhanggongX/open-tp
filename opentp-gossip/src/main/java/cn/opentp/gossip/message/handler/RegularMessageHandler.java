@@ -1,7 +1,7 @@
 package cn.opentp.gossip.message.handler;
 
 import cn.opentp.gossip.GossipApp;
-import cn.opentp.gossip.message.holder.GossipMessageContext;
+import cn.opentp.gossip.message.holder.GossipMessageHolder;
 import cn.opentp.gossip.enums.GossipStateEnum;
 import cn.opentp.gossip.message.GossipMessage;
 import com.alibaba.fastjson2.JSON;
@@ -21,7 +21,7 @@ public class RegularMessageHandler implements MessageHandler {
 
         GossipMessage gossipRegularMessage = JSON.parseObject(data, GossipMessage.class);
 
-        GossipMessageContext mm = GossipApp.instance().gossipMessageContext();
+        GossipMessageHolder mm = GossipApp.instance().gossipMessageHolder();
         String creatorId = gossipRegularMessage.getCreator().getNodeId();
         if (!RECEIVED.containsKey(creatorId)) {
             RECEIVED.put(creatorId, gossipRegularMessage.getId());

@@ -60,6 +60,7 @@ public class Gossip {
 
         // 服务器启动
         GOSSIP_APP.startup();
+        GOSSIP_APP.workingMark();
     }
 
     /**

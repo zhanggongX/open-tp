@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-public class MemoryGossipMessageContext implements GossipMessageContext {
+public class MemoryGossipMessageHolder implements GossipMessageHolder {
 
     private static final ConcurrentHashMap<String, GossipMessage> messageCache = new ConcurrentHashMap<>();
 
