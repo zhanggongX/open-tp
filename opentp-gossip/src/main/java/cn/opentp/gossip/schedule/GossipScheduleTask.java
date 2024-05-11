@@ -42,7 +42,7 @@ public class GossipScheduleTask implements Runnable {
             log.trace(String.format("Now my heartbeat version is %d", version));
         }
 
-        List<GossipDigest> digests = new ArrayList<>();
+        List<GossipNodeDigest> digests = new ArrayList<>();
         try {
             randomGossipDigest(digests);
             if (!digests.isEmpty()) {
@@ -121,7 +121,7 @@ public class GossipScheduleTask implements Runnable {
         return gossipNode.getState() == GossipStateEnum.JOIN || gossipNode.getState() == GossipStateEnum.DOWN;
     }
 
-    private void randomGossipDigest(List<GossipDigest> digests) throws UnknownHostException {
+    private void randomGossipDigest(List<GossipNodeDigest> digests) throws UnknownHostException {
         List<GossipNode> endpoints = new ArrayList<>(gossipApp.gossipNodeContext().endpointNodes().keySet());
         Collections.shuffle(endpoints, ThreadLocalRandom.current());
 
@@ -133,7 +133,7 @@ public class GossipScheduleTask implements Runnable {
                 hbTime = heartbeatState.getHeartbeatTime();
                 hbVersion = heartbeatState.getVersion();
             }
-            digests.add(new GossipDigest(gossipNode, hbTime, hbVersion));
+            digests.add(new GossipNodeDigest(gossipNode, hbTime, hbVersion));
         }
     }
 
@@ -267,14 +267,14 @@ public class GossipScheduleTask implements Runnable {
         log.info("downing ~~");
         try {//11
             if (gossipApp.gossipNodeContext().candidateMembers().containsKey(member)) {
-                CandidateMemberState cState = gossipApp.gossipNodeContext().candidateMembers().get(member);
+                CandidateNodeState cState = gossipApp.gossipNodeContext().candidateMembers().get(member);
                 if (state.getHeartbeatTime() == cState.getHeartbeatTime()) {
                     cState.updateCount();
                 } else if (state.getHeartbeatTime() > cState.getHeartbeatTime()) {
                     gossipApp.gossipNodeContext().candidateMembers().remove(member);
                 }
             } else {
-                gossipApp.gossipNodeContext().candidateMembers().put(member, new CandidateMemberState(state.getHeartbeatTime()));
+                gossipApp.gossipNodeContext().candidateMembers().put(member, new CandidateNodeState(state.getHeartbeatTime()));
             }
         } catch (Exception e) {
             log.error(e.getMessage());

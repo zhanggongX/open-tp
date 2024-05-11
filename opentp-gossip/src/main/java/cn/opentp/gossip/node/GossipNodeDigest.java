@@ -5,38 +5,48 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
+/**
+ * GossipNode 摘要
+ */
+public class GossipNodeDigest implements Serializable, Comparable<GossipNodeDigest> {
 
-public class GossipDigest implements Serializable, Comparable<GossipDigest> {
-
-    private InetSocketAddress endpoint;
+    private String nodeId;
     private long heartbeatTime;
     private long version;
-    private String id;
+    private InetSocketAddress socketAddress;
 
     @Override
-    public int compareTo(GossipDigest o) {
+    public int compareTo(GossipNodeDigest o) {
         if (heartbeatTime != o.heartbeatTime) {
             return (int) (heartbeatTime - o.heartbeatTime);
         }
         return (int) (version - o.version);
     }
 
-    public GossipDigest() {
+    public GossipNodeDigest() {
     }
 
-    public GossipDigest(GossipNode endpoint, long heartbeatTime, long version) throws UnknownHostException {
-        this.endpoint = new InetSocketAddress(InetAddress.getByName(endpoint.getHost()), endpoint.getPort());
+    public GossipNodeDigest(GossipNode node, long heartbeatTime, long version) throws UnknownHostException {
+        this.socketAddress = new InetSocketAddress(InetAddress.getByName(node.getHost()), node.getPort());
         this.heartbeatTime = heartbeatTime;
         this.version = version;
-        this.id = endpoint.getNodeId();
+        this.nodeId = node.getNodeId();
     }
 
-    public InetSocketAddress getEndpoint() {
-        return endpoint;
+    public InetSocketAddress getSocketAddress() {
+        return socketAddress;
     }
 
-    public void setEndpoint(InetSocketAddress endpoint) {
-        this.endpoint = endpoint;
+    public void setSocketAddress(InetSocketAddress socketAddress) {
+        this.socketAddress = socketAddress;
+    }
+
+    public String getNodeId() {
+        return nodeId;
+    }
+
+    public void setNodeId(String nodeId) {
+        this.nodeId = nodeId;
     }
 
     public long getHeartbeatTime() {
@@ -55,20 +65,13 @@ public class GossipDigest implements Serializable, Comparable<GossipDigest> {
         this.version = version;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
     @Override
     public String toString() {
-        return "GossipDigest{" +
-                "endpoint=" + endpoint.toString() +
+        return "GossipNodeDigest{" +
+                "socketAddress=" + socketAddress +
                 ", heartbeatTime=" + heartbeatTime +
                 ", version=" + version +
+                ", nodeId='" + nodeId + '\'' +
                 '}';
     }
 }

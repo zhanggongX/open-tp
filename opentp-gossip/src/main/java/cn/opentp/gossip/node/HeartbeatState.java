@@ -2,10 +2,13 @@ package cn.opentp.gossip.node;
 
 import cn.opentp.gossip.util.VersionGenerator;
 
+/**
+ * 心跳状态
+ */
 public class HeartbeatState {
 
-    private long heartbeatTime;
     private long version;
+    private long heartbeatTime;
 
     public long getHeartbeatTime() {
         return heartbeatTime;
@@ -27,9 +30,6 @@ public class HeartbeatState {
 
     @Override
     public String toString() {
-        return "HeartbeatState{" +
-                "heartbeatTime=" + heartbeatTime +
-                ", version=" + version +
-                '}';
+        return "HeartbeatState{" + "heartbeatTime=" + heartbeatTime + ", version=" + version + '}';
     }
 }

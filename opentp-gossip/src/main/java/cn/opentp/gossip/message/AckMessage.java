@@ -1,7 +1,7 @@
 package cn.opentp.gossip.message;
 
 
-import cn.opentp.gossip.node.GossipDigest;
+import cn.opentp.gossip.node.GossipNodeDigest;
 import cn.opentp.gossip.node.GossipNode;
 import cn.opentp.gossip.node.HeartbeatState;
 
@@ -11,23 +11,23 @@ import java.util.Map;
 
 
 public class AckMessage implements Serializable {
-    private List<GossipDigest> olders;
+    private List<GossipNodeDigest> olders;
 
     private Map<GossipNode, HeartbeatState> newers;
 
     public AckMessage() {
     }
 
-    public AckMessage(List<GossipDigest> olders, Map<GossipNode, HeartbeatState> newers) {
+    public AckMessage(List<GossipNodeDigest> olders, Map<GossipNode, HeartbeatState> newers) {
         this.olders = olders;
         this.newers = newers;
     }
 
-    public List<GossipDigest> getOlders() {
+    public List<GossipNodeDigest> getOlders() {
         return olders;
     }
 
-    public void setOlders(List<GossipDigest> olders) {
+    public void setOlders(List<GossipNodeDigest> olders) {
         this.olders = olders;
     }
 

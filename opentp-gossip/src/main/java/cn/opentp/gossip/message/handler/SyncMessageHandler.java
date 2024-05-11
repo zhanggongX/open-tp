@@ -4,7 +4,7 @@ package cn.opentp.gossip.message.handler;
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.message.AckMessage;
 import cn.opentp.gossip.message.codec.GossipMessageCodec;
-import cn.opentp.gossip.node.GossipDigest;
+import cn.opentp.gossip.node.GossipNodeDigest;
 import cn.opentp.gossip.node.GossipNode;
 import cn.opentp.gossip.node.HeartbeatState;
 import com.alibaba.fastjson2.JSON;
@@ -22,19 +22,19 @@ public class SyncMessageHandler implements MessageHandler {
     public void handle(String cluster, String data, String from) {
         if (data != null) {
             try {
-                List<GossipDigest> gossipDigests = JSON.parseArray(data, GossipDigest.class);
+                List<GossipNodeDigest> gossipDigests = JSON.parseArray(data, GossipNodeDigest.class);
 
-                List<GossipDigest> olders = new ArrayList<>();
+                List<GossipNodeDigest> olders = new ArrayList<>();
                 Map<GossipNode, HeartbeatState> newers = new HashMap<>();
 
                 List<GossipNode> gMemberList = new ArrayList<>();
-                for (GossipDigest gossipDigest : gossipDigests) {
+                for (GossipNodeDigest gossipDigest : gossipDigests) {
 //                    GossipDigest g = Serializer.getInstance().decode(Buffer.buffer().appendString(e.toString()), GossipDigest.class);
                     GossipNode member = new GossipNode();
                     member.setCluster(cluster);
-                    member.setHost(gossipDigest.getEndpoint().getAddress().getHostAddress());
-                    member.setPort(gossipDigest.getEndpoint().getPort());
-                    member.setNodeId(gossipDigest.getId());
+                    member.setHost(gossipDigest.getSocketAddress().getAddress().getHostAddress());
+                    member.setPort(gossipDigest.getSocketAddress().getPort());
+                    member.setNodeId(gossipDigest.getNodeId());
                     gMemberList.add(member);
 
                     compareDigest(gossipDigest, member, cluster, olders, newers);
@@ -62,7 +62,7 @@ public class SyncMessageHandler implements MessageHandler {
         }
     }
 
-    private void compareDigest(GossipDigest g, GossipNode member, String cluster, List<GossipDigest> olders, Map<GossipNode, HeartbeatState> newers) {
+    private void compareDigest(GossipNodeDigest g, GossipNode member, String cluster, List<GossipNodeDigest> olders, Map<GossipNode, HeartbeatState> newers) {
 
         try {
             HeartbeatState hb = GossipApp.instance().gossipNodeContext().endpointNodes().get(member);

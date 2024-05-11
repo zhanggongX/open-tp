@@ -1,18 +1,18 @@
 package cn.opentp.gossip.message;
 
-import cn.opentp.gossip.node.GossipDigest;
+import cn.opentp.gossip.node.GossipNodeDigest;
 
 import java.io.Serializable;
 import java.util.List;
 
 public class SyncMessage implements Serializable {
     private String cluster;
-    private List<GossipDigest> digestList;
+    private List<GossipNodeDigest> digestList;
 
     public SyncMessage() {
     }
 
-    public SyncMessage(String cluster, List<GossipDigest> digestList) {
+    public SyncMessage(String cluster, List<GossipNodeDigest> digestList) {
         this.cluster = cluster;
         this.digestList = digestList;
     }
@@ -25,11 +25,11 @@ public class SyncMessage implements Serializable {
         this.cluster = cluster;
     }
 
-    public List<GossipDigest> getDigestList() {
+    public List<GossipNodeDigest> getDigestList() {
         return digestList;
     }
 
-    public void setDigestList(List<GossipDigest> digestList) {
+    public void setDigestList(List<GossipNodeDigest> digestList) {
         this.digestList = digestList;
     }
 

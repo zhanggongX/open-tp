@@ -19,7 +19,7 @@ public class AckMessageHandler extends AbstractMessageHandler implements Message
     public void handle(String cluster, String data, String from) {
         AckMessage ackMessage = JSON.parseObject(data, AckMessage.class);
 
-        List<GossipDigest> olders = ackMessage.getOlders();
+        List<GossipNodeDigest> olders = ackMessage.getOlders();
         Map<GossipNode, HeartbeatState> newers = ackMessage.getNewers();
 
         //update local state
@@ -29,7 +29,7 @@ public class AckMessageHandler extends AbstractMessageHandler implements Message
 
         Map<GossipNode, HeartbeatState> deltaEndpoints = new HashMap<>();
         if (olders != null) {
-            for (GossipDigest d : olders) {
+            for (GossipNodeDigest d : olders) {
                 GossipNode member = createByDigest(d);
                 HeartbeatState hb = GossipApp.instance().gossipNodeContext().endpointNodes().get(member);
                 if (hb != null) {
@@ -48,10 +48,10 @@ public class AckMessageHandler extends AbstractMessageHandler implements Message
         }
     }
 
-    public GossipNode createByDigest(GossipDigest digest) {
+    public GossipNode createByDigest(GossipNodeDigest digest) {
         GossipNode member = new GossipNode();
-        member.setPort(digest.getEndpoint().getPort());
-        member.setHost(digest.getEndpoint().getAddress().getHostAddress());
+        member.setPort(digest.getSocketAddress().getPort());
+        member.setHost(digest.getSocketAddress().getAddress().getHostAddress());
         member.setCluster(GossipApp.instance().setting().getCluster());
 
         Set<GossipNode> keys = GossipApp.instance().gossipNodeContext().endpointNodes().keySet();

@@ -3,9 +3,7 @@ package cn.opentp.gossip.node;
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.enums.GossipStateEnum;
 import cn.opentp.gossip.event.GossipEventTrigger;
-import cn.opentp.gossip.message.GossipMessage;
 import cn.opentp.gossip.message.codec.GossipMessageCodec;
-import cn.opentp.gossip.util.CommonUtil;
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +25,7 @@ public class GossipNodeContext {
     // 死节点
     private final List<GossipNode> deadNodes = new CopyOnWriteArrayList<>();
     // 候选节点，判定中的节点
-    private final Map<GossipNode, CandidateMemberState> candidateMembers = new ConcurrentHashMap<>();
+    private final Map<GossipNode, CandidateNodeState> candidateMembers = new ConcurrentHashMap<>();
 
     public Map<GossipNode, HeartbeatState> endpointNodes() {
         return endpointNodes;
@@ -41,7 +39,7 @@ public class GossipNodeContext {
         return deadNodes;
     }
 
-    public Map<GossipNode, CandidateMemberState> candidateMembers() {
+    public Map<GossipNode, CandidateNodeState> candidateMembers() {
         return candidateMembers;
     }
 
