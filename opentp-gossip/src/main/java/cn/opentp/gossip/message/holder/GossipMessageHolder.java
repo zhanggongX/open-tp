@@ -6,13 +6,13 @@ import java.util.Set;
 
 public interface GossipMessageHolder {
 
-    void add(GossipMessage msg);
+    void add(GossipMessage message);
 
-    GossipMessage acquire(String id);
+    GossipMessage acquire(String messageId);
 
-    GossipMessage remove(String id);
+    GossipMessage remove(String messageId);
 
-    boolean contains(String id);
+    boolean contains(String messageId);
 
     boolean isEmpty();
 

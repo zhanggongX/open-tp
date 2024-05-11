@@ -11,53 +11,48 @@ public class GossipMessage implements Serializable {
 
     private static final long DEFAULT_TTL = 300000;
 
-    private String id;
-    private long ttl;
+    private String messageId;
+    // 有效时间
+    private long effectTime;
+    // 创建时间
     private long createTime;
     private Object payload;
+    // 转发次数
     private int forwardCount;
-
-    private GossipNode creator;
+    // 流言消息的创建者
+    private GossipNode publishNode;
 
     public GossipMessage() {
     }
 
-    public GossipMessage(GossipNode creator, Object payload) {
-        this(creator, payload, DEFAULT_TTL);
+    public GossipMessage(GossipNode publishNode, Object payload) {
+        this(publishNode, payload, DEFAULT_TTL);
     }
 
-    public GossipMessage(GossipNode creator, Object payload, Long ttl) {
+    public GossipMessage(GossipNode publishNode, Object payload, Long effectTime) {
         long now = System.currentTimeMillis();
-        this.ttl = ttl == null ? DEFAULT_TTL : ttl;
-        this.creator = creator;
+        this.effectTime = effectTime == null ? DEFAULT_TTL : effectTime;
+        this.publishNode = publishNode;
         this.payload = payload;
-        this.id = "REG_MSG_" + now;
+        this.messageId = "GSM_" + now;
         this.createTime = now;
         this.forwardCount = 0;
     }
 
-    public String getId() {
-        return id;
+    public String getMessageId() {
+        return messageId;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setMessageId(String messageId) {
+        this.messageId = messageId;
     }
 
-    public long getTtl() {
-        return ttl;
+    public long getEffectTime() {
+        return effectTime;
     }
 
-    public void setTtl(long ttl) {
-        this.ttl = ttl;
-    }
-
-    public GossipNode getCreator() {
-        return creator;
-    }
-
-    public void setCreator(GossipNode creator) {
-        this.creator = creator;
+    public void setEffectTime(long effectTime) {
+        this.effectTime = effectTime;
     }
 
     public long getCreateTime() {
@@ -84,15 +79,23 @@ public class GossipMessage implements Serializable {
         this.forwardCount = forwardCount;
     }
 
+    public GossipNode getPublishNode() {
+        return publishNode;
+    }
+
+    public void setPublishNode(GossipNode publishNode) {
+        this.publishNode = publishNode;
+    }
+
     @Override
     public String toString() {
-        return "GossipRegularMessage{" +
-                "id='" + id + '\'' +
-                ", ttl=" + ttl +
+        return "GossipMessage{" +
+                "messageId='" + messageId + '\'' +
+                ", effectTime=" + effectTime +
                 ", createTime=" + createTime +
                 ", payload=" + payload +
                 ", forwardCount=" + forwardCount +
-                ", creator=" + creator +
+                ", publishNode=" + publishNode +
                 '}';
     }
 }

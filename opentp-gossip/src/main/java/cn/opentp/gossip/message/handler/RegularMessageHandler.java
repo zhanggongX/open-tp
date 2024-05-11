@@ -19,32 +19,32 @@ public class RegularMessageHandler implements MessageHandler {
     @Override
     public void handle(String cluster, String data, String from) {
 
-        GossipMessage gossipRegularMessage = JSON.parseObject(data, GossipMessage.class);
+        GossipMessage gossipMessage = JSON.parseObject(data, GossipMessage.class);
 
         GossipMessageHolder mm = GossipApp.instance().gossipMessageHolder();
-        String creatorId = gossipRegularMessage.getCreator().getNodeId();
-        if (!RECEIVED.containsKey(creatorId)) {
-            RECEIVED.put(creatorId, gossipRegularMessage.getId());
+        String publishNodeId = gossipMessage.getPublishNode().getNodeId();
+        if (!RECEIVED.containsKey(publishNodeId)) {
+            RECEIVED.put(publishNodeId, gossipMessage.getMessageId());
         } else {
-            String rcvedId = RECEIVED.get(creatorId);
-            int c = gossipRegularMessage.getId().compareTo(rcvedId);
+            String rcvedId = RECEIVED.get(publishNodeId);
+            int c = gossipMessage.getMessageId().compareTo(rcvedId);
             if (c <= 0) {
                 return;
             } else {
                 GossipMessage remove = mm.remove(rcvedId);
                 log.warn("remove: {}", remove);
-                RECEIVED.put(creatorId, gossipRegularMessage.getId());
+                RECEIVED.put(publishNodeId, gossipMessage.getMessageId());
             }
         }
 
         if (log.isTraceEnabled()) {
-            log.trace("Received a message from : [" + from + "], message : [" + gossipRegularMessage + "]");
+            log.trace("Received a message from : [" + from + "], message : [" + gossipMessage + "]");
         }
-        if (!mm.contains(gossipRegularMessage.getId())) {
-            gossipRegularMessage.setForwardCount(0);
-            mm.add(gossipRegularMessage);
+        if (!mm.contains(gossipMessage.getMessageId())) {
+            gossipMessage.setForwardCount(0);
+            mm.add(gossipMessage);
 
-            GossipApp.instance().listener().gossipEvent(gossipRegularMessage.getCreator(), GossipStateEnum.RECEIVE, gossipRegularMessage.getPayload());
+            GossipApp.instance().listener().gossipEvent(gossipMessage.getPublishNode(), GossipStateEnum.RECEIVE, gossipMessage.getPayload());
         }
     }
 }

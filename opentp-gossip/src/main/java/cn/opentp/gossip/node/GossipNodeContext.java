@@ -8,17 +8,21 @@ import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class GossipNodeContext {
 
     private static final Logger log = LoggerFactory.getLogger(GossipNodeContext.class);
 
-    // 节点心跳信息
+    // 所有节点
     private final Map<GossipNode, HeartbeatState> endpointNodes = new ConcurrentHashMap<>();
     // 活节点
     private final List<GossipNode> liveNodes = new CopyOnWriteArrayList<>();
@@ -116,5 +120,31 @@ public class GossipNodeContext {
             }
         }
         byteBuf.release();
+    }
+
+    /**
+     * 随机当前所有节点的摘要信息
+     *
+     * @throws UnknownHostException
+     */
+    public List<GossipNodeDigest> randomGossipNodeDigest() throws UnknownHostException {
+        List<GossipNodeDigest> nodeDigests = new ArrayList<>();
+
+        GossipNodeContext nodeContext = GossipApp.instance().gossipNodeContext();
+
+        List<GossipNode> nodes = new ArrayList<>(nodeContext.endpointNodes().keySet());
+        Collections.shuffle(nodes, ThreadLocalRandom.current());
+
+        for (GossipNode node : nodes) {
+            HeartbeatState heartbeatState = nodeContext.endpointNodes().get(node);
+            long time = 0;
+            long version = 0;
+            if (heartbeatState != null) {
+                time = heartbeatState.getHeartbeatTime();
+                version = heartbeatState.getVersion();
+            }
+            nodeDigests.add(new GossipNodeDigest(node, time, version));
+        }
+        return nodeDigests;
     }
 }

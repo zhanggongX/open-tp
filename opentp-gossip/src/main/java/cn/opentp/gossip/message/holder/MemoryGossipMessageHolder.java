@@ -12,23 +12,23 @@ public class MemoryGossipMessageHolder implements GossipMessageHolder {
     private static final ConcurrentHashMap<String, GossipMessage> messageCache = new ConcurrentHashMap<>();
 
     @Override
-    public void add(GossipMessage msg) {
-        messageCache.putIfAbsent(msg.getId(), msg);
+    public void add(GossipMessage message) {
+        messageCache.putIfAbsent(message.getMessageId(), message);
     }
 
     @Override
-    public GossipMessage acquire(String id) {
-        return messageCache.get(id);
+    public GossipMessage acquire(String messageId) {
+        return messageCache.get(messageId);
     }
 
     @Override
-    public GossipMessage remove(String id) {
-        return messageCache.remove(id);
+    public GossipMessage remove(String messageId) {
+        return messageCache.remove(messageId);
     }
 
     @Override
-    public boolean contains(String id) {
-        return messageCache.containsKey(id);
+    public boolean contains(String messageId) {
+        return messageCache.containsKey(messageId);
     }
 
     @Override
