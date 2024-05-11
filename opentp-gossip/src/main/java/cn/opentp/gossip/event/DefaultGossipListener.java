@@ -1,7 +1,7 @@
 package cn.opentp.gossip.event;
 
 import cn.opentp.gossip.enums.GossipStateEnum;
-import cn.opentp.gossip.model.GossipNode;
+import cn.opentp.gossip.node.GossipNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

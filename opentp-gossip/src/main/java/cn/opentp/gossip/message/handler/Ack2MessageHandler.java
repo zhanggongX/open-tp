@@ -1,8 +1,8 @@
 package cn.opentp.gossip.message.handler;
 
 import cn.opentp.gossip.message.Ack2Message;
-import cn.opentp.gossip.model.GossipNode;
-import cn.opentp.gossip.model.HeartbeatState;
+import cn.opentp.gossip.node.GossipNode;
+import cn.opentp.gossip.node.HeartbeatState;
 import com.alibaba.fastjson2.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

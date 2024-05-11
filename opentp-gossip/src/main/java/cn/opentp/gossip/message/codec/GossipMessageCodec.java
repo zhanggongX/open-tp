@@ -6,7 +6,8 @@ import cn.opentp.gossip.message.Ack2Message;
 import cn.opentp.gossip.message.AckMessage;
 import cn.opentp.gossip.message.GossipMessage;
 import cn.opentp.gossip.message.MessagePayload;
-import cn.opentp.gossip.model.GossipDigest;
+import cn.opentp.gossip.node.GossipDigest;
+import cn.opentp.gossip.node.GossipNode;
 import com.alibaba.fastjson2.JSON;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -67,11 +68,11 @@ public class GossipMessageCodec {
         return Unpooled.copiedBuffer(JSON.toJSONString(gossipMessage), StandardCharsets.UTF_8);
     }
 
-    public ByteBuf encodeShutdownMessage() {
-        String selfNodeJson = JSON.toJSONString(gossipApp.selfNode());
+    public ByteBuf encodeShutdownMessage(GossipNode node) {
+        String nodeJson = JSON.toJSONString(node);
         MessagePayload gossipMessage = MessagePayload.builder()
                 .type(MessageTypeEnum.SHUTDOWN)
-                .data(selfNodeJson)
+                .data(nodeJson)
                 .cluster(gossipApp.setting().getCluster())
                 .from(gossipApp.selfNode().socketAddress()).build();
         return Unpooled.copiedBuffer(JSON.toJSONString(gossipMessage), StandardCharsets.UTF_8);

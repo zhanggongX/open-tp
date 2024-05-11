@@ -4,7 +4,7 @@ import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.message.Ack2Message;
 import cn.opentp.gossip.message.AckMessage;
 import cn.opentp.gossip.message.codec.GossipMessageCodec;
-import cn.opentp.gossip.model.*;
+import cn.opentp.gossip.node.*;
 import com.alibaba.fastjson2.JSON;
 import io.netty.buffer.ByteBuf;
 
@@ -31,7 +31,7 @@ public class AckMessageHandler extends AbstractMessageHandler implements Message
         if (olders != null) {
             for (GossipDigest d : olders) {
                 GossipNode member = createByDigest(d);
-                HeartbeatState hb = GossipApp.instance().endpointNodeCache().get(member);
+                HeartbeatState hb = GossipApp.instance().gossipNodeContext().endpointNodes().get(member);
                 if (hb != null) {
                     deltaEndpoints.put(member, hb);
                 }
@@ -54,7 +54,7 @@ public class AckMessageHandler extends AbstractMessageHandler implements Message
         member.setHost(digest.getEndpoint().getAddress().getHostAddress());
         member.setCluster(GossipApp.instance().setting().getCluster());
 
-        Set<GossipNode> keys = GossipApp.instance().endpointNodeCache().keySet();
+        Set<GossipNode> keys = GossipApp.instance().gossipNodeContext().endpointNodes().keySet();
         for (GossipNode m : keys) {
             if (m.equals(member)) {
                 member.setNodeId(m.getNodeId());

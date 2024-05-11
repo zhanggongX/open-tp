@@ -18,7 +18,7 @@ public class CommonUtil {
      * 判定趋同次数
      */
     public static int convergenceCount() {
-        int size = GossipApp.instance().endpointNodeCache().size();
+        int size = GossipApp.instance().gossipNodeContext().endpointNodes().size();
         return (int) Math.floor(Math.log10(size) + Math.log(size) + 1);
     }
 }

@@ -54,7 +54,7 @@ public class UDPNetworkService implements NetworkService {
 
     @Override
     public void handle(String data) {
-//        log.debug("接收到消息：{}", data);
+        log.debug("处理消息：{}", data);
         MessagePayload gossipMessage = JSON.parseObject(data, MessagePayload.class);
 
         MessageHandler handler = null;

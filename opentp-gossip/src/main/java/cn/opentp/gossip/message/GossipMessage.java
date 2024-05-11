@@ -1,6 +1,6 @@
 package cn.opentp.gossip.message;
 
-import cn.opentp.gossip.model.GossipNode;
+import cn.opentp.gossip.node.GossipNode;
 
 import java.io.Serializable;
 

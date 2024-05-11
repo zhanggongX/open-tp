@@ -4,9 +4,9 @@ package cn.opentp.gossip.message.handler;
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.message.AckMessage;
 import cn.opentp.gossip.message.codec.GossipMessageCodec;
-import cn.opentp.gossip.model.GossipDigest;
-import cn.opentp.gossip.model.GossipNode;
-import cn.opentp.gossip.model.HeartbeatState;
+import cn.opentp.gossip.node.GossipDigest;
+import cn.opentp.gossip.node.GossipNode;
+import cn.opentp.gossip.node.HeartbeatState;
 import com.alibaba.fastjson2.JSON;
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
@@ -40,7 +40,7 @@ public class SyncMessageHandler implements MessageHandler {
                     compareDigest(gossipDigest, member, cluster, olders, newers);
                 }
                 // I have, you don't have
-                Map<GossipNode, HeartbeatState> endpoints = GossipApp.instance().endpointNodeCache();
+                Map<GossipNode, HeartbeatState> endpoints = GossipApp.instance().gossipNodeContext().endpointNodes();
                 Set<GossipNode> epKeys = endpoints.keySet();
                 for (GossipNode m : epKeys) {
                     if (!gMemberList.contains(m)) {
@@ -65,7 +65,7 @@ public class SyncMessageHandler implements MessageHandler {
     private void compareDigest(GossipDigest g, GossipNode member, String cluster, List<GossipDigest> olders, Map<GossipNode, HeartbeatState> newers) {
 
         try {
-            HeartbeatState hb = GossipApp.instance().endpointNodeCache().get(member);
+            HeartbeatState hb = GossipApp.instance().gossipNodeContext().endpointNodes().get(member);
             long remoteHeartbeatTime = g.getHeartbeatTime();
             long remoteVersion = g.getVersion();
             if (hb != null) {

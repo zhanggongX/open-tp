@@ -1,4 +1,6 @@
-package cn.opentp.gossip.model;
+package cn.opentp.gossip.message;
+
+import cn.opentp.gossip.node.GossipDigest;
 
 import java.io.Serializable;
 import java.util.List;

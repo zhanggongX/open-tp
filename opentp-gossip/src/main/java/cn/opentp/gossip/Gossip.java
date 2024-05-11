@@ -2,7 +2,7 @@ package cn.opentp.gossip;
 
 import cn.opentp.gossip.event.DefaultGossipListener;
 import cn.opentp.gossip.event.GossipListener;
-import cn.opentp.gossip.model.GossipNode;
+import cn.opentp.gossip.node.GossipNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -2,7 +2,7 @@ package cn.opentp.gossip.event;
 
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.enums.GossipStateEnum;
-import cn.opentp.gossip.model.GossipNode;
+import cn.opentp.gossip.node.GossipNode;
 
 /**
  * 事件触发器

@@ -1,4 +1,4 @@
-package cn.opentp.gossip.model;
+package cn.opentp.gossip.node;
 
 import cn.opentp.gossip.util.VersionGenerator;
 

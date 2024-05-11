@@ -1,9 +1,9 @@
 package cn.opentp.gossip;
 
 import cn.opentp.gossip.enums.GossipStateEnum;
-import cn.opentp.gossip.model.GossipNode;
-import cn.opentp.gossip.model.HeartbeatState;
-import cn.opentp.gossip.model.SeedNode;
+import cn.opentp.gossip.node.GossipNode;
+import cn.opentp.gossip.node.HeartbeatState;
+import cn.opentp.gossip.node.SeedNode;
 import cn.opentp.gossip.util.SocketAddressUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,7 +89,7 @@ public class GossipSettings {
         gossipNode.setState(GossipStateEnum.JOIN);
         gossipSettings.setLocalNode(gossipNode);
 
-        gossipApp.endpointNodeCache().put(gossipNode, new HeartbeatState());
+        gossipApp.gossipNodeContext().endpointNodes().put(gossipNode, new HeartbeatState());
     }
 
     public GossipNode getLocalNode() {

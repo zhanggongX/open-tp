@@ -7,7 +7,7 @@ import cn.opentp.gossip.message.GossipMessage;
 import cn.opentp.gossip.message.codec.GossipMessageCodec;
 import cn.opentp.gossip.message.holder.GossipMessageHolder;
 import cn.opentp.gossip.message.holder.MemoryGossipMessageHolder;
-import cn.opentp.gossip.model.*;
+import cn.opentp.gossip.node.*;
 import cn.opentp.gossip.network.NetworkService;
 import cn.opentp.gossip.network.UDPNetworkService;
 import cn.opentp.gossip.schedule.GossipScheduleTask;
@@ -49,15 +49,8 @@ public class GossipApp {
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     // 周期定时任务执行
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-
-    // 节点心跳信息
-    private final Map<GossipNode, HeartbeatState> endpointNodeCache = new ConcurrentHashMap<>();
-    // 活节点
-    private final List<GossipNode> liveNodes = new CopyOnWriteArrayList<>();
-    // 死节点
-    private final List<GossipNode> deadNodes = new CopyOnWriteArrayList<>();
-    // 候选节点，判定中的节点
-    private final Map<GossipNode, CandidateMemberState> candidateMembers = new ConcurrentHashMap<>();
+    // Gossip 节点上下文
+    private final GossipNodeContext gossipNodeContext = new GossipNodeContext();
 
     private GossipApp() {
     }
@@ -70,20 +63,8 @@ public class GossipApp {
         return networkService;
     }
 
-    public List<GossipNode> liveNodes() {
-        return liveNodes;
-    }
-
-    public List<GossipNode> deadNodes() {
-        return deadNodes;
-    }
-
     public boolean working() {
         return working;
-    }
-
-    public Map<GossipNode, HeartbeatState> endpointNodeCache() {
-        return endpointNodeCache;
     }
 
     public ReentrantReadWriteLock lock() {
@@ -92,10 +73,6 @@ public class GossipApp {
 
     public ScheduledExecutorService scheduledExecutorService() {
         return scheduledExecutorService;
-    }
-
-    public Map<GossipNode, CandidateMemberState> candidateMembers() {
-        return candidateMembers;
     }
 
     public void initMark() {
@@ -134,6 +111,10 @@ public class GossipApp {
         this.listener = gossipListener;
     }
 
+    public GossipNodeContext gossipNodeContext() {
+        return gossipNodeContext;
+    }
+
     /**
      * 启动服务
      */
@@ -161,23 +142,9 @@ public class GossipApp {
             log.error("服务关闭期间异常: ", e);
         }
         // 发送关闭消息
-        sendShutdown();
+        gossipNodeContext().selfNodeShutdown();
         // 设置工作状态
         working = false;
-    }
-
-    private void sendShutdown() {
-        ByteBuf byteBuf = GossipMessageCodec.codec().encodeShutdownMessage();
-        final List<GossipNode> gossipNodes = liveNodes();
-        for (GossipNode node : gossipNodes) {
-            try {
-                if (!node.equals(selfNode())) {
-                    networkService().send(node.getHost(), node.getPort(), byteBuf);
-                }
-            } catch (Exception e) {
-                log.error(e.getMessage());
-            }
-        }
     }
 
     /**

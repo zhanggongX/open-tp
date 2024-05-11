@@ -1,9 +1,9 @@
 package cn.opentp.gossip.message;
 
 
-import cn.opentp.gossip.model.GossipDigest;
-import cn.opentp.gossip.model.GossipNode;
-import cn.opentp.gossip.model.HeartbeatState;
+import cn.opentp.gossip.node.GossipDigest;
+import cn.opentp.gossip.node.GossipNode;
+import cn.opentp.gossip.node.HeartbeatState;
 
 import java.io.Serializable;
 import java.util.List;
