@@ -1,7 +1,5 @@
 package cn.opentp.gossip.message.handler;
 
-import cn.opentp.gossip.GossipApp;
-import cn.opentp.gossip.enums.GossipStateEnum;
 import cn.opentp.gossip.message.Ack2Message;
 import cn.opentp.gossip.model.GossipNode;
 import cn.opentp.gossip.model.HeartbeatState;
@@ -10,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.Set;
 
 public class Ack2MessageHandler extends AbstractMessageHandler implements MessageHandler {
 

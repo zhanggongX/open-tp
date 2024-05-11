@@ -13,7 +13,7 @@ public class ShutdownMessageHandler extends AbstractMessageHandler implements Me
     public void handle(String cluster, String data, String from) {
 
         GossipNode gossipNode = JSON.parseObject(data, GossipNode.class);
-
+        log.info("");
         if (gossipNode != null) {
             down(gossipNode);
         }

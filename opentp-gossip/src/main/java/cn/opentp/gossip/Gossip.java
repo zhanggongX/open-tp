@@ -1,5 +1,6 @@
 package cn.opentp.gossip;
 
+import cn.opentp.gossip.event.DefaultGossipListener;
 import cn.opentp.gossip.event.GossipListener;
 import cn.opentp.gossip.model.GossipNode;
 import org.slf4j.Logger;
@@ -12,7 +13,7 @@ public class Gossip {
 
     private static final Logger log = LoggerFactory.getLogger(Gossip.class);
 
-    private static final GossipApp GOSSIP_APP = GossipApp.instance();
+    private static final GossipApp gossipApp = GossipApp.instance();
 
     /**
      * 系统初始化
@@ -20,20 +21,20 @@ public class Gossip {
      * @param properties 可配置入参
      */
     public static void init(GossipProperties properties) {
-        GossipSettings.parseConfig(properties);
-        // 标记配置完成
-        GOSSIP_APP.initMark();
+        init(properties, new DefaultGossipListener());
     }
 
     /**
      * 系统初始化
      *
      * @param properties     可配置入参
-     * @param gossipListener 自定义事件处理器
+     * @param gossipListener 自定义事件处理器，处理在集群中广播的信息
      */
     public static void init(GossipProperties properties, GossipListener gossipListener) {
-        GOSSIP_APP.setGossipListener(gossipListener);
-        init(properties);
+        GossipSettings.parseConfig(properties);
+        gossipApp.setListener(gossipListener);
+        // 标记配置完成
+        gossipApp.initMark();
     }
 
     /**
@@ -41,17 +42,17 @@ public class Gossip {
      */
     public synchronized static void start() {
 
-        if (!GOSSIP_APP.hadInit()) {
+        if (!gossipApp.hadInit()) {
             log.info("Gossip 未初始化，请先执行: {}", "cn.opentp.gossip.GossipService.init()");
             System.exit(-1);
         }
 
-        if (GOSSIP_APP.working()) {
+        if (gossipApp.working()) {
             log.info("Gossip 请勿重复启动");
             System.exit(-1);
         }
 
-        GossipNode localNode = GOSSIP_APP.selfNode();
+        GossipNode localNode = gossipApp.selfNode();
         log.info("Starting {} gossip, host:{}, port:{}, nodeId:{}",
                 localNode.getCluster(),
                 localNode.getHost(),
@@ -59,16 +60,16 @@ public class Gossip {
                 localNode.getNodeId());
 
         // 服务器启动
-        GOSSIP_APP.startup();
-        GOSSIP_APP.workingMark();
+        gossipApp.startup();
+        gossipApp.workingMark();
     }
 
     /**
      * 服务关闭
      */
     public void shutdown() {
-        if (GOSSIP_APP.working()) {
-            GOSSIP_APP.shutdown();
+        if (gossipApp.working()) {
+            gossipApp.shutdown();
         }
     }
 }

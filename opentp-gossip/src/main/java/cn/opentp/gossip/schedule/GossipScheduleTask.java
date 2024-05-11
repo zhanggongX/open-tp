@@ -6,7 +6,7 @@ import cn.opentp.gossip.message.GossipMessage;
 import cn.opentp.gossip.message.codec.GossipMessageCodec;
 import cn.opentp.gossip.message.holder.GossipMessageHolder;
 import cn.opentp.gossip.model.*;
-import cn.opentp.gossip.message.service.MessageService;
+import cn.opentp.gossip.network.NetworkService;
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -259,7 +259,7 @@ public class GossipScheduleTask implements Runnable {
                         target = members.get((index + 1) % m_size);
                     }
                 }
-                MessageService messageService = gossipApp.messageService();
+                NetworkService messageService = gossipApp.networkService();
                 messageService.send(target.getHost(), target.getPort(), byteBuf);
                 return true;
             } catch (Exception e) {
@@ -274,11 +274,11 @@ public class GossipScheduleTask implements Runnable {
     }
 
     public void fireGossipEvent(GossipNode member, GossipStateEnum state, Object payload) {
-        if (gossipApp.gossipListener() != null) {
+        if (gossipApp.listener() != null) {
             if (state == GossipStateEnum.RECEIVE) {
-                new Thread(() -> gossipApp.gossipListener().gossipEvent(member, state, payload)).start();
+                new Thread(() -> gossipApp.listener().gossipEvent(member, state, payload)).start();
             } else {
-                gossipApp.gossipListener().gossipEvent(member, state, payload);
+                gossipApp.listener().gossipEvent(member, state, payload);
             }
         }
     }
@@ -349,7 +349,7 @@ public class GossipScheduleTask implements Runnable {
                         target = nodes.get((index + 1) % m_size);
                     }
                 }
-                gossipApp.messageService().send(target.getHost(), target.getPort(), byteBuf);
+                gossipApp.networkService().send(target.getHost(), target.getPort(), byteBuf);
                 return gossipApp.setting().getSendNodes().contains(gossipMember2SeedMember(target));
             } catch (Exception e) {
                 log.error(e.getMessage());

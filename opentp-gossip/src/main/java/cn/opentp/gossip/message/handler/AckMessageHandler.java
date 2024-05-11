@@ -43,7 +43,7 @@ public class AckMessageHandler extends AbstractMessageHandler implements Message
             ByteBuf byteBuf = GossipMessageCodec.codec().encodeAck2Message(ack2Message);
             if (from != null) {
                 String[] host = from.split(":");
-                GossipApp.instance().messageService().send(host[0], Integer.valueOf(host[1]), byteBuf);
+                GossipApp.instance().networkService().send(host[0], Integer.valueOf(host[1]), byteBuf);
             }
         }
     }

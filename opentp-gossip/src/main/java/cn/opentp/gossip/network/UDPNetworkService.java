@@ -1,9 +1,9 @@
-package cn.opentp.gossip.message.service;
+package cn.opentp.gossip.network;
 
 import cn.opentp.gossip.enums.MessageTypeEnum;
 import cn.opentp.gossip.message.MessagePayload;
 import cn.opentp.gossip.message.handler.*;
-import cn.opentp.gossip.message.service.netty.NettyMessageHandler;
+import cn.opentp.gossip.network.netty.NettyMessageHandler;
 import com.alibaba.fastjson2.JSON;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -18,9 +18,9 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 
-public class UDPMessageService implements MessageService {
+public class UDPNetworkService implements NetworkService {
 
-    private final Logger log = LoggerFactory.getLogger(UDPMessageService.class);
+    private final Logger log = LoggerFactory.getLogger(UDPNetworkService.class);
 
     private Channel channel;
     private EventLoopGroup eventLoopGroup;

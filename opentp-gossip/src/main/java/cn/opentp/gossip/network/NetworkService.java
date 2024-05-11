@@ -1,6 +1,6 @@
-package cn.opentp.gossip.message.service;
+package cn.opentp.gossip.network;
 
-public interface MessageService {
+public interface NetworkService {
 
     void start(String host, int port);
 

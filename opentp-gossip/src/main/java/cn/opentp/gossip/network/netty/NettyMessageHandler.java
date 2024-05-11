@@ -1,7 +1,7 @@
-package cn.opentp.gossip.message.service.netty;
+package cn.opentp.gossip.network.netty;
 
 import cn.opentp.gossip.GossipApp;
-import cn.opentp.gossip.message.service.MessageService;
+import cn.opentp.gossip.network.NetworkService;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.DatagramPacket;
@@ -15,18 +15,16 @@ public class NettyMessageHandler extends SimpleChannelInboundHandler<DatagramPac
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, DatagramPacket packet) throws Exception {
+    protected void channelRead0(ChannelHandlerContext channelHandlerContext, DatagramPacket packet) {
         GossipApp management = GossipApp.instance();
-        MessageService messageService = management.messageService();
+        NetworkService networkService = management.networkService();
         if (packet.content() == null) return;
         String data = packet.content().toString(StandardCharsets.UTF_8);
-        messageService.handle(data);
+        networkService.handle(data);
     }
 
-
-
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         log.error("NetMessageHandler cathe error: ", cause.getCause());
     }
 }

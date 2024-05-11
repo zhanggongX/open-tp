@@ -1,16 +1,17 @@
 package cn.opentp.gossip;
 
 import cn.opentp.gossip.enums.GossipStateEnum;
-import cn.opentp.gossip.event.DefaultGossipListener;
+import cn.opentp.gossip.event.GossipEventTrigger;
 import cn.opentp.gossip.event.GossipListener;
 import cn.opentp.gossip.message.GossipMessage;
 import cn.opentp.gossip.message.codec.GossipMessageCodec;
 import cn.opentp.gossip.message.holder.GossipMessageHolder;
 import cn.opentp.gossip.message.holder.MemoryGossipMessageHolder;
 import cn.opentp.gossip.model.*;
-import cn.opentp.gossip.message.service.MessageService;
-import cn.opentp.gossip.message.service.UDPMessageService;
+import cn.opentp.gossip.network.NetworkService;
+import cn.opentp.gossip.network.UDPNetworkService;
 import cn.opentp.gossip.schedule.GossipScheduleTask;
+import cn.opentp.gossip.util.CommonUtil;
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,19 +36,19 @@ public class GossipApp {
     // 是否发送节点标记
     private Boolean seedNode = null;
 
-    // 消息服务
-    private final MessageService messageService = new UDPMessageService();
+    // 网络服务
+    private final NetworkService networkService = new UDPNetworkService();
     // 设置信息
-    private final GossipSettings gossipSettings = new GossipSettings();
+    private final GossipSettings settings = new GossipSettings();
     // 事件监听器
-    private GossipListener gossipListener = new DefaultGossipListener();
+    private GossipListener listener;
     // 流言消息缓存
     private final GossipMessageHolder gossipMessageHolder = new MemoryGossipMessageHolder();
 
     // 锁
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     // 周期定时任务执行
-    private final ScheduledExecutorService gossipScheduleExecutor = Executors.newScheduledThreadPool(1);
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
     // 节点心跳信息
     private final Map<GossipNode, HeartbeatState> endpointNodeCache = new ConcurrentHashMap<>();
@@ -65,8 +66,8 @@ public class GossipApp {
         return INSTANCE;
     }
 
-    public MessageService messageService() {
-        return messageService;
+    public NetworkService networkService() {
+        return networkService;
     }
 
     public List<GossipNode> liveNodes() {
@@ -89,16 +90,12 @@ public class GossipApp {
         return lock;
     }
 
-    public ScheduledExecutorService gossipScheduleExecutor() {
-        return gossipScheduleExecutor;
+    public ScheduledExecutorService scheduledExecutorService() {
+        return scheduledExecutorService;
     }
 
     public Map<GossipNode, CandidateMemberState> candidateMembers() {
         return candidateMembers;
-    }
-
-    public void netStartup() {
-        messageService.start(setting().getHost(), setting().getPort());
     }
 
     public void initMark() {
@@ -122,78 +119,61 @@ public class GossipApp {
     }
 
     public GossipSettings setting() {
-        return gossipSettings;
+        return settings;
     }
 
     public Boolean getSeedNode() {
         return seedNode;
     }
 
-    public GossipListener gossipListener() {
-        return gossipListener;
+    public GossipListener listener() {
+        return listener;
     }
 
-    public void setGossipListener(GossipListener gossipListener) {
-        this.gossipListener = gossipListener;
+    public void setListener(GossipListener gossipListener) {
+        this.listener = gossipListener;
     }
-
-    public void fireGossipEvent(GossipNode member, GossipStateEnum state) {
-        fireGossipEvent(member, state, null);
-    }
-
-    public void fireGossipEvent(GossipNode member, GossipStateEnum state, Object payload) {
-        if (gossipListener() != null) {
-            if (state == GossipStateEnum.RECEIVE) {
-                new Thread(() -> gossipListener().gossipEvent(member, state, payload)).start();
-            } else {
-                gossipListener().gossipEvent(member, state, payload);
-            }
-        }
-    }
-
 
     /**
      * 启动服务
      */
     public void startup() {
-        netStartup();
-        gossipStartup();
-        fireGossipEvent(setting().getLocalNode(), GossipStateEnum.JOIN);
-    }
-
-    /**
-     * 启动流言发送线程
-     */
-    public void gossipStartup() {
-        gossipScheduleExecutor.scheduleAtFixedRate(new GossipScheduleTask(), setting().getGossipInterval(), setting().getGossipInterval(), TimeUnit.MILLISECONDS);
+        // 启动服务监听
+        networkService().start(setting().getHost(), setting().getPort());
+        // 启动传播线程
+        scheduledExecutorService().scheduleAtFixedRate(new GossipScheduleTask(), setting().getGossipInterval(), setting().getGossipInterval(), TimeUnit.MILLISECONDS);
+        // 触发 join 事件
+        GossipEventTrigger.fireGossipEvent(setting().getLocalNode(), GossipStateEnum.JOIN, null);
     }
 
     /**
      * 关闭服务
      */
     public void shutdown() {
-        messageService.close();
-        gossipScheduleExecutor.shutdown();
-        // 等待消息发送完成
+        // 关闭服务监听
+        networkService().close();
+        // 关闭传播线程
+        scheduledExecutorService().shutdown();
+        // 等待消息处理完成
         try {
             Thread.sleep(setting().getGossipInterval());
         } catch (InterruptedException e) {
             log.error("服务关闭期间异常: ", e);
         }
+        // 发送关闭消息
         sendShutdown();
+        // 设置工作状态
         working = false;
     }
 
     private void sendShutdown() {
         ByteBuf byteBuf = GossipMessageCodec.codec().encodeShutdownMessage();
         final List<GossipNode> gossipNodes = liveNodes();
-        for (int i = 0; i < gossipNodes.size(); i++) {
+        for (GossipNode node : gossipNodes) {
             try {
-                GossipNode gossipNode = gossipNodes.get(i);
-                if (!gossipNode.equals(selfNode())) {
-                    messageService.send(gossipNode.getHost(), gossipNode.getPort(), byteBuf);
+                if (!node.equals(selfNode())) {
+                    networkService().send(node.getHost(), node.getPort(), byteBuf);
                 }
-                // setting().getSendNodes().contains(gossipMember2SeedMember(gossipNode));
             } catch (Exception e) {
                 log.error(e.getMessage());
             }
@@ -204,23 +184,7 @@ public class GossipApp {
      * 发布流言
      */
     public void publish(Object payload) {
-        GossipMessage msg = new GossipMessage(selfNode(), payload, convictedTime());
-        gossipMessageHolder.add(msg);
-    }
-
-    /**
-     * 判定过期时间
-     */
-    private long convictedTime() {
-        long executeGossipTime = 500;
-        return ((convergenceCount() * (gossipSettings.getNetworkDelay() * 3L + executeGossipTime)) << 1) + setting().getGossipInterval();
-    }
-
-    /**
-     * 判定获取次数
-     */
-    private int convergenceCount() {
-        int size = endpointNodeCache().size();
-        return (int) Math.floor(Math.log10(size) + Math.log(size) + 1);
+        GossipMessage gossipMessage = new GossipMessage(selfNode(), payload, CommonUtil.convictedTime());
+        gossipMessageHolder().add(gossipMessage);
     }
 }

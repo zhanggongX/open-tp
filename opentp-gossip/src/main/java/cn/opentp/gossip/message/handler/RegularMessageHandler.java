@@ -31,7 +31,8 @@ public class RegularMessageHandler implements MessageHandler {
             if (c <= 0) {
                 return;
             } else {
-                mm.remove(rcvedId);
+                GossipMessage remove = mm.remove(rcvedId);
+                log.warn("remove: {}", remove);
                 RECEIVED.put(creatorId, gossipRegularMessage.getId());
             }
         }
@@ -42,7 +43,8 @@ public class RegularMessageHandler implements MessageHandler {
         if (!mm.contains(gossipRegularMessage.getId())) {
             gossipRegularMessage.setForwardCount(0);
             mm.add(gossipRegularMessage);
-            GossipApp.instance().fireGossipEvent(gossipRegularMessage.getCreator(), GossipStateEnum.RECEIVE, gossipRegularMessage.getPayload());
+
+            GossipApp.instance().listener().gossipEvent(gossipRegularMessage.getCreator(), GossipStateEnum.RECEIVE, gossipRegularMessage.getPayload());
         }
     }
 }

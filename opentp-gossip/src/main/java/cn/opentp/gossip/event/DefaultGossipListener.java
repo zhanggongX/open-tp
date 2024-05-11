@@ -12,10 +12,13 @@ public class DefaultGossipListener implements GossipListener {
     @Override
     public void gossipEvent(GossipNode node, GossipStateEnum state, Object payload) {
         if (state == GossipStateEnum.RECEIVE) {
-            log.info("node: {}, state: {}, payload:{}", node, state, payload);
-        }
-        if (state == GossipStateEnum.DOWN) {
-            log.info("node: {} was downed", node);
+            log.info("接收到 node: {}, 信息: {}", node, payload);
+        } else if (state == GossipStateEnum.DOWN) {
+            log.info("node: {} 退出集群", node);
+        } else if (state == GossipStateEnum.JOIN) {
+            log.info("node: {} 加入集群。", node);
+        } else if (state == GossipStateEnum.UP) {
+            log.info("node: {} 活跃状态", node);
         }
     }
 }

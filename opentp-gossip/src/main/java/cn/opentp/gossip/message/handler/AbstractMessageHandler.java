@@ -31,7 +31,7 @@ public abstract class AbstractMessageHandler {
                 gossipApp.deadNodes().remove(member);
                 log.info("up ~~");
                 if (!member.equals(gossipApp.selfNode())) {
-                    gossipApp.fireGossipEvent(member, GossipStateEnum.UP);
+                    gossipApp.listener().gossipEvent(member, GossipStateEnum.JOIN, null);
                 }
             }
 
@@ -55,7 +55,7 @@ public abstract class AbstractMessageHandler {
                 gossipApp.deadNodes().add(member);
             }
 //            clearExecutor.schedule(() -> clearMember(member), getSettings().getDeleteThreshold() * getSettings().getGossipInterval(), TimeUnit.MILLISECONDS);
-            gossipApp.fireGossipEvent(member, GossipStateEnum.DOWN);
+            gossipApp.listener().gossipEvent(member, GossipStateEnum.DOWN, null);
         } catch (Exception e) {
             log.error(e.getMessage());
         } finally {
