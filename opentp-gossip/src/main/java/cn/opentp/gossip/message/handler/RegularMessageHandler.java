@@ -44,7 +44,7 @@ public class RegularMessageHandler implements MessageHandler {
             gossipMessage.setForwardCount(0);
             mm.add(gossipMessage);
 
-            GossipApp.instance().listener().gossipEvent(gossipMessage.getPublishNode(), GossipStateEnum.RECEIVE, gossipMessage.getPayload());
+            GossipApp.instance().gossipListenerContext().fireGossipEvent(gossipMessage.getPublishNode(), GossipStateEnum.RECEIVE, gossipMessage.getPayload());
         }
     }
 }

@@ -1,18 +1,19 @@
 package cn.opentp.gossip.schedule;
 
 import cn.opentp.gossip.GossipApp;
-import cn.opentp.gossip.enums.GossipStateEnum;
 import cn.opentp.gossip.message.GossipMessage;
 import cn.opentp.gossip.message.codec.GossipMessageCodec;
 import cn.opentp.gossip.message.holder.GossipMessageHolder;
-import cn.opentp.gossip.node.*;
 import cn.opentp.gossip.network.NetworkService;
+import cn.opentp.gossip.node.*;
+import cn.opentp.gossip.util.GossipUtil;
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -30,13 +31,12 @@ public class GossipScheduleTask implements Runnable {
         //Update local member version
         Map<GossipNode, HeartbeatState> endpointMembers = nodeContext.endpointNodes();
         HeartbeatState heartbeatState = endpointMembers.get(gossipApp.selfNode());
-
         long version = heartbeatState.updateVersion();
-        log.debug("heartbeat version is {}", version);
+        log.trace("heartbeat version is {}", version);
 
         // 如果当前节点处于待加入集群状态，执行上线
         GossipNode selfNode = gossipApp.selfNode();
-        if (discoverable(selfNode)) {
+        if (nodeContext.discoverable(selfNode)) {
             nodeContext.up(selfNode);
         }
 
@@ -51,7 +51,7 @@ public class GossipScheduleTask implements Runnable {
             log.error("获取节点摘要异常：", e);
         }
 
-        checkStatus();
+        nodeContext.checkStatus();
 
         log.trace("live nodes : {}", nodeContext.liveNodes());
         log.trace("dead nodes : {}", nodeContext.deadNodes());
@@ -65,7 +65,7 @@ public class GossipScheduleTask implements Runnable {
         for (String messageId : messageHolder.list()) {
             GossipMessage message = messageHolder.acquire(messageId);
             int forwardCount = message.getForwardCount();
-            int maxTry = convergenceCount();
+            int maxTry = GossipUtil.fanOut();
             if (forwardCount < maxTry) {
                 ByteBuf byteBuf = GossipMessageCodec.codec().encodeRegularMessage(message);
                 sendBuf(byteBuf);
@@ -78,221 +78,147 @@ public class GossipScheduleTask implements Runnable {
     }
 
     private void sendBuf(ByteBuf byteBuf) {
-        //gossip to some random live members
-        boolean b = gossip2LiveMember(byteBuf);
+        // 向活跃节点发布流言
+        boolean success = sendToLiveNodes(byteBuf);
+        // 向终止节点发布流言
+        sendToDeadNodes(byteBuf);
 
-        //gossip to a random dead members
-        gossip2UndiscoverableMember(byteBuf);
-
-        //
-        if (!b || GossipApp.instance().gossipNodeContext().liveNodes().size() <= GossipApp.instance().setting().getSendNodes().size()) {
-            gossip2Seed(byteBuf);
+        List<GossipNode> liveNodes = GossipApp.instance().gossipNodeContext().liveNodes();
+        List<DiscoverNode> discoverNodes = GossipApp.instance().setting().discoverNodes();
+        if (!success || liveNodes.size() <= discoverNodes.size()) {
+            // 向配置的 discovery 节点发送流言信息
+            sendToDiscoveryNode(byteBuf);
         }
     }
 
-    private boolean discoverable(GossipNode gossipNode) {
-        return gossipNode.getState() == GossipStateEnum.JOIN || gossipNode.getState() == GossipStateEnum.DOWN;
-    }
-
-    private void checkStatus() {
-        try {
-            GossipNode local = GossipApp.instance().selfNode();
-            Map<GossipNode, HeartbeatState> endpoints = GossipApp.instance().gossipNodeContext().endpointNodes();
-            Set<GossipNode> epKeys = endpoints.keySet();
-            for (GossipNode k : epKeys) {
-                if (!k.equals(local)) {
-                    HeartbeatState state = endpoints.get(k);
-                    long now = System.currentTimeMillis();
-                    long duration = now - state.getHeartbeatTime();
-                    long convictedTime = convictedTime();
-                    log.info("check1 : " + k + " state : " + state + " duration : " + duration + " convictedTime : " + convictedTime);
-                    if (duration > convictedTime && (isAlive(k) || GossipApp.instance().gossipNodeContext().liveNodes().contains(k))) {
-                        downing(k, state);
-                    }
-                    if (duration <= convictedTime && (discoverable(k) || GossipApp.instance().gossipNodeContext().deadNodes().contains(k))) {
-                        GossipApp.instance().instance().gossipNodeContext().up(k);
-                    }
-                }
-            }
-            checkCandidate();
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
-    }
-
-    private int convergenceCount() {
-        // 计算流言传播度
-        int size = GossipApp.instance().gossipNodeContext().endpointNodes().size();
-        return (int) Math.floor(Math.log10(size) + Math.log(size) + 1);
-    }
-//
-//    public static void main(String[] args) {
-//        for (int size = 0; size < 10000; size++) {
-//            System.out.println((int) Math.floor(Math.log10(size) + Math.log(size) + 1));
-//        }
-//    }
-
-    private boolean gossip2LiveMember(ByteBuf byteBuf) {
+    /**
+     * 向活跃节点发布流言。
+     *
+     * @param byteBuf 流言信息
+     * @return 发送成功
+     */
+    private boolean sendToLiveNodes(ByteBuf byteBuf) {
         int liveSize = GossipApp.instance().gossipNodeContext().liveNodes().size();
         if (liveSize == 0) {
             return false;
         }
 
         boolean success = false;
-        int c = Math.min(liveSize, convergenceCount());
-        for (int i = 0; i < c; i++) {
+        int fanOut = Math.min(liveSize, GossipUtil.fanOut());
+        for (int i = 0; i < fanOut; i++) {
             int index = ThreadLocalRandom.current().nextInt(liveSize);
-            success = success || sendGossip(byteBuf, GossipApp.instance().gossipNodeContext().liveNodes(), index);
+            success = success || sendToNode(byteBuf, GossipApp.instance().gossipNodeContext().liveNodes(), index);
         }
         return success;
     }
 
-    private void gossip2UndiscoverableMember(ByteBuf buffer) {
-        int deadSize = GossipApp.instance().gossipNodeContext().deadNodes().size();
+    /**
+     * 向终止节点发送流言
+     *
+     * @param byteBuf 流言信息
+     */
+    private void sendToDeadNodes(ByteBuf byteBuf) {
+        List<GossipNode> deadNodes = GossipApp.instance().gossipNodeContext().deadNodes();
+        int deadSize = deadNodes.size();
         if (deadSize == 0) {
             return;
         }
         int index = (deadSize == 1) ? 0 : ThreadLocalRandom.current().nextInt(deadSize);
-        sendGossip(buffer, GossipApp.instance().gossipNodeContext().deadNodes(), index);
+        sendToNode(byteBuf, deadNodes, index);
     }
 
-    private void gossip2Seed(ByteBuf byteBuf) {
-        int size = GossipApp.instance().setting().getSendNodes().size();
+    /**
+     * 向配置的发现节点发送流言
+     *
+     * @param byteBuf 流言信息
+     */
+    private void sendToDiscoveryNode(ByteBuf byteBuf) {
+        List<DiscoverNode> discoverNodes = GossipApp.instance().setting().discoverNodes();
+        int size = discoverNodes.size();
         if (size > 0) {
             if (size == 1 && isSeedNode()) {
                 return;
             }
             int index = (size == 1) ? 0 : ThreadLocalRandom.current().nextInt(size);
             if (GossipApp.instance().gossipNodeContext().liveNodes().size() == 1) {
-                sendGossip2Seed(byteBuf, GossipApp.instance().setting().getSendNodes(), index);
+                sendDiscoveryNode(byteBuf, discoverNodes, index);
             } else {
-                double prob = size / (double) GossipApp.instance().gossipNodeContext().liveNodes().size();
+                double prob = size / (double) discoverNodes.size();
                 if (ThreadLocalRandom.current().nextDouble() < prob) {
-                    sendGossip2Seed(byteBuf, GossipApp.instance().setting().getSendNodes(), index);
+                    sendDiscoveryNode(byteBuf, discoverNodes, index);
                 }
             }
         }
     }
 
-    private boolean sendGossip2Seed(ByteBuf byteBuf, List<SeedNode> members, int index) {
-        if (byteBuf != null && index >= 0) {
-//            ByteBuf sendByteBuf = byteBuf.copy();
-            try {
-                SeedNode target = members.get(index);
-                int m_size = members.size();
-                if (target.equals(gossipMember2SeedMember(GossipApp.instance().selfNode()))) {
-                    if (m_size <= 1) {
-                        return false;
-                    } else {
-                        target = members.get((index + 1) % m_size);
-                    }
-                }
-                NetworkService messageService = GossipApp.instance().networkService();
-                messageService.send(target.getHost(), target.getPort(), byteBuf);
-                return true;
-            } catch (Exception e) {
-                log.error("", e);
-            }
+    /**
+     * 向集群节点发送流言
+     *
+     * @param byteBuf 流言信息
+     * @param nodes   集群节点
+     * @param index   集群节点索引
+     * @return 状态
+     */
+    private boolean sendToNode(ByteBuf byteBuf, List<GossipNode> nodes, int index) {
+        if (byteBuf == null || index < 0) {
+            return false;
         }
-        return false;
-    }
 
-    private void fireGossipEvent(GossipNode member, GossipStateEnum state) {
-        fireGossipEvent(member, state, null);
-    }
-
-    public void fireGossipEvent(GossipNode member, GossipStateEnum state, Object payload) {
-        if (GossipApp.instance().listener() != null) {
-            if (state == GossipStateEnum.RECEIVE) {
-                new Thread(() -> GossipApp.instance().listener().gossipEvent(member, state, payload)).start();
-            } else {
-                GossipApp.instance().listener().gossipEvent(member, state, payload);
-            }
-        }
-    }
-
-    private long convictedTime() {
-        long executeGossipTime = 500;
-        return ((convergenceCount() * (GossipApp.instance().setting().getNetworkDelay() * 3L + executeGossipTime)) << 1) + GossipApp.instance().setting().getGossipInterval();
-    }
-
-    private boolean isAlive(GossipNode member) {
-        return member.getState() == GossipStateEnum.UP;
-    }
-
-    private void downing(GossipNode member, HeartbeatState state) {
-        log.info("downing ~~");
-        try {//11
-            if (GossipApp.instance().gossipNodeContext().candidateMembers().containsKey(member)) {
-                CandidateNodeState cState = GossipApp.instance().gossipNodeContext().candidateMembers().get(member);
-                if (state.getHeartbeatTime() == cState.getHeartbeatTime()) {
-                    cState.updateCount();
-                } else if (state.getHeartbeatTime() > cState.getHeartbeatTime()) {
-                    GossipApp.instance().gossipNodeContext().candidateMembers().remove(member);
-                }
-            } else {
-                GossipApp.instance().gossipNodeContext().candidateMembers().put(member, new CandidateNodeState(state.getHeartbeatTime()));
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
-    }
-
-    private void checkCandidate() {
-        Set<GossipNode> keys = GossipApp.instance().gossipNodeContext().candidateMembers().keySet();
-        for (GossipNode m : keys) {
-            if (GossipApp.instance().gossipNodeContext().candidateMembers().get(m).getDowningCount().get() >= convergenceCount()) {
-                down(m);
-                GossipApp.instance().gossipNodeContext().candidateMembers().remove(m);
-            }
-        }
-    }
-
-    public void down(GossipNode member) {
-        log.info("down ~~");
         try {
-            GossipApp.instance().lock().writeLock().lock();
-            member.setState(GossipStateEnum.DOWN);
-            GossipApp.instance().gossipNodeContext().liveNodes().remove(member);
-            if (!GossipApp.instance().gossipNodeContext().deadNodes().contains(member)) {
-                GossipApp.instance().gossipNodeContext().deadNodes().add(member);
+            GossipNode target = nodes.get(index);
+            if (target.equals(GossipApp.instance().selfNode())) {
+                int m_size = nodes.size();
+                if (m_size == 1) {
+                    return false;
+                } else {
+                    target = nodes.get((index + 1) % m_size);
+                }
             }
-            fireGossipEvent(member, GossipStateEnum.DOWN);
+            GossipApp.instance().networkService().send(target.getHost(), target.getPort(), byteBuf);
+            return GossipApp.instance().setting().discoverNodes().contains(buildSeedNode(target));
         } catch (Exception e) {
             log.error(e.getMessage());
-        } finally {
-            GossipApp.instance().lock().writeLock().unlock();
+            return false;
         }
     }
 
-    private boolean sendGossip(ByteBuf byteBuf, List<GossipNode> nodes, int index) {
-        if (byteBuf != null && index >= 0) {
-            try {
-                GossipNode target = nodes.get(index);
-                if (target.equals(GossipApp.instance().selfNode())) {
-                    int m_size = nodes.size();
-                    if (m_size == 1) {
-                        return false;
-                    } else {
-                        target = nodes.get((index + 1) % m_size);
-                    }
+    /**
+     * 向配置的发现节点发送流言
+     *
+     * @param byteBuf       流言信息
+     * @param discoverNodes 配置的发现节点
+     * @param index         发现节点索引
+     */
+    private void sendDiscoveryNode(ByteBuf byteBuf, List<DiscoverNode> discoverNodes, int index) {
+        if (byteBuf == null && index < 0) {
+            return;
+        }
+
+        try {
+            DiscoverNode target = discoverNodes.get(index);
+            int size = discoverNodes.size();
+            if (target.equals(buildSeedNode(GossipApp.instance().selfNode()))) {
+                if (size == 1) {
+                    return;
+                } else {
+                    target = discoverNodes.get((index + 1) % size);
                 }
-                GossipApp.instance().networkService().send(target.getHost(), target.getPort(), byteBuf);
-                return GossipApp.instance().setting().getSendNodes().contains(gossipMember2SeedMember(target));
-            } catch (Exception e) {
-                log.error(e.getMessage());
             }
+            NetworkService messageService = GossipApp.instance().networkService();
+            messageService.send(target.getHost(), target.getPort(), byteBuf);
+        } catch (Exception e) {
+            log.error("", e);
         }
-        return false;
     }
 
-    private SeedNode gossipMember2SeedMember(GossipNode gossipNode) {
-        return new SeedNode(gossipNode.getCluster(), gossipNode.getNodeId(), gossipNode.getHost(), gossipNode.getPort());
+
+    private DiscoverNode buildSeedNode(GossipNode gossipNode) {
+        return new DiscoverNode(gossipNode.getCluster(), gossipNode.getNodeId(), gossipNode.getHost(), gossipNode.getPort());
     }
 
     public boolean isSeedNode() {
         if (GossipApp.instance().getSeedNode() == null) {
-            return GossipApp.instance().setting().getSendNodes().contains(gossipMember2SeedMember(GossipApp.instance().selfNode()));
+            return GossipApp.instance().setting().discoverNodes().contains(buildSeedNode(GossipApp.instance().selfNode()));
         }
         return GossipApp.instance().getSeedNode();
     }

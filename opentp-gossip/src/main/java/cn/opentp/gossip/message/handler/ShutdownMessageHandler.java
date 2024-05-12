@@ -1,5 +1,6 @@
 package cn.opentp.gossip.message.handler;
 
+import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.node.GossipNode;
 import com.alibaba.fastjson2.JSON;
 import org.slf4j.Logger;
@@ -15,7 +16,7 @@ public class ShutdownMessageHandler extends AbstractMessageHandler implements Me
         GossipNode gossipNode = JSON.parseObject(data, GossipNode.class);
         log.info("");
         if (gossipNode != null) {
-            down(gossipNode);
+            GossipApp.instance().gossipNodeContext().down(gossipNode);
         }
     }
 }

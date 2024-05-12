@@ -1,23 +1,22 @@
 package cn.opentp.gossip;
 
 import cn.opentp.gossip.enums.GossipStateEnum;
-import cn.opentp.gossip.event.GossipEventTrigger;
-import cn.opentp.gossip.event.GossipListener;
+import cn.opentp.gossip.event.GossipListenerContext;
 import cn.opentp.gossip.message.GossipMessage;
-import cn.opentp.gossip.message.codec.GossipMessageCodec;
 import cn.opentp.gossip.message.holder.GossipMessageHolder;
 import cn.opentp.gossip.message.holder.MemoryGossipMessageHolder;
-import cn.opentp.gossip.node.*;
 import cn.opentp.gossip.network.NetworkService;
 import cn.opentp.gossip.network.UDPNetworkService;
+import cn.opentp.gossip.node.GossipNode;
+import cn.opentp.gossip.node.GossipNodeContext;
 import cn.opentp.gossip.schedule.GossipScheduleTask;
-import cn.opentp.gossip.util.CommonUtil;
-import io.netty.buffer.ByteBuf;
+import cn.opentp.gossip.util.GossipUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -41,7 +40,7 @@ public class GossipApp {
     // 设置信息
     private final GossipSettings settings = new GossipSettings();
     // 事件监听器
-    private GossipListener listener;
+    private final GossipListenerContext gossipListenerContext = new GossipListenerContext();
     // 流言消息缓存
     private final GossipMessageHolder gossipMessageHolder = new MemoryGossipMessageHolder();
 
@@ -103,12 +102,8 @@ public class GossipApp {
         return seedNode;
     }
 
-    public GossipListener listener() {
-        return listener;
-    }
-
-    public void setListener(GossipListener gossipListener) {
-        this.listener = gossipListener;
+    public GossipListenerContext gossipListenerContext() {
+        return gossipListenerContext;
     }
 
     public GossipNodeContext gossipNodeContext() {
@@ -124,7 +119,7 @@ public class GossipApp {
         // 启动传播线程
         scheduledExecutorService().scheduleAtFixedRate(new GossipScheduleTask(), setting().getGossipInterval(), setting().getGossipInterval(), TimeUnit.MILLISECONDS);
         // 触发 join 事件
-        GossipEventTrigger.fireGossipEvent(setting().getLocalNode(), GossipStateEnum.JOIN, null);
+        gossipListenerContext.fireGossipEvent(setting().getLocalNode(), GossipStateEnum.JOIN, null);
     }
 
     /**
@@ -151,7 +146,7 @@ public class GossipApp {
      * 发布流言
      */
     public void publish(Object payload) {
-        GossipMessage gossipMessage = new GossipMessage(selfNode(), payload, CommonUtil.convictedTime());
+        GossipMessage gossipMessage = new GossipMessage(selfNode(), payload, GossipUtil.convictedTime());
         gossipMessageHolder().add(gossipMessage);
     }
 }

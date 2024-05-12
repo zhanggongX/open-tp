@@ -3,7 +3,7 @@ package cn.opentp.gossip;
 import cn.opentp.gossip.enums.GossipStateEnum;
 import cn.opentp.gossip.node.GossipNode;
 import cn.opentp.gossip.node.HeartbeatState;
-import cn.opentp.gossip.node.SeedNode;
+import cn.opentp.gossip.node.DiscoverNode;
 import cn.opentp.gossip.util.SocketAddressUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,8 +40,8 @@ public class GossipSettings {
 
     // 本地节点
     private GossipNode localNode;
-    // 集群节点
-    private final List<SeedNode> sendNodes = new ArrayList<>();
+    // 配置的集群发现节点
+    private final List<DiscoverNode> discoverNodes = new ArrayList<>();
 
     public static void parseConfig(GossipProperties properties) {
         // 校验必要配置
@@ -61,7 +61,7 @@ public class GossipSettings {
         for (String host : hosts) {
             try {
                 InetSocketAddress inetSocketAddress = SocketAddressUtil.parseSocketAddress(host);
-                gossipSettings.getSendNodes().add(new SeedNode(properties.getCluster(), null, inetSocketAddress.getHostName(), inetSocketAddress.getPort()));
+                gossipSettings.discoverNodes().add(new DiscoverNode(properties.getCluster(), null, inetSocketAddress.getHostName(), inetSocketAddress.getPort()));
             } catch (UnknownHostException ex) {
                 log.warn("Seed provider couldn't lookup host {}", host);
             }
@@ -164,8 +164,8 @@ public class GossipSettings {
         this.deleteThreshold = deleteThreshold;
     }
 
-    public List<SeedNode> getSendNodes() {
-        return sendNodes;
+    public List<DiscoverNode> discoverNodes() {
+        return discoverNodes;
     }
 
     public static void checkParams(GossipProperties properties) {

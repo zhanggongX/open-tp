@@ -82,6 +82,7 @@ public class UDPNetworkService implements NetworkService {
         if (message instanceof ByteBuf sendBuf) {
             ByteBuf realSendBuf = sendBuf.copy();
             DatagramPacket datagramPacket = new DatagramPacket(realSendBuf, new InetSocketAddress(targetHost, targetPort));
+            log.info("发送消息：{}", sendBuf.copy().toString(StandardCharsets.UTF_8));
             channel.writeAndFlush(datagramPacket);
         } else {
             String json = JSON.toJSONString(message);

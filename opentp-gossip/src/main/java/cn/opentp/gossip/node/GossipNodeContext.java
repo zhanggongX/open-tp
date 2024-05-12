@@ -2,17 +2,14 @@ package cn.opentp.gossip.node;
 
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.enums.GossipStateEnum;
-import cn.opentp.gossip.event.GossipEventTrigger;
 import cn.opentp.gossip.message.codec.GossipMessageCodec;
+import cn.opentp.gossip.util.GossipUtil;
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadLocalRandom;
@@ -66,15 +63,32 @@ public class GossipNodeContext {
             // 终止节点移除
             deadNodes().remove(node);
 
-            log.debug("节点: {} 上线。", node);
             if (!node.equals(GossipApp.instance().selfNode())) {
                 // 触发上线事件
-                GossipEventTrigger.fireGossipEvent(node, GossipStateEnum.UP);
+                GossipApp.instance().gossipListenerContext().fireGossipEvent(node, GossipStateEnum.UP);
             }
         } catch (Exception e) {
             log.error(e.getMessage());
         } finally {
             writeLock.unlock();
+        }
+    }
+
+    public void downing(GossipNode member, HeartbeatState state) {
+        log.info("downing ~~");
+        try {//11
+            if (GossipApp.instance().gossipNodeContext().candidateMembers().containsKey(member)) {
+                CandidateNodeState cState = GossipApp.instance().gossipNodeContext().candidateMembers().get(member);
+                if (state.getHeartbeatTime() == cState.getHeartbeatTime()) {
+                    cState.updateCount();
+                } else if (state.getHeartbeatTime() > cState.getHeartbeatTime()) {
+                    GossipApp.instance().gossipNodeContext().candidateMembers().remove(member);
+                }
+            } else {
+                GossipApp.instance().gossipNodeContext().candidateMembers().put(member, new CandidateNodeState(state.getHeartbeatTime()));
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
     }
 
@@ -95,7 +109,7 @@ public class GossipNodeContext {
                 deadNodes().add(node);
             }
             // 触发下线事件
-            GossipEventTrigger.fireGossipEvent(node, GossipStateEnum.DOWN);
+            GossipApp.instance().gossipListenerContext().fireGossipEvent(node, GossipStateEnum.DOWN);
         } catch (Exception e) {
             log.error(e.getMessage());
         } finally {
@@ -146,5 +160,51 @@ public class GossipNodeContext {
             nodeDigests.add(new GossipNodeDigest(node, time, version));
         }
         return nodeDigests;
+    }
+
+    public void checkStatus() {
+        try {
+            GossipNode local = GossipApp.instance().selfNode();
+            GossipNodeContext nodeContext = GossipApp.instance().gossipNodeContext();
+            Map<GossipNode, HeartbeatState> endpoints = GossipApp.instance().gossipNodeContext().endpointNodes();
+            Set<GossipNode> epKeys = endpoints.keySet();
+            for (GossipNode k : epKeys) {
+                if (!k.equals(local)) {
+                    HeartbeatState state = endpoints.get(k);
+                    long now = System.currentTimeMillis();
+                    long duration = now - state.getHeartbeatTime();
+                    long convictedTime = GossipUtil.convictedTime();
+                    log.info("check1 : " + k + " state : " + state + " duration : " + duration + " convictedTime : " + convictedTime);
+                    if (duration > convictedTime && (isAlive(k) || GossipApp.instance().gossipNodeContext().liveNodes().contains(k))) {
+                        downing(k, state);
+                    }
+                    if (duration <= convictedTime && (discoverable(k) || GossipApp.instance().gossipNodeContext().deadNodes().contains(k))) {
+                        up(k);
+                    }
+                }
+            }
+            checkCandidate();
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private boolean isAlive(GossipNode member) {
+        return member.getState() == GossipStateEnum.UP;
+    }
+
+    private void checkCandidate() {
+        GossipNodeContext nodeContext = GossipApp.instance().gossipNodeContext();
+        Set<GossipNode> keys = GossipApp.instance().gossipNodeContext().candidateMembers().keySet();
+        for (GossipNode m : keys) {
+            if (GossipApp.instance().gossipNodeContext().candidateMembers().get(m).getDowningCount().get() >= GossipUtil.fanOut()) {
+                nodeContext.down(m);
+                GossipApp.instance().gossipNodeContext().candidateMembers().remove(m);
+            }
+        }
+    }
+
+    public boolean discoverable(GossipNode gossipNode) {
+        return gossipNode.getState() == GossipStateEnum.JOIN || gossipNode.getState() == GossipStateEnum.DOWN;
     }
 }

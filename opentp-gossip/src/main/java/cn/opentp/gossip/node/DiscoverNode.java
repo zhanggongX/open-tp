@@ -4,17 +4,20 @@ import java.io.Serializable;
 import java.util.Objects;
 
 
-public class SeedNode implements Serializable {
+/**
+ * 通过属性配置的发现节点
+ */
+public class DiscoverNode implements Serializable {
 
     private String nodeId;
     private String cluster;
     private String host;
     private Integer port;
 
-    public SeedNode() {
+    public DiscoverNode() {
     }
 
-    public SeedNode(String cluster, String nodeId, String host, Integer port) {
+    public DiscoverNode(String cluster, String nodeId, String host, Integer port) {
         this.cluster = cluster;
         this.nodeId = nodeId;
         this.host = host;
@@ -61,7 +64,7 @@ public class SeedNode implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        SeedNode seedNode = (SeedNode) o;
+        DiscoverNode seedNode = (DiscoverNode) o;
         return Objects.equals(nodeId, seedNode.nodeId) && Objects.equals(cluster, seedNode.cluster) && Objects.equals(host, seedNode.host) && Objects.equals(port, seedNode.port);
     }
 
@@ -72,6 +75,6 @@ public class SeedNode implements Serializable {
 
     @Override
     public String toString() {
-        return "SeedNode{" + "nodeId='" + nodeId + '\'' + ", cluster='" + cluster + '\'' + ", host='" + host + '\'' + ", port=" + port + '}';
+        return "DiscoverNode{" + "nodeId='" + nodeId + '\'' + ", cluster='" + cluster + '\'' + ", host='" + host + '\'' + ", port=" + port + '}';
     }
 }

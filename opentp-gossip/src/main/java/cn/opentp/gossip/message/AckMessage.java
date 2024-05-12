@@ -11,8 +11,8 @@ import java.util.Map;
 
 
 public class AckMessage implements Serializable {
-    private List<GossipNodeDigest> olders;
 
+    private List<GossipNodeDigest> olders;
     private Map<GossipNode, HeartbeatState> newers;
 
     public AckMessage() {

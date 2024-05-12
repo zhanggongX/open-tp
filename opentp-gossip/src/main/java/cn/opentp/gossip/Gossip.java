@@ -32,7 +32,7 @@ public class Gossip {
      */
     public static void init(GossipProperties properties, GossipListener gossipListener) {
         GossipSettings.parseConfig(properties);
-        gossipApp.setListener(gossipListener);
+        gossipApp.gossipListenerContext().setGossipListener(gossipListener);
         // 标记配置完成
         gossipApp.initMark();
     }
