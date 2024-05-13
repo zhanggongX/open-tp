@@ -20,7 +20,7 @@ public class GossipUtil {
      * 扇出是指由一个服务或消息路由器向多个用户分发消息，通常是同时分发。
      */
     public static int fanOut() {
-        int size = GossipApp.instance().gossipNodeContext().endpointNodes().size();
+        int size = GossipApp.instance().gossipNodeContext().clusterNodes().size();
         return (int) Math.floor(Math.log10(size) + Math.log(size) + 1);
     }
 }

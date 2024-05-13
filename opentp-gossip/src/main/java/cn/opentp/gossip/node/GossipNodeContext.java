@@ -20,7 +20,7 @@ public class GossipNodeContext {
     private static final Logger log = LoggerFactory.getLogger(GossipNodeContext.class);
 
     // 所有节点
-    private final Map<GossipNode, HeartbeatState> endpointNodes = new ConcurrentHashMap<>();
+    private final Map<GossipNode, HeartbeatState> clusterNodes = new ConcurrentHashMap<>();
     // 活节点
     private final List<GossipNode> liveNodes = new CopyOnWriteArrayList<>();
     // 死节点
@@ -28,8 +28,8 @@ public class GossipNodeContext {
     // 候选节点，判定中的节点
     private final Map<GossipNode, CandidateNodeState> candidateMembers = new ConcurrentHashMap<>();
 
-    public Map<GossipNode, HeartbeatState> endpointNodes() {
-        return endpointNodes;
+    public Map<GossipNode, HeartbeatState> clusterNodes() {
+        return clusterNodes;
     }
 
     public List<GossipNode> liveNodes() {
@@ -144,13 +144,11 @@ public class GossipNodeContext {
     public List<GossipNodeDigest> randomGossipNodeDigest() throws UnknownHostException {
         List<GossipNodeDigest> nodeDigests = new ArrayList<>();
 
-        GossipNodeContext nodeContext = GossipApp.instance().gossipNodeContext();
-
-        List<GossipNode> nodes = new ArrayList<>(nodeContext.endpointNodes().keySet());
+        List<GossipNode> nodes = new ArrayList<>(clusterNodes().keySet());
         Collections.shuffle(nodes, ThreadLocalRandom.current());
 
         for (GossipNode node : nodes) {
-            HeartbeatState heartbeatState = nodeContext.endpointNodes().get(node);
+            HeartbeatState heartbeatState = clusterNodes().get(node);
             long time = 0;
             long version = 0;
             if (heartbeatState != null) {
@@ -165,8 +163,7 @@ public class GossipNodeContext {
     public void checkStatus() {
         try {
             GossipNode local = GossipApp.instance().selfNode();
-            GossipNodeContext nodeContext = GossipApp.instance().gossipNodeContext();
-            Map<GossipNode, HeartbeatState> endpoints = GossipApp.instance().gossipNodeContext().endpointNodes();
+            Map<GossipNode, HeartbeatState> endpoints = clusterNodes();
             Set<GossipNode> epKeys = endpoints.keySet();
             for (GossipNode k : epKeys) {
                 if (!k.equals(local)) {

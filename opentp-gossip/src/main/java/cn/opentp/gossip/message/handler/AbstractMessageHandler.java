@@ -22,7 +22,7 @@ public abstract class AbstractMessageHandler {
             }
 
             try {
-                HeartbeatState localState = GossipApp.instance().gossipNodeContext().endpointNodes().get(m);
+                HeartbeatState localState = GossipApp.instance().gossipNodeContext().clusterNodes().get(m);
                 HeartbeatState remoteState = endpointMembers.get(m);
 
                 if (localState != null) {
@@ -53,9 +53,9 @@ public abstract class AbstractMessageHandler {
         if (member.getState() == GossipStateEnum.DOWN) {
             GossipApp.instance().gossipNodeContext().down(member);
         }
-        if (GossipApp.instance().gossipNodeContext().endpointNodes().containsKey(member)) {
-            GossipApp.instance().gossipNodeContext().endpointNodes().remove(member);
+        if (GossipApp.instance().gossipNodeContext().clusterNodes().containsKey(member)) {
+            GossipApp.instance().gossipNodeContext().clusterNodes().remove(member);
         }
-        GossipApp.instance().gossipNodeContext().endpointNodes().put(member, remoteState);
+        GossipApp.instance().gossipNodeContext().clusterNodes().put(member, remoteState);
     }
 }

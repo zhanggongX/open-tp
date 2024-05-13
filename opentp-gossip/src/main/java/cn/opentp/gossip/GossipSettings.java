@@ -89,7 +89,7 @@ public class GossipSettings {
         gossipNode.setState(GossipStateEnum.JOIN);
         gossipSettings.setLocalNode(gossipNode);
 
-        gossipApp.gossipNodeContext().endpointNodes().put(gossipNode, new HeartbeatState());
+        gossipApp.gossipNodeContext().clusterNodes().put(gossipNode, new HeartbeatState());
     }
 
     public GossipNode getLocalNode() {

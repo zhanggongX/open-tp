@@ -31,7 +31,7 @@ public class AckMessageHandler extends AbstractMessageHandler implements Message
         if (olders != null) {
             for (GossipNodeDigest d : olders) {
                 GossipNode member = createByDigest(d);
-                HeartbeatState hb = GossipApp.instance().gossipNodeContext().endpointNodes().get(member);
+                HeartbeatState hb = GossipApp.instance().gossipNodeContext().clusterNodes().get(member);
                 if (hb != null) {
                     deltaEndpoints.put(member, hb);
                 }
@@ -54,7 +54,7 @@ public class AckMessageHandler extends AbstractMessageHandler implements Message
         member.setHost(digest.getSocketAddress().getAddress().getHostAddress());
         member.setCluster(GossipApp.instance().setting().getCluster());
 
-        Set<GossipNode> keys = GossipApp.instance().gossipNodeContext().endpointNodes().keySet();
+        Set<GossipNode> keys = GossipApp.instance().gossipNodeContext().clusterNodes().keySet();
         for (GossipNode m : keys) {
             if (m.equals(member)) {
                 member.setNodeId(m.getNodeId());

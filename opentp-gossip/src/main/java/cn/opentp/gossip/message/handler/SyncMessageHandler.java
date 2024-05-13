@@ -38,12 +38,12 @@ public class SyncMessageHandler implements MessageHandler {
                 node.setNodeId(gossipNodeDigest.getNodeId());
                 syncedNodes.add(node);
 
-                compareDigest(gossipNodeDigest, node, cluster, oldNodes, newNodes);
+                compareDigest(gossipNodeDigest, node, oldNodes, newNodes);
             }
 
             GossipNodeContext nodeContext = GossipApp.instance().gossipNodeContext();
             // 把本节点有的，其他节点没有的集群节点，通过 ack 同步回去
-            Map<GossipNode, HeartbeatState> endpoints = nodeContext.endpointNodes();
+            Map<GossipNode, HeartbeatState> endpoints = nodeContext.clusterNodes();
             Set<GossipNode> epKeys = endpoints.keySet();
             for (GossipNode m : epKeys) {
                 if (!syncedNodes.contains(m)) {
@@ -64,7 +64,13 @@ public class SyncMessageHandler implements MessageHandler {
         }
     }
 
-    private void compareDigest(GossipNodeDigest gossipNodeDigest, GossipNode syncedNode, String cluster, List<GossipNodeDigest> oldNodes, Map<GossipNode, HeartbeatState> newNodes) {
+    /**
+     * @param gossipNodeDigest 同步过来的节点摘要
+     * @param syncedNode       摘要生成的节点
+     * @param oldNodes         过时的节点信息
+     * @param newNodes         当前的节点更新
+     */
+    private void compareDigest(GossipNodeDigest gossipNodeDigest, GossipNode syncedNode, List<GossipNodeDigest> oldNodes, Map<GossipNode, HeartbeatState> newNodes) {
 
         try {
             // 同步过来的节点的信息
@@ -72,7 +78,7 @@ public class SyncMessageHandler implements MessageHandler {
             long remoteVersion = gossipNodeDigest.getVersion();
 
             GossipNodeContext nodeContext = GossipApp.instance().gossipNodeContext();
-            HeartbeatState heartbeatState = nodeContext.endpointNodes().get(syncedNode);
+            HeartbeatState heartbeatState = nodeContext.clusterNodes().get(syncedNode);
             if (heartbeatState != null) {
                 long localHeartbeatTime = heartbeatState.getHeartbeatTime();
                 long localVersion = heartbeatState.getVersion();

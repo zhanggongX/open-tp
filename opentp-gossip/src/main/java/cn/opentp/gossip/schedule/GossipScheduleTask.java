@@ -29,7 +29,7 @@ public class GossipScheduleTask implements Runnable {
         GossipNodeContext nodeContext = gossipApp.gossipNodeContext();
 
         //Update local member version
-        Map<GossipNode, HeartbeatState> endpointMembers = nodeContext.endpointNodes();
+        Map<GossipNode, HeartbeatState> endpointMembers = nodeContext.clusterNodes();
         HeartbeatState heartbeatState = endpointMembers.get(gossipApp.selfNode());
         long version = heartbeatState.updateVersion();
         log.trace("heartbeat version is {}", version);
@@ -55,7 +55,7 @@ public class GossipScheduleTask implements Runnable {
 
         log.trace("live nodes : {}", nodeContext.liveNodes());
         log.trace("dead nodes : {}", nodeContext.deadNodes());
-        log.trace("cluster nodes : {}", nodeContext.endpointNodes());
+        log.trace("cluster nodes : {}", nodeContext.clusterNodes());
 
         // 处理流言信息
         GossipMessageHolder messageHolder = gossipApp.gossipMessageHolder();
