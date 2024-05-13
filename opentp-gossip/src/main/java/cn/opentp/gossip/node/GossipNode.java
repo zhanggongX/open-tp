@@ -91,9 +91,4 @@ public class GossipNode implements Serializable {
         result = 31 * result + port.hashCode();
         return result;
     }
-
-    @Override
-    public String toString() {
-        return "GossipNode{" + "cluster='" + cluster + '\'' + ", host='" + host + '\'' + ", port=" + port + ", nodeId='" + nodeId + '\'' + ", state=" + state + '}';
-    }
 }

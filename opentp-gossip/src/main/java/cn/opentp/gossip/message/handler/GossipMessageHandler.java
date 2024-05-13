@@ -1,10 +1,10 @@
 package cn.opentp.gossip.message.handler;
 
+import cn.opentp.core.util.JSONUtils;
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.enums.GossipStateEnum;
 import cn.opentp.gossip.message.GossipMessage;
 import cn.opentp.gossip.message.holder.GossipMessageHolder;
-import com.alibaba.fastjson2.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +21,7 @@ public class GossipMessageHandler implements MessageHandler {
 
     @Override
     public void handle(String cluster, String data, String from) {
-        GossipMessage gossipMessage = JSON.parseObject(data, GossipMessage.class);
+        GossipMessage gossipMessage = JSONUtils.fromJson(data, GossipMessage.class);
         GossipMessageHolder messageHolder = GossipApp.instance().gossipMessageHolder();
 
         String publishNodeId = gossipMessage.getPublishNode().getNodeId();

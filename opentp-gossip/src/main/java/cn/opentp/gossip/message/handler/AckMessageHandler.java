@@ -1,11 +1,11 @@
 package cn.opentp.gossip.message.handler;
 
+import cn.opentp.core.util.JSONUtils;
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.message.Ack2Message;
 import cn.opentp.gossip.message.AckMessage;
 import cn.opentp.gossip.message.factory.GossipMessageFactory;
 import cn.opentp.gossip.node.*;
-import com.alibaba.fastjson2.JSON;
 import io.netty.buffer.ByteBuf;
 
 import java.util.HashMap;
@@ -17,7 +17,8 @@ public class AckMessageHandler implements MessageHandler {
 
     @Override
     public void handle(String cluster, String data, String from) {
-        AckMessage ackMessage = JSON.parseObject(data, AckMessage.class);
+        System.out.println("1: " + data);
+        AckMessage ackMessage = JSONUtils.fromJson(data, AckMessage.class);
         GossipNodeContext nodeContext = GossipApp.instance().gossipNodeContext();
 
         List<GossipNodeDigest> remoteNeedUpdateNodes = ackMessage.getNeedUpdateNodes();

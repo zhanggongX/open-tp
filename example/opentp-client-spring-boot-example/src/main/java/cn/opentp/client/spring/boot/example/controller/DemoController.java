@@ -2,7 +2,7 @@ package cn.opentp.client.spring.boot.example.controller;
 
 import cn.opentp.client.configuration.Configuration;
 import cn.opentp.core.thread.pool.ThreadPoolContext;
-import com.alibaba.fastjson2.JSON;
+import cn.opentp.core.util.JSONUtils;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,14 +26,14 @@ public class DemoController {
         for (Map.Entry<String, ThreadPoolContext> e : threadPoolContextCache.entrySet()) {
             res.append(e.getValue().getState().toString());
         }
-        return JSON.toJSONString(res.toString());
+        return JSONUtils.toJSONString(res.toString());
     }
 
     @GetMapping("threadPool/{tpName}")
     public String tpCoreSize(@PathVariable String tpName) {
         Map<String, ThreadPoolContext> threadPoolContextCache = Configuration.configuration().threadPoolContextCache();
         ThreadPoolContext threadPoolContext = threadPoolContextCache.get(tpName);
-        return JSON.toJSONString(threadPoolContext);
+        return JSONUtils.toJSONString(threadPoolContext);
     }
 
     @GetMapping("threadPool/report")

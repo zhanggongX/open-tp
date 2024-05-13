@@ -1,7 +1,7 @@
 package cn.opentp.core.thread.pool;
 
 
-import com.alibaba.fastjson2.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.Serializable;
 
@@ -72,9 +72,9 @@ public class ThreadPoolState implements Serializable {
         this.threadPoolName = threadPoolState.getThreadPoolName();
     }
 
-    public void flushRequest(JSONObject httpRequestJsonNode) {
-        this.coreSize = httpRequestJsonNode.get("coreSize") != null ? httpRequestJsonNode.getInteger("coreSize") : -1;
-        this.maxSize = httpRequestJsonNode.get("maxSize") != null ? httpRequestJsonNode.getInteger("maxSize") : -1;
+    public void flushRequest(JsonNode httpRequestJsonNode) {
+        this.coreSize = httpRequestJsonNode.get("coreSize") != null ? httpRequestJsonNode.get("coreSize").asInt() : -1;
+        this.maxSize = httpRequestJsonNode.get("maxSize") != null ? httpRequestJsonNode.get("maxSize").asInt() : -1;
         this.poolSize = -1;
         this.activeCount = -1;
         this.completedCount = -1;

@@ -1,10 +1,11 @@
 package cn.opentp.gossip.network;
 
+import cn.opentp.core.util.JSONUtils;
+import cn.opentp.core.util.JacksonUtil;
 import cn.opentp.gossip.enums.MessageTypeEnum;
 import cn.opentp.gossip.message.MessagePayload;
 import cn.opentp.gossip.message.handler.*;
 import cn.opentp.gossip.network.netty.NettyMessageHandler;
-import com.alibaba.fastjson2.JSON;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -64,7 +65,7 @@ public class UDPNetworkService implements NetworkService {
     @Override
     public void handle(String data) {
         log.trace("处理消息：{}", data);
-        MessagePayload gossipMessage = JSON.parseObject(data, MessagePayload.class);
+        MessagePayload gossipMessage = JSONUtils.fromJson(data, MessagePayload.class);
 
         MessageHandler handler = null;
         MessageTypeEnum type = MessageTypeEnum.parse(gossipMessage.getType());
@@ -97,7 +98,7 @@ public class UDPNetworkService implements NetworkService {
             DatagramPacket datagramPacket = new DatagramPacket(realSendBuf, new InetSocketAddress(targetHost, targetPort));
             channel.writeAndFlush(datagramPacket);
         } else {
-            String json = JSON.toJSONString(message);
+            String json = JSONUtils.toJSONString(message);
             DatagramPacket datagramPacket = new DatagramPacket(Unpooled.copiedBuffer(json, StandardCharsets.UTF_8), new InetSocketAddress(targetHost, targetPort));
             channel.writeAndFlush(datagramPacket);
         }

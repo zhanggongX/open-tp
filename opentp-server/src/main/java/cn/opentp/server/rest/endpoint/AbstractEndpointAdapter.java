@@ -1,7 +1,7 @@
 package cn.opentp.server.rest.endpoint;
 
+import cn.opentp.core.util.JSONUtils;
 import cn.opentp.server.rest.BaseRes;
-import com.alibaba.fastjson2.JSON;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 public abstract class AbstractEndpointAdapter<T> implements Endpoint {
 
     private void dealEndpointRes(FullHttpResponse httpResponse, BaseRes<?> res) {
-        httpResponse.content().writeBytes(JSON.toJSONString(res).getBytes(StandardCharsets.UTF_8));
+        httpResponse.content().writeBytes(JSONUtils.toJSONString(res).getBytes(StandardCharsets.UTF_8));
         httpResponse.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, httpResponse.content().readableBytes());
     }
 
