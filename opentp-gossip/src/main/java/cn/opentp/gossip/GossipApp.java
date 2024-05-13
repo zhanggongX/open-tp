@@ -29,9 +29,9 @@ public class GossipApp {
     private static final GossipApp INSTANCE = new GossipApp();
 
     // 初始化标记
-    private boolean hadInit = false;
+    private volatile boolean hadInit = false;
     // 开启运行标记
-    private boolean working = false;
+    private volatile boolean working = false;
     // 是否发送节点标记
     private Boolean seedNode = null;
 
@@ -114,6 +114,11 @@ public class GossipApp {
      * 启动服务
      */
     public void startup() {
+        if (!hadInit()) {
+            log.info("Gossip 未初始化，请先执行: {}", "cn.opentp.gossip.GossipService.init()");
+            System.exit(-1);
+        }
+
         // 启动服务监听
         networkService().start(setting().getHost(), setting().getPort());
         // 启动传播线程
@@ -126,6 +131,11 @@ public class GossipApp {
      * 关闭服务
      */
     public void shutdown() {
+        if (!working()) {
+            log.error("Gossip 未启动，关闭服务退出");
+            return;
+        }
+
         // 关闭服务监听
         networkService().close();
         // 关闭传播线程
@@ -146,6 +156,11 @@ public class GossipApp {
      * 发布流言
      */
     public void publish(Object payload) {
+        if (!working()) {
+            log.error("Gossip 未启动，发布流言失败！");
+            return;
+        }
+
         GossipMessage gossipMessage = new GossipMessage(selfNode(), payload, GossipUtil.convictedTime());
         gossipMessageHolder().add(gossipMessage);
     }

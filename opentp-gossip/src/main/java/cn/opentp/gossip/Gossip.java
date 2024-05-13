@@ -42,13 +42,8 @@ public class Gossip {
      */
     public synchronized static void start() {
 
-        if (!gossipApp.hadInit()) {
-            log.info("Gossip 未初始化，请先执行: {}", "cn.opentp.gossip.GossipService.init()");
-            System.exit(-1);
-        }
-
         if (gossipApp.working()) {
-            log.info("Gossip 请勿重复启动");
+            log.error("Gossip 请勿重复启动");
             System.exit(-1);
         }
 
@@ -68,8 +63,6 @@ public class Gossip {
      * 服务关闭
      */
     public void shutdown() {
-        if (gossipApp.working()) {
-            gossipApp.shutdown();
-        }
+        gossipApp.shutdown();
     }
 }
