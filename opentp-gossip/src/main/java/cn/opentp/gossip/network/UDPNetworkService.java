@@ -31,12 +31,16 @@ public class UDPNetworkService implements NetworkService {
         eventLoopGroup = new NioEventLoopGroup();
 
         Bootstrap bootstrap = new Bootstrap();
-        bootstrap.group(eventLoopGroup).channel(NioDatagramChannel.class).option(ChannelOption.SO_BROADCAST, false).option(ChannelOption.SO_RCVBUF, 2048 * 1024).option(ChannelOption.SO_SNDBUF, 1024 * 1024).handler(new ChannelInitializer<>() {
-            @Override
-            protected void initChannel(Channel channel) throws Exception {
-                channel.pipeline().addLast(new NettyMessageHandler());
-            }
-        });
+        bootstrap.group(eventLoopGroup).channel(NioDatagramChannel.class)
+                .option(ChannelOption.SO_BROADCAST, false)
+                .option(ChannelOption.SO_RCVBUF, 2048 * 1024)
+                .option(ChannelOption.SO_SNDBUF, 1024 * 1024)
+                .handler(new ChannelInitializer<>() {
+                    @Override
+                    protected void initChannel(Channel channel) throws Exception {
+                        channel.pipeline().addLast(new NettyMessageHandler());
+                    }
+                });
 
         ChannelFuture channelFuture = bootstrap.bind(host, port);
         channelFuture.addListener(new ChannelFutureListener() {
@@ -52,6 +56,11 @@ public class UDPNetworkService implements NetworkService {
         });
     }
 
+    /**
+     * 处理消息
+     *
+     * @param data 消息内容
+     */
     @Override
     public void handle(String data) {
         log.debug("处理消息：{}", data);
@@ -72,6 +81,7 @@ public class UDPNetworkService implements NetworkService {
         } else {
             log.error("Not supported message type");
         }
+
         if (handler != null) {
             handler.handle(gossipMessage.getCluster(), gossipMessage.getData(), gossipMessage.getFrom());
         }
@@ -80,6 +90,8 @@ public class UDPNetworkService implements NetworkService {
     @Override
     public void send(String targetHost, Integer targetPort, Object message) {
         if (message instanceof ByteBuf sendBuf) {
+            // ps： 由于消息会多次发送，这里发送的是 copy 的信息
+            // 所以发送方要记得 release() 消息
             ByteBuf realSendBuf = sendBuf.copy();
             DatagramPacket datagramPacket = new DatagramPacket(realSendBuf, new InetSocketAddress(targetHost, targetPort));
             log.info("发送消息：{}", sendBuf.copy().toString(StandardCharsets.UTF_8));
@@ -94,7 +106,6 @@ public class UDPNetworkService implements NetworkService {
     @Override
     public void close() {
         eventLoopGroup.shutdownGracefully();
-
         ChannelFuture channelFuture = channel.close();
         channelFuture.addListener(new ChannelFutureListener() {
             @Override

@@ -14,6 +14,7 @@ import cn.opentp.gossip.util.GossipUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -47,7 +48,10 @@ public class GossipApp {
     // 锁
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     // 周期定时任务执行
-    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+    // 执行流言线程池
+    private final ExecutorService gossipExecutorService = Executors.newFixedThreadPool(4);
+
     // Gossip 节点上下文
     private final GossipNodeContext gossipNodeContext = new GossipNodeContext();
 
@@ -72,6 +76,10 @@ public class GossipApp {
 
     public ScheduledExecutorService scheduledExecutorService() {
         return scheduledExecutorService;
+    }
+
+    public ExecutorService gossipExecutorService() {
+        return gossipExecutorService;
     }
 
     public void initMark() {
@@ -140,6 +148,7 @@ public class GossipApp {
         networkService().close();
         // 关闭传播线程
         scheduledExecutorService().shutdown();
+        gossipExecutorService().shutdown();
         // 等待消息处理完成
         try {
             Thread.sleep(setting().getGossipInterval());

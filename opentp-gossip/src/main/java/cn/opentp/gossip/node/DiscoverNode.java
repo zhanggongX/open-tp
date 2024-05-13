@@ -3,7 +3,6 @@ package cn.opentp.gossip.node;
 import java.io.Serializable;
 import java.util.Objects;
 
-
 /**
  * 通过属性配置的发现节点
  */

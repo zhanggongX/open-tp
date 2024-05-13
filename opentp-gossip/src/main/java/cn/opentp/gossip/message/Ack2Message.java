@@ -6,29 +6,32 @@ import cn.opentp.gossip.node.HeartbeatState;
 import java.io.Serializable;
 import java.util.Map;
 
-
+/**
+ * 节点信息同步应答的应答消息
+ */
 public class Ack2Message implements Serializable {
 
-    private Map<GossipNode, HeartbeatState> endpoints;
+    private Map<GossipNode, HeartbeatState> clusterNodes;
 
     public Ack2Message() {
     }
 
-    public Ack2Message(Map<GossipNode, HeartbeatState> endpoints) {
+    public Ack2Message(Map<GossipNode, HeartbeatState> clusterNodes) {
+        this.clusterNodes = clusterNodes;
+    }
 
-        this.endpoints = endpoints;
+    public Map<GossipNode, HeartbeatState> getClusterNodes() {
+        return clusterNodes;
+    }
+
+    public void setClusterNodes(Map<GossipNode, HeartbeatState> clusterNodes) {
+        this.clusterNodes = clusterNodes;
     }
 
     @Override
     public String toString() {
-        return "GossipDigestAck2Message{" + "endpoints=" + endpoints + '}';
-    }
-
-    public Map<GossipNode, HeartbeatState> getEndpoints() {
-        return endpoints;
-    }
-
-    public void setEndpoints(Map<GossipNode, HeartbeatState> endpoints) {
-        this.endpoints = endpoints;
+        return "Ack2Message{" +
+                "clusterNodes=" + clusterNodes +
+                '}';
     }
 }

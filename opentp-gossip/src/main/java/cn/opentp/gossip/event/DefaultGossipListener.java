@@ -12,7 +12,7 @@ public class DefaultGossipListener implements GossipListener {
     @Override
     public void gossipEvent(GossipNode node, GossipStateEnum state, Object payload) {
         if (state == GossipStateEnum.RECEIVE) {
-            log.info("接收到 node: {}, 信息: {}", node, payload);
+            log.info("接收到 node: {}, 信息: {}, 建议异步处理。", node, payload);
         } else if (state == GossipStateEnum.DOWN) {
             log.info("node: {} 退出集群", node);
         } else if (state == GossipStateEnum.JOIN) {

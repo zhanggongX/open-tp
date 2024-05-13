@@ -2,19 +2,25 @@ package cn.opentp.gossip.node;
 
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.enums.GossipStateEnum;
-import cn.opentp.gossip.message.codec.GossipMessageCodec;
+import cn.opentp.gossip.message.factory.GossipMessageFactory;
 import cn.opentp.gossip.util.GossipUtil;
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * Gossip 集群节点环境
+ */
 public class GossipNodeContext {
 
     private static final Logger log = LoggerFactory.getLogger(GossipNodeContext.class);
@@ -24,9 +30,9 @@ public class GossipNodeContext {
     // 活节点
     private final List<GossipNode> liveNodes = new CopyOnWriteArrayList<>();
     // 死节点
-    private final List<GossipNode> deadNodes = new CopyOnWriteArrayList<>();
+    private final List<GossipNode> downedNodes = new CopyOnWriteArrayList<>();
     // 候选节点，判定中的节点
-    private final Map<GossipNode, CandidateNodeState> candidateMembers = new ConcurrentHashMap<>();
+    private final Map<GossipNode, DowningNodeState> downingNodes = new ConcurrentHashMap<>();
 
     public Map<GossipNode, HeartbeatState> clusterNodes() {
         return clusterNodes;
@@ -36,12 +42,12 @@ public class GossipNodeContext {
         return liveNodes;
     }
 
-    public List<GossipNode> deadNodes() {
-        return deadNodes;
+    public List<GossipNode> downedNodes() {
+        return downedNodes;
     }
 
-    public Map<GossipNode, CandidateNodeState> candidateMembers() {
-        return candidateMembers;
+    public Map<GossipNode, DowningNodeState> downingNodes() {
+        return downingNodes;
     }
 
     /**
@@ -59,9 +65,9 @@ public class GossipNodeContext {
                 liveNodes().add(node);
             }
             // 候选节点移除
-            candidateMembers().remove(node);
+            downingNodes().remove(node);
             // 终止节点移除
-            deadNodes().remove(node);
+            downedNodes().remove(node);
 
             if (!node.equals(GossipApp.instance().selfNode())) {
                 // 触发上线事件
@@ -74,18 +80,20 @@ public class GossipNodeContext {
         }
     }
 
-    public void downing(GossipNode member, HeartbeatState state) {
-        log.info("downing ~~");
-        try {//11
-            if (GossipApp.instance().gossipNodeContext().candidateMembers().containsKey(member)) {
-                CandidateNodeState cState = GossipApp.instance().gossipNodeContext().candidateMembers().get(member);
-                if (state.getHeartbeatTime() == cState.getHeartbeatTime()) {
-                    cState.updateCount();
-                } else if (state.getHeartbeatTime() > cState.getHeartbeatTime()) {
-                    GossipApp.instance().gossipNodeContext().candidateMembers().remove(member);
+    public void downing(GossipNode node, HeartbeatState state) {
+        try {
+            if (downingNodes().containsKey(node)) {
+                DowningNodeState downingNodeState = downingNodes().get(node);
+                if (state.getHeartbeatTime() == downingNodeState.getHeartbeatTime()) {
+                    // 没有心跳到来，downing count ++;
+                    downingNodeState.updateCount();
+                } else if (state.getHeartbeatTime() > downingNodeState.getHeartbeatTime()) {
+                    // 有更新，移出即将下线节点
+                    downingNodes().remove(node);
                 }
             } else {
-                GossipApp.instance().gossipNodeContext().candidateMembers().put(member, new CandidateNodeState(state.getHeartbeatTime()));
+                // 新的，放入候选节点
+                downingNodes().put(node, new DowningNodeState(state.getHeartbeatTime()));
             }
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -105,8 +113,8 @@ public class GossipNodeContext {
             // 活动节点移除
             liveNodes().remove(node);
             // 加入终止节点
-            if (!deadNodes().contains(node)) {
-                deadNodes().add(node);
+            if (!downedNodes().contains(node)) {
+                downedNodes().add(node);
             }
             // 触发下线事件
             GossipApp.instance().gossipListenerContext().fireGossipEvent(node, GossipStateEnum.DOWN);
@@ -123,7 +131,7 @@ public class GossipNodeContext {
     public void selfNodeShutdown() {
         GossipApp gossipApp = GossipApp.instance();
         GossipNode selfNode = gossipApp.selfNode();
-        ByteBuf byteBuf = GossipMessageCodec.codec().encodeShutdownMessage(selfNode);
+        ByteBuf byteBuf = GossipMessageFactory.factory().encodeShutdownMessage(selfNode);
         for (GossipNode node : liveNodes()) {
             try {
                 if (!node.equals(selfNode)) {
@@ -139,7 +147,7 @@ public class GossipNodeContext {
     /**
      * 随机当前所有节点的摘要信息
      *
-     * @throws UnknownHostException
+     * @throws UnknownHostException 节点网络地址异常
      */
     public List<GossipNodeDigest> randomGossipNodeDigest() throws UnknownHostException {
         List<GossipNodeDigest> nodeDigests = new ArrayList<>();
@@ -162,25 +170,32 @@ public class GossipNodeContext {
 
     public void checkStatus() {
         try {
-            GossipNode local = GossipApp.instance().selfNode();
-            Map<GossipNode, HeartbeatState> endpoints = clusterNodes();
-            Set<GossipNode> epKeys = endpoints.keySet();
-            for (GossipNode k : epKeys) {
-                if (!k.equals(local)) {
-                    HeartbeatState state = endpoints.get(k);
-                    long now = System.currentTimeMillis();
-                    long duration = now - state.getHeartbeatTime();
-                    long convictedTime = GossipUtil.convictedTime();
-                    log.info("check1 : " + k + " state : " + state + " duration : " + duration + " convictedTime : " + convictedTime);
-                    if (duration > convictedTime && (isAlive(k) || GossipApp.instance().gossipNodeContext().liveNodes().contains(k))) {
-                        downing(k, state);
-                    }
-                    if (duration <= convictedTime && (discoverable(k) || GossipApp.instance().gossipNodeContext().deadNodes().contains(k))) {
-                        up(k);
-                    }
+            GossipNode localNode = GossipApp.instance().selfNode();
+            Map<GossipNode, HeartbeatState> clusteredNodes = clusterNodes();
+
+            for (Map.Entry<GossipNode, HeartbeatState> nodeEntry : clusteredNodes.entrySet()) {
+                GossipNode node = nodeEntry.getKey();
+                HeartbeatState heartbeatState = nodeEntry.getValue();
+
+                if (node.equals(localNode)) {
+                    continue;
+                }
+
+                long now = System.currentTimeMillis();
+                long duration = now - heartbeatState.getHeartbeatTime();
+                long convictedTime = GossipUtil.convictedTime();
+                log.debug("check: {}, state: {}, duration: {}, convictedTime: {}", node, heartbeatState, duration, convictedTime);
+                if (duration > convictedTime && (isAlive(node) || GossipApp.instance().gossipNodeContext().liveNodes().contains(node))) {
+                    // 长时间没有心跳，准备下线
+                    downing(node, heartbeatState);
+                }
+                if (duration <= convictedTime && (discoverable(node) || GossipApp.instance().gossipNodeContext().downedNodes().contains(node))) {
+                    // 重新上线
+                    up(node);
                 }
             }
-            checkCandidate();
+            // 检查即将下线节点
+            checkDowning();
         } catch (Exception e) {
             log.error(e.getMessage());
         }
@@ -190,13 +205,13 @@ public class GossipNodeContext {
         return member.getState() == GossipStateEnum.UP;
     }
 
-    private void checkCandidate() {
-        GossipNodeContext nodeContext = GossipApp.instance().gossipNodeContext();
-        Set<GossipNode> keys = GossipApp.instance().gossipNodeContext().candidateMembers().keySet();
-        for (GossipNode m : keys) {
-            if (GossipApp.instance().gossipNodeContext().candidateMembers().get(m).getDowningCount().get() >= GossipUtil.fanOut()) {
-                nodeContext.down(m);
-                GossipApp.instance().gossipNodeContext().candidateMembers().remove(m);
+    private void checkDowning() {
+        for (Map.Entry<GossipNode, DowningNodeState> nodeEntry : downingNodes().entrySet()) {
+            GossipNode node = nodeEntry.getKey();
+            DowningNodeState downingNodeState = nodeEntry.getValue();
+            if (downingNodeState.getDowningCount().get() >= GossipUtil.fanOut()) {
+                down(node);
+                downingNodes().remove(node);
             }
         }
     }

@@ -4,6 +4,9 @@ import cn.opentp.gossip.enums.GossipStateEnum;
 
 import java.io.Serializable;
 
+/**
+ * 集群节点
+ */
 public class GossipNode implements Serializable {
 
     private String cluster;

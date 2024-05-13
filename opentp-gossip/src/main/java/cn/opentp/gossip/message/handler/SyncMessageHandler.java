@@ -3,7 +3,7 @@ package cn.opentp.gossip.message.handler;
 
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.message.AckMessage;
-import cn.opentp.gossip.message.codec.GossipMessageCodec;
+import cn.opentp.gossip.message.factory.GossipMessageFactory;
 import cn.opentp.gossip.node.GossipNodeContext;
 import cn.opentp.gossip.node.GossipNodeDigest;
 import cn.opentp.gossip.node.GossipNode;
@@ -54,7 +54,7 @@ public class SyncMessageHandler implements MessageHandler {
                 }
             }
             AckMessage ackMessage = new AckMessage(oldNodes, newNodes);
-            ByteBuf ackBuffer = GossipMessageCodec.codec().encodeAckMessage(ackMessage);
+            ByteBuf ackBuffer = GossipMessageFactory.factory().encodeAckMessage(ackMessage);
             if (from != null) {
                 String[] host = from.split(":");
                 GossipApp.instance().networkService().send(host[0], Integer.valueOf(host[1]), ackBuffer);

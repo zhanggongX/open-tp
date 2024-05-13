@@ -3,7 +3,7 @@ package cn.opentp.gossip.message.handler;
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.message.Ack2Message;
 import cn.opentp.gossip.message.AckMessage;
-import cn.opentp.gossip.message.codec.GossipMessageCodec;
+import cn.opentp.gossip.message.factory.GossipMessageFactory;
 import cn.opentp.gossip.node.*;
 import com.alibaba.fastjson2.JSON;
 import io.netty.buffer.ByteBuf;
@@ -40,7 +40,7 @@ public class AckMessageHandler extends AbstractMessageHandler implements Message
 
         if (!deltaEndpoints.isEmpty()) {
             Ack2Message ack2Message = new Ack2Message(deltaEndpoints);
-            ByteBuf byteBuf = GossipMessageCodec.codec().encodeAck2Message(ack2Message);
+            ByteBuf byteBuf = GossipMessageFactory.factory().encodeAck2Message(ack2Message);
             if (from != null) {
                 String[] host = from.split(":");
                 GossipApp.instance().networkService().send(host[0], Integer.valueOf(host[1]), byteBuf);

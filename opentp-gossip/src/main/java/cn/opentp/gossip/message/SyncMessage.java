@@ -5,7 +5,11 @@ import cn.opentp.gossip.node.GossipNodeDigest;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * 集群节点同步消息
+ */
 public class SyncMessage implements Serializable {
+
     private String cluster;
     private List<GossipNodeDigest> digestList;
 

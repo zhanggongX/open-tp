@@ -19,7 +19,7 @@ public class GossipMessage implements Serializable {
     private Object payload;
     // 转发次数
     private int forwardCount;
-    // 流言消息的创建者
+    // 流言消息的发布者
     private GossipNode publishNode;
 
     public GossipMessage() {

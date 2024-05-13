@@ -1,6 +1,5 @@
 package cn.opentp.gossip.message.holder;
 
-
 import cn.opentp.gossip.message.GossipMessage;
 
 import java.util.Set;

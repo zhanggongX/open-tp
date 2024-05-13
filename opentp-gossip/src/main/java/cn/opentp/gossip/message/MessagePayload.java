@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 /**
  * 网络传输消息载体
+ * 是所有消息的载体
  */
 public class MessagePayload implements Serializable {
 
