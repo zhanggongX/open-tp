@@ -113,7 +113,7 @@ public class GossipApp {
     /**
      * 启动服务
      */
-    public void startup() {
+    public synchronized void startup() {
         if (!hadInit()) {
             log.info("Gossip 未初始化，请先执行: {}", "cn.opentp.gossip.GossipService.init()");
             System.exit(-1);
@@ -130,7 +130,7 @@ public class GossipApp {
     /**
      * 关闭服务
      */
-    public void shutdown() {
+    public synchronized void shutdown() {
         if (!working()) {
             log.error("Gossip 未启动，关闭服务退出");
             return;
