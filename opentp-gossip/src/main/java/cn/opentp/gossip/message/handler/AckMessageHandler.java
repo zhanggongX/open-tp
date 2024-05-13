@@ -13,33 +13,34 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class AckMessageHandler extends AbstractMessageHandler implements MessageHandler {
+public class AckMessageHandler implements MessageHandler {
 
     @Override
     public void handle(String cluster, String data, String from) {
         AckMessage ackMessage = JSON.parseObject(data, AckMessage.class);
+        GossipNodeContext nodeContext = GossipApp.instance().gossipNodeContext();
 
-        List<GossipNodeDigest> olders = ackMessage.getOlders();
-        Map<GossipNode, HeartbeatState> newers = ackMessage.getNewers();
+        List<GossipNodeDigest> remoteNeedUpdateNodes = ackMessage.getNeedUpdateNodes();
+        Map<GossipNode, HeartbeatState> newestNodes = ackMessage.getNewestNodes();
 
-        //update local state
-        if (!newers.isEmpty()) {
-            apply2LocalState(newers);
+        if (!newestNodes.isEmpty()) {
+            nodeContext.updateLocalClusterNodes(newestNodes);
         }
 
-        Map<GossipNode, HeartbeatState> deltaEndpoints = new HashMap<>();
-        if (olders != null) {
-            for (GossipNodeDigest d : olders) {
-                GossipNode member = createByDigest(d);
-                HeartbeatState hb = GossipApp.instance().gossipNodeContext().clusterNodes().get(member);
-                if (hb != null) {
-                    deltaEndpoints.put(member, hb);
+        Map<GossipNode, HeartbeatState> deltaGossipNodes = new HashMap<>();
+        if (remoteNeedUpdateNodes != null) {
+            for (GossipNodeDigest needUpdateNodeDigest : remoteNeedUpdateNodes) {
+                GossipNode remoteNeedUpdateNode = restoreGossipNode(needUpdateNodeDigest);
+                HeartbeatState heartbeatState = nodeContext.clusterNodes().get(remoteNeedUpdateNode);
+                if (heartbeatState != null) {
+                    deltaGossipNodes.put(remoteNeedUpdateNode, heartbeatState);
                 }
             }
         }
 
-        if (!deltaEndpoints.isEmpty()) {
-            Ack2Message ack2Message = new Ack2Message(deltaEndpoints);
+        // 同步回去对方需要更新的节点信息，完成一次信息交换。
+        if (!deltaGossipNodes.isEmpty()) {
+            Ack2Message ack2Message = new Ack2Message(deltaGossipNodes);
             ByteBuf byteBuf = GossipMessageFactory.factory().encodeAck2Message(ack2Message);
             if (from != null) {
                 String[] host = from.split(":");
@@ -48,21 +49,28 @@ public class AckMessageHandler extends AbstractMessageHandler implements Message
         }
     }
 
-    public GossipNode createByDigest(GossipNodeDigest digest) {
-        GossipNode member = new GossipNode();
-        member.setPort(digest.getSocketAddress().getPort());
-        member.setHost(digest.getSocketAddress().getAddress().getHostAddress());
-        member.setCluster(GossipApp.instance().setting().getCluster());
+    /**
+     * 根据签名还原节点信息
+     * 注意该方法不具有普适性，只是这里是响应通信的处理，说明本集群一定有该节点。
+     *
+     * @param nodeDigest 节点签名
+     * @return 节点信息
+     */
+    private GossipNode restoreGossipNode(GossipNodeDigest nodeDigest) {
+        GossipNode node = new GossipNode();
+        node.setPort(nodeDigest.getSocketAddress().getPort());
+        node.setHost(nodeDigest.getSocketAddress().getAddress().getHostAddress());
+        node.setCluster(GossipApp.instance().setting().getCluster());
 
-        Set<GossipNode> keys = GossipApp.instance().gossipNodeContext().clusterNodes().keySet();
-        for (GossipNode m : keys) {
-            if (m.equals(member)) {
-                member.setNodeId(m.getNodeId());
-                member.setState(m.getState());
+        GossipNodeContext gossipNodeContext = GossipApp.instance().gossipNodeContext();
+        Set<GossipNode> clusterNodeKeys = gossipNodeContext.clusterNodes().keySet();
+        for (GossipNode clusterNode : clusterNodeKeys) {
+            if (clusterNode.equals(node)) {
+                node.setNodeId(clusterNode.getNodeId());
+                node.setState(clusterNode.getState());
                 break;
             }
         }
-
-        return member;
+        return node;
     }
 }

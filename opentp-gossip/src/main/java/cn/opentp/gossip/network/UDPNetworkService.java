@@ -77,7 +77,7 @@ public class UDPNetworkService implements NetworkService {
         } else if (type == MessageTypeEnum.SHUTDOWN) {
             handler = new ShutdownMessageHandler();
         } else if (type == MessageTypeEnum.GOSSIP) {
-            handler = new RegularMessageHandler();
+            handler = new GossipMessageHandler();
         } else {
             log.error("Not supported message type");
         }

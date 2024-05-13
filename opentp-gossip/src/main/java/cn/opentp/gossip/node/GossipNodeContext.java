@@ -9,10 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadLocalRandom;
@@ -114,6 +111,7 @@ public class GossipNodeContext {
             liveNodes().remove(node);
             // 加入终止节点
             if (!downedNodes().contains(node)) {
+                // 非原子操作
                 downedNodes().add(node);
             }
             // 触发下线事件
@@ -168,6 +166,9 @@ public class GossipNodeContext {
         return nodeDigests;
     }
 
+    /**
+     * 检查本节点集群状态
+     */
     public void checkStatus() {
         try {
             GossipNode localNode = GossipApp.instance().selfNode();
@@ -199,6 +200,59 @@ public class GossipNodeContext {
         } catch (Exception e) {
             log.error(e.getMessage());
         }
+    }
+
+    /**
+     * 更新本节点集群信息
+     *
+     * @param remoteClusterNodes 远程集群信息
+     */
+    public void updateLocalClusterNodes(Map<GossipNode, HeartbeatState> remoteClusterNodes) {
+
+        GossipNode selfNode = GossipApp.instance().selfNode();
+        Map<GossipNode, HeartbeatState> clusterNodes = GossipApp.instance().gossipNodeContext().clusterNodes();
+
+        for (Map.Entry<GossipNode, HeartbeatState> nodeEntry : remoteClusterNodes.entrySet()) {
+            GossipNode remoteNode = nodeEntry.getKey();
+            HeartbeatState remoteNodeHb = nodeEntry.getValue();
+
+            if (selfNode.equals(remoteNode)) {
+                continue;
+            }
+
+            try {
+                HeartbeatState localState = clusterNodes.get(remoteNode);
+                if (localState != null) {
+                    int compareRes = localState.compareTo(remoteNodeHb);
+                    if (compareRes < 0) {
+                        updateClusterNodes(remoteNode, remoteNodeHb);
+                    }
+                } else {
+                    // 如果本地没有，直接更新
+                    updateClusterNodes(remoteNode, remoteNodeHb);
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * 根据远程节点信息，更新集群节点信息。
+     *
+     * @param remoteNode  远程节点信息
+     * @param remoteState 远程节点状态
+     */
+    private void updateClusterNodes(GossipNode remoteNode, HeartbeatState remoteState) {
+        GossipNodeContext nodeContext = GossipApp.instance().gossipNodeContext();
+        if (remoteNode.getState() == GossipStateEnum.UP) {
+            nodeContext.up(remoteNode);
+        }
+        if (remoteNode.getState() == GossipStateEnum.DOWN) {
+            nodeContext.down(remoteNode);
+        }
+        // 记录集群节点信息
+        nodeContext.clusterNodes().put(remoteNode, remoteState);
     }
 
     private boolean isAlive(GossipNode member) {

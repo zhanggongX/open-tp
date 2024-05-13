@@ -13,39 +13,35 @@ import java.util.Map;
  */
 public class AckMessage implements Serializable {
 
-    private List<GossipNodeDigest> olders;
-    private Map<GossipNode, HeartbeatState> newers;
+    private List<GossipNodeDigest> needUpdateNodes;
+    private Map<GossipNode, HeartbeatState> newestNodes;
 
     public AckMessage() {
     }
 
-    public AckMessage(List<GossipNodeDigest> olders, Map<GossipNode, HeartbeatState> newers) {
-        this.olders = olders;
-        this.newers = newers;
+    public AckMessage(List<GossipNodeDigest> needUpdateNodes, Map<GossipNode, HeartbeatState> newestNodes) {
+        this.needUpdateNodes = needUpdateNodes;
+        this.newestNodes = newestNodes;
     }
 
-    public List<GossipNodeDigest> getOlders() {
-        return olders;
+    public List<GossipNodeDigest> getNeedUpdateNodes() {
+        return needUpdateNodes;
     }
 
-    public void setOlders(List<GossipNodeDigest> olders) {
-        this.olders = olders;
+    public void setNeedUpdateNodes(List<GossipNodeDigest> needUpdateNodes) {
+        this.needUpdateNodes = needUpdateNodes;
     }
 
-    public Map<GossipNode, HeartbeatState> getNewers() {
-        return newers;
+    public Map<GossipNode, HeartbeatState> getNewestNodes() {
+        return newestNodes;
     }
 
-    public void setNewers(Map<GossipNode, HeartbeatState> newers) {
-        this.newers = newers;
+    public void setNewestNodes(Map<GossipNode, HeartbeatState> newestNodes) {
+        this.newestNodes = newestNodes;
     }
 
     @Override
     public String toString() {
-        return "AckMessage{" +
-                "olders=" + olders +
-                ", newers=" + newers +
-                '}';
+        return "AckMessage{" + "needUpdateNodes=" + needUpdateNodes + ", newestNodes=" + newestNodes + '}';
     }
-
 }

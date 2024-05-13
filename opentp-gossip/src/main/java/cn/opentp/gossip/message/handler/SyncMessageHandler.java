@@ -4,9 +4,9 @@ package cn.opentp.gossip.message.handler;
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.message.AckMessage;
 import cn.opentp.gossip.message.factory.GossipMessageFactory;
+import cn.opentp.gossip.node.GossipNode;
 import cn.opentp.gossip.node.GossipNodeContext;
 import cn.opentp.gossip.node.GossipNodeDigest;
-import cn.opentp.gossip.node.GossipNode;
 import cn.opentp.gossip.node.HeartbeatState;
 import com.alibaba.fastjson2.JSON;
 import io.netty.buffer.ByteBuf;
@@ -26,8 +26,8 @@ public class SyncMessageHandler implements MessageHandler {
         try {
             List<GossipNodeDigest> gossipNodeDigests = JSON.parseArray(data, GossipNodeDigest.class);
 
-            List<GossipNodeDigest> oldNodes = new ArrayList<>();
-            Map<GossipNode, HeartbeatState> newNodes = new HashMap<>();
+            List<GossipNodeDigest> needUpdateNodes = new ArrayList<>();
+            Map<GossipNode, HeartbeatState> newestNodes = new HashMap<>();
 
             List<GossipNode> syncedNodes = new ArrayList<>();
             for (GossipNodeDigest gossipNodeDigest : gossipNodeDigests) {
@@ -38,26 +38,30 @@ public class SyncMessageHandler implements MessageHandler {
                 node.setNodeId(gossipNodeDigest.getNodeId());
                 syncedNodes.add(node);
 
-                compareDigest(gossipNodeDigest, node, oldNodes, newNodes);
+                compareDigest(gossipNodeDigest, node, needUpdateNodes, newestNodes);
             }
 
-            GossipNodeContext nodeContext = GossipApp.instance().gossipNodeContext();
-            // 把本节点有的，其他节点没有的集群节点，通过 ack 同步回去
-            Map<GossipNode, HeartbeatState> endpoints = nodeContext.clusterNodes();
-            Set<GossipNode> epKeys = endpoints.keySet();
-            for (GossipNode m : epKeys) {
-                if (!syncedNodes.contains(m)) {
-                    newNodes.put(m, endpoints.get(m));
+            GossipApp gossipApp = GossipApp.instance();
+            GossipNodeContext nodeContext = gossipApp.gossipNodeContext();
+            // 本节点记录的集群节点信息
+            Map<GossipNode, HeartbeatState> clusterNodes = nodeContext.clusterNodes();
+            Set<GossipNode> clusterNodeKeys = clusterNodes.keySet();
+            for (GossipNode node : clusterNodeKeys) {
+                // 我有，你没有。
+                if (!syncedNodes.contains(node)) {
+                    newestNodes.put(node, clusterNodes.get(node));
                 }
-                if (m.equals(GossipApp.instance().selfNode())) {
-                    newNodes.put(m, endpoints.get(m));
+                // 如果是本节点，不管对方有没有，都返回。
+                if (node.equals(gossipApp.selfNode())) {
+                    newestNodes.put(node, clusterNodes.get(node));
                 }
             }
-            AckMessage ackMessage = new AckMessage(oldNodes, newNodes);
-            ByteBuf ackBuffer = GossipMessageFactory.factory().encodeAckMessage(ackMessage);
+
+            AckMessage ackMessage = new AckMessage(needUpdateNodes, newestNodes);
+            ByteBuf ackByteBuf = GossipMessageFactory.factory().encodeAckMessage(ackMessage);
             if (from != null) {
                 String[] host = from.split(":");
-                GossipApp.instance().networkService().send(host[0], Integer.valueOf(host[1]), ackBuffer);
+                gossipApp.networkService().send(host[0], Integer.parseInt(host[1]), ackByteBuf);
             }
         } catch (NumberFormatException e) {
             log.error(e.getMessage());
@@ -67,10 +71,10 @@ public class SyncMessageHandler implements MessageHandler {
     /**
      * @param gossipNodeDigest 同步过来的节点摘要
      * @param syncedNode       摘要生成的节点
-     * @param oldNodes         过时的节点信息
-     * @param newNodes         当前的节点更新
+     * @param needUpdateNodes  本节点需要更新的节点
+     * @param newestNodes      当前节点最新的节点信息
      */
-    private void compareDigest(GossipNodeDigest gossipNodeDigest, GossipNode syncedNode, List<GossipNodeDigest> oldNodes, Map<GossipNode, HeartbeatState> newNodes) {
+    private void compareDigest(GossipNodeDigest gossipNodeDigest, GossipNode syncedNode, List<GossipNodeDigest> needUpdateNodes, Map<GossipNode, HeartbeatState> newestNodes) {
 
         try {
             // 同步过来的节点的信息
@@ -84,18 +88,18 @@ public class SyncMessageHandler implements MessageHandler {
                 long localVersion = heartbeatState.getVersion();
 
                 if (remoteHeartbeatTime > localHeartbeatTime) {
-                    oldNodes.add(gossipNodeDigest);
+                    needUpdateNodes.add(gossipNodeDigest);
                 } else if (remoteHeartbeatTime < localHeartbeatTime) {
-                    newNodes.put(syncedNode, heartbeatState);
+                    newestNodes.put(syncedNode, heartbeatState);
                 } else {
                     if (remoteVersion > localVersion) {
-                        oldNodes.add(gossipNodeDigest);
+                        needUpdateNodes.add(gossipNodeDigest);
                     } else if (remoteVersion < localVersion) {
-                        newNodes.put(syncedNode, heartbeatState);
+                        newestNodes.put(syncedNode, heartbeatState);
                     }
                 }
             } else {
-                oldNodes.add(gossipNodeDigest);
+                needUpdateNodes.add(gossipNodeDigest);
             }
         } catch (Exception e) {
             log.error(e.getMessage());
