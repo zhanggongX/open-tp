@@ -63,7 +63,7 @@ public class UDPNetworkService implements NetworkService {
      */
     @Override
     public void handle(String data) {
-        log.debug("处理消息：{}", data);
+        log.trace("处理消息：{}", data);
         MessagePayload gossipMessage = JSON.parseObject(data, MessagePayload.class);
 
         MessageHandler handler = null;
@@ -93,8 +93,8 @@ public class UDPNetworkService implements NetworkService {
             // ps： 由于消息会多次发送，这里发送的是 copy 的信息
             // 所以发送方要记得 release() 消息
             ByteBuf realSendBuf = sendBuf.copy();
+            log.trace("发送消息：{}", realSendBuf.toString(StandardCharsets.UTF_8));
             DatagramPacket datagramPacket = new DatagramPacket(realSendBuf, new InetSocketAddress(targetHost, targetPort));
-            log.info("发送消息：{}", sendBuf.copy().toString(StandardCharsets.UTF_8));
             channel.writeAndFlush(datagramPacket);
         } else {
             String json = JSON.toJSONString(message);
