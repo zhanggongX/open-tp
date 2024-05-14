@@ -3,5 +3,5 @@ opentp:
   http-port: 8080
   gossip-port: 9528
   deploy: cluster
-  cluster: localhost:9528
+  cluster: localhost:9628
 

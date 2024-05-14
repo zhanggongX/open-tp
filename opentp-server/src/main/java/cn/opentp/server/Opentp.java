@@ -64,6 +64,12 @@ public class Opentp {
         Runtime.getRuntime().addShutdownHook(hook);
     }
 
+    /**
+     * todo 逐步完善配置
+     *
+     * @param config yml
+     * @return gossip 属性
+     */
     private static GossipProperties getGossipProperties(OpentpProperties config) {
         GossipProperties properties = new GossipProperties();
         properties.setCluster("opentp");
@@ -74,7 +80,7 @@ public class Opentp {
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
-        properties.setPort(9001);
+        properties.setPort(config.getGossipPort());
         properties.setNodeId(null);
         properties.setClusterNodes(config.getCluster());
         properties.setGossipInterval(5000);

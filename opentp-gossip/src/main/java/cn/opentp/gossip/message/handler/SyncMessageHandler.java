@@ -24,8 +24,7 @@ public class SyncMessageHandler implements MessageHandler {
         if (data == null) return;
 
         try {
-            SyncMessage syncMessage = GossipJacksonUtil.parseJson(data, SyncMessage.class);
-            List<GossipNodeDigest> gossipNodeDigests = syncMessage.getDigestList();
+            List<GossipNodeDigest> gossipNodeDigests = GossipJacksonUtil.parseJsonList(data, GossipNodeDigest.class);
 
             List<GossipNodeDigest> needUpdateNodes = new ArrayList<>();
             Map<GossipNode, HeartbeatState> newestNodes = new HashMap<>();
