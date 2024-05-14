@@ -2,6 +2,7 @@ package cn.opentp.server.report.handler;
 
 import cn.opentp.core.auth.ClientInfo;
 import cn.opentp.core.auth.License;
+import cn.opentp.core.auth.ServerInfo;
 import cn.opentp.core.constant.OpentpCoreConstant;
 import cn.opentp.core.net.OpentpMessage;
 import cn.opentp.core.net.OpentpMessageConstant;
@@ -20,6 +21,7 @@ import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -89,12 +91,17 @@ public class ReportServerHandler extends ChannelInboundHandlerAdapter {
 
         // 设置 licenseKey
         ctx.channel().attr(OpentpCoreConstant.EXPORT_CHANNEL_ATTR_KEY).set(newLicenseKey);
-        OpentpApp configuration = OpentpApp.instance();
+        OpentpApp opentpApp = OpentpApp.instance();
         // 记录 licenseKey <-> clientInfo
-        configuration.licenseKeyClientCache().putIfAbsent(newLicenseKey, clientInfo);
+        opentpApp.licenseKeyClientCache().putIfAbsent(newLicenseKey, clientInfo);
         // 记录 客户端信息 <-> 网络连接
-        configuration.clientChannelCache().put(clientInfo, ctx.channel());
-        configuration.clientKeyChannelCache().put(clientInfo.clientKey(), ctx.channel());
+        opentpApp.clientChannelCache().put(clientInfo, ctx.channel());
+        opentpApp.clientKeyChannelCache().put(clientInfo.clientKey(), ctx.channel());
+
+        ServerInfo thisServerInfo = new ServerInfo();
+        List<ClientInfo> clientInfos = opentpApp.clusterServerInfoCache().getOrDefault(thisServerInfo, new ArrayList<>());
+        clientInfos.add(clientInfo);
+        opentpApp.clusterServerInfoCache().put(thisServerInfo, clientInfos);
 
         OpentpMessage opentpMessageRes = OpentpCoreConstant.OPENTP_MSG_PROTO.clone();
         OpentpMessage
@@ -177,7 +184,7 @@ public class ReportServerHandler extends ChannelInboundHandlerAdapter {
 
     private void removeChannelInfo(Channel channel) {
         String licenseKey = channel.attr(OpentpCoreConstant.EXPORT_CHANNEL_ATTR_KEY).get();
-        
+
         OpentpApp opentpApp = OpentpApp.instance();
         ClientInfo clientInfo = opentpApp.licenseKeyClientCache().get(licenseKey);
         opentpApp.clientChannelCache().remove(clientInfo);

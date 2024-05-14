@@ -1,9 +1,11 @@
 package cn.opentp.server;
 
 import cn.opentp.gossip.Gossip;
+import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.GossipProperties;
 import cn.opentp.server.constant.OpentpServerConstant;
 import cn.opentp.server.enums.DeployEnum;
+import cn.opentp.server.gossip.GossipSendTask;
 import cn.opentp.server.report.ReceiveReportServer;
 import cn.opentp.server.rest.RestServer;
 import cn.opentp.server.util.PropertiesUtil;
@@ -12,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * opentp 启动类
@@ -59,6 +62,7 @@ public class Opentp {
             Gossip.init(properties);
             // 开启服务
             Gossip.start();
+            OpentpApp.instance().gossipSendExecutor().scheduleAtFixedRate(new GossipSendTask(), 5, 5, TimeUnit.SECONDS);
         }
 
         Runtime.getRuntime().addShutdownHook(hook);

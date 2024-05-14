@@ -2,8 +2,13 @@ package cn.opentp.server;
 
 import cn.opentp.core.auth.ClientInfo;
 import cn.opentp.core.auth.ServerInfo;
+import cn.opentp.core.jackson.ServerInfoKeyDeserializer;
+import cn.opentp.core.jackson.ServerInfoKeySerializer;
 import cn.opentp.core.thread.pool.ThreadPoolState;
 import cn.opentp.server.rest.EndpointMapping;
+import com.fasterxml.jackson.annotation.JsonKey;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.netty.channel.Channel;
 
 import java.net.SocketAddress;
@@ -11,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 public class OpentpApp {
 
@@ -34,7 +41,12 @@ public class OpentpApp {
     private final Map<String, ClientInfo> licenseKeyClientCache = new ConcurrentHashMap<>();
     // 集群 key = 线程客户端信息， value = 所在的服务端信息
     private final Map<ClientInfo, ServerInfo> clusterClientInfoCache = new ConcurrentHashMap<>();
+
+    //@JsonSerialize(using = ServerInfoKeySerializer.class)
+//@JsonDeserialize(using = ServerInfoKeyDeserializer.class)
     private final Map<ServerInfo, List<ClientInfo>> clusterServerInfoCache = new ConcurrentHashMap<>();
+
+    private final ScheduledExecutorService gossipSendExecutor = Executors.newSingleThreadScheduledExecutor();
 
 
     private final Map<SocketAddress, Channel> clusterConnected = new ConcurrentHashMap<>();
@@ -77,6 +89,10 @@ public class OpentpApp {
 
     public Map<String, Map<String, ThreadPoolState>> clientKeyThreadPoolStatesCache() {
         return clientKeyThreadPoolStatesCache;
+    }
+
+    public ScheduledExecutorService gossipSendExecutor() {
+        return gossipSendExecutor;
     }
 
     public Map<String, Channel> clientKeyChannelCache() {
