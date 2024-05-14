@@ -9,7 +9,7 @@ import cn.opentp.core.net.OpentpMessageTypeEnum;
 import cn.opentp.core.net.serializer.SerializerTypeEnum;
 import cn.opentp.core.thread.pool.ThreadPoolContext;
 import cn.opentp.core.thread.pool.ThreadPoolState;
-import cn.opentp.core.util.JSONUtils;
+import cn.opentp.core.util.OpentpCoreJacksonUtils;
 import cn.opentp.core.util.MessageTraceIdUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -53,7 +53,7 @@ public class OpentpClientHandler extends ChannelInboundHandlerAdapter {
         switch (Objects.requireNonNull(opentpMessageTypeEnum)) {
             case THREAD_POOL_UPDATE:
                 ThreadPoolState threadPoolState = (ThreadPoolState) opentpMessage.getData();
-                log.debug("接收到线程池更新命令：{}", JSONUtils.toJSONString(threadPoolState));
+                log.debug("接收到线程池更新命令：{}", OpentpCoreJacksonUtils.toJSONString(threadPoolState));
 
                 Map<String, ThreadPoolContext> threadPoolContextCache = Configuration.configuration().threadPoolContextCache();
                 ThreadPoolContext threadPoolContext = threadPoolContextCache.get(threadPoolState.getThreadPoolName());

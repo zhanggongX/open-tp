@@ -1,11 +1,14 @@
 package cn.opentp.gossip.message.handler;
 
-import cn.opentp.core.util.JSONUtils;
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.message.Ack2Message;
 import cn.opentp.gossip.message.AckMessage;
 import cn.opentp.gossip.message.factory.GossipMessageFactory;
-import cn.opentp.gossip.node.*;
+import cn.opentp.gossip.node.GossipNode;
+import cn.opentp.gossip.node.GossipNodeContext;
+import cn.opentp.gossip.node.GossipNodeDigest;
+import cn.opentp.gossip.node.HeartbeatState;
+import cn.opentp.gossip.util.GossipJacksonUtil;
 import io.netty.buffer.ByteBuf;
 
 import java.util.HashMap;
@@ -17,8 +20,8 @@ public class AckMessageHandler implements MessageHandler {
 
     @Override
     public void handle(String cluster, String data, String from) {
-        System.out.println("1: " + data);
-        AckMessage ackMessage = JSONUtils.fromJson(data, AckMessage.class);
+
+        AckMessage ackMessage = GossipJacksonUtil.parseJson(data, AckMessage.class);
         GossipNodeContext nodeContext = GossipApp.instance().gossipNodeContext();
 
         List<GossipNodeDigest> remoteNeedUpdateNodes = ackMessage.getNeedUpdateNodes();
@@ -47,6 +50,7 @@ public class AckMessageHandler implements MessageHandler {
                 String[] host = from.split(":");
                 GossipApp.instance().networkService().send(host[0], Integer.valueOf(host[1]), byteBuf);
             }
+            byteBuf.release();
         }
     }
 

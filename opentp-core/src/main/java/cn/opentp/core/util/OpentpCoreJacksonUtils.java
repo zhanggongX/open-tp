@@ -11,7 +11,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Set;
 
-public class JSONUtils {
+/**
+ * 只处理简单对象
+ */
+public class OpentpCoreJacksonUtils {
 
     private static ObjectMapper objectMapper = new ObjectMapper();
 
@@ -23,14 +26,8 @@ public class JSONUtils {
 
     /**
      * 解析json
-     *
-     * @param content   字符串
-     * @param valueType 类型
-     * @return T
-     * @author zg
-     * @date 2020-10-27
      */
-    public static <T> T fromJson(String content, Class<T> valueType) {
+    public static <T> T parseJson(String content, Class<T> valueType) {
         if (objectMapper == null) {
             objectMapper = new ObjectMapper();
         }
@@ -41,7 +38,10 @@ public class JSONUtils {
         }
     }
 
-    public static <T> T fromJsonRefer(String content, Class<T> clazz) {
+    /**
+     * 解析json
+     */
+    public static <T> T parseJsonRefer(String content, Class<T> clazz) {
         if (objectMapper == null) {
             objectMapper = new ObjectMapper();
         }
@@ -53,7 +53,10 @@ public class JSONUtils {
         }
     }
 
-    public static <T> List<T> fromJsonList(String content, Class<T> clazz) {
+    /**
+     * 解析json -> list
+     */
+    public static <T> List<T> parseJsonList(String content, Class<T> clazz) {
         if (objectMapper == null) {
             objectMapper = new ObjectMapper();
         }
@@ -64,7 +67,10 @@ public class JSONUtils {
         }
     }
 
-    public static <T> Set<T> fromJsonSet(String content, Class<T> clazz) {
+    /**
+     * 解析json -> set
+     */
+    public static <T> Set<T> parseJsonSet(String content, Class<T> clazz) {
         if (objectMapper == null) {
             objectMapper = new ObjectMapper();
         }
@@ -76,7 +82,7 @@ public class JSONUtils {
     }
 
     /**
-     * 生成json
+     * 生成json string
      */
     public static String toJSONString(Object object) {
         if (objectMapper == null) {
@@ -90,11 +96,7 @@ public class JSONUtils {
     }
 
     /**
-     * 获取node值
-     *
-     * @return String
-     * @author zg
-     * @date 2020-10-27
+     * 获取 jsonNode 值
      */
     public static String getNodeVal(String content, String key) {
         if (objectMapper == null) {
@@ -108,7 +110,7 @@ public class JSONUtils {
     }
 
     /**
-     * 获取node
+     * 获取 jsonNode
      */
     public static JsonNode getNode(String content) {
         if (objectMapper == null) {
@@ -123,11 +125,6 @@ public class JSONUtils {
 
     /**
      * 获取泛型的 List Type
-     *
-     * @param elementClasses 泛型类型
-     * @return JavaType
-     * @author zg
-     * @date 2020-12-17
      */
     private static JavaType getListType(Class<?>... elementClasses) {
         if (objectMapper == null) {
@@ -136,6 +133,9 @@ public class JSONUtils {
         return objectMapper.getTypeFactory().constructParametricType(List.class, elementClasses);
     }
 
+    /**
+     * 获取泛型的 Set Type
+     */
     private static JavaType getSetType(Class<?>... elementClasses) {
         if (objectMapper == null) {
             objectMapper = new ObjectMapper();

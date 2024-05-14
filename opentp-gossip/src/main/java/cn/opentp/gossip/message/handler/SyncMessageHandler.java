@@ -1,15 +1,14 @@
 package cn.opentp.gossip.message.handler;
 
-
-import cn.opentp.core.util.JSONUtils;
-import cn.opentp.core.util.JacksonUtil;
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.message.AckMessage;
+import cn.opentp.gossip.message.SyncMessage;
 import cn.opentp.gossip.message.factory.GossipMessageFactory;
 import cn.opentp.gossip.node.GossipNode;
 import cn.opentp.gossip.node.GossipNodeContext;
 import cn.opentp.gossip.node.GossipNodeDigest;
 import cn.opentp.gossip.node.HeartbeatState;
+import cn.opentp.gossip.util.GossipJacksonUtil;
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +24,8 @@ public class SyncMessageHandler implements MessageHandler {
         if (data == null) return;
 
         try {
-            List<GossipNodeDigest> gossipNodeDigests = JSONUtils.fromJsonList(data, GossipNodeDigest.class);
+            SyncMessage syncMessage = GossipJacksonUtil.parseJson(data, SyncMessage.class);
+            List<GossipNodeDigest> gossipNodeDigests = syncMessage.getDigestList();
 
             List<GossipNodeDigest> needUpdateNodes = new ArrayList<>();
             Map<GossipNode, HeartbeatState> newestNodes = new HashMap<>();

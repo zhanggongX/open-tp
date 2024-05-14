@@ -18,7 +18,7 @@ public class DefaultGossipListener implements GossipListener {
         } else if (state == GossipStateEnum.JOIN) {
             log.info("node: {} 加入集群。", node);
         } else if (state == GossipStateEnum.UP) {
-            log.info("node: {} 活跃状态", node);
+            log.trace("node: {} 活跃状态", node);
         }
     }
 }
