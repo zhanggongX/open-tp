@@ -42,6 +42,7 @@ public class GossipSettings {
     private GossipNode localNode;
     // 配置的集群发现节点
     private final List<DiscoverNode> discoverNodes = new ArrayList<>();
+    private boolean isDiscoverNode = false;
 
     public static void parseConfig(GossipProperties properties) {
         // 校验必要配置
@@ -51,12 +52,14 @@ public class GossipSettings {
         if (properties.getNodeId() == null || properties.getNodeId().isEmpty()) {
             properties.setNodeId(properties.getHost() + ":" + properties.getPort());
         }
+        DiscoverNode selfDiscoverNode = new DiscoverNode(properties.getCluster(), properties.getNodeId(), properties.getHost(), properties.getPort());
 
         // 解析 clusterNodes
         GossipApp gossipApp = GossipApp.instance();
         GossipSettings gossipSettings = gossipApp.setting();
         String clusterNodes = properties.getClusterNodes();
         String[] hosts = clusterNodes.split(",", -1);
+
 
         for (String host : hosts) {
             try {
@@ -65,6 +68,9 @@ public class GossipSettings {
             } catch (UnknownHostException ex) {
                 log.warn("Seed provider couldn't lookup host {}", host);
             }
+        }
+        if (gossipSettings.discoverNodes().contains(selfDiscoverNode)) {
+            gossipSettings.setIsDiscoverNode(true);
         }
 
         // 其他参数
@@ -166,6 +172,14 @@ public class GossipSettings {
 
     public List<DiscoverNode> discoverNodes() {
         return discoverNodes;
+    }
+
+    public boolean isDiscoverNode() {
+        return isDiscoverNode;
+    }
+
+    public void setIsDiscoverNode(boolean isDiscoverNode) {
+        this.isDiscoverNode = isDiscoverNode;
     }
 
     public static void checkParams(GossipProperties properties) {

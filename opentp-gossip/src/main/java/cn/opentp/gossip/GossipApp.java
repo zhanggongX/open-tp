@@ -33,9 +33,9 @@ public class GossipApp {
     private volatile boolean hadInit = false;
     // 开启运行标记
     private volatile boolean working = false;
-    // 是否发送节点标记
-    private Boolean seedNode = null;
 
+    // Gossip 节点上下文
+    private final GossipNodeContext gossipNodeContext = new GossipNodeContext();
     // 网络服务
     private final NetworkService networkService = new UDPNetworkService();
     // 设置信息
@@ -47,13 +47,11 @@ public class GossipApp {
 
     // 锁
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+
     // 周期定时任务执行
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
     // 执行流言线程池
-    private final ExecutorService gossipExecutorService = Executors.newFixedThreadPool(4);
-
-    // Gossip 节点上下文
-    private final GossipNodeContext gossipNodeContext = new GossipNodeContext();
+    private final ExecutorService gossipExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     private GossipApp() {
     }
@@ -104,10 +102,6 @@ public class GossipApp {
 
     public GossipSettings setting() {
         return settings;
-    }
-
-    public Boolean getSeedNode() {
-        return seedNode;
     }
 
     public GossipListenerContext gossipListenerContext() {

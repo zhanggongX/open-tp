@@ -1,6 +1,7 @@
 package cn.opentp.gossip.schedule;
 
 import cn.opentp.gossip.GossipApp;
+import cn.opentp.gossip.GossipSettings;
 import cn.opentp.gossip.network.NetworkService;
 import cn.opentp.gossip.node.DiscoverNode;
 import cn.opentp.gossip.node.GossipNode;
@@ -72,10 +73,11 @@ public abstract class AbstractGossipTask implements Runnable {
      * @param byteBuf 流言信息
      */
     private void sendToDiscoveryNode(ByteBuf byteBuf) {
-        List<DiscoverNode> discoverNodes = GossipApp.instance().setting().discoverNodes();
+        GossipSettings setting = GossipApp.instance().setting();
+        List<DiscoverNode> discoverNodes = setting.discoverNodes();
         int size = discoverNodes.size();
         if (size > 0) {
-            if (size == 1 && isSeedNode()) {
+            if (size == 1 && setting.isDiscoverNode()) {
                 return;
             }
             int index = (size == 1) ? 0 : ThreadLocalRandom.current().nextInt(size);
@@ -114,7 +116,7 @@ public abstract class AbstractGossipTask implements Runnable {
                 }
             }
             GossipApp.instance().networkService().send(target.getHost(), target.getPort(), byteBuf);
-            return GossipApp.instance().setting().discoverNodes().contains(buildSeedNode(target));
+            return GossipApp.instance().setting().discoverNodes().contains(buildDiscoverNode(target));
         } catch (Exception e) {
             log.error(e.getMessage());
             return false;
@@ -136,7 +138,7 @@ public abstract class AbstractGossipTask implements Runnable {
         try {
             DiscoverNode target = discoverNodes.get(index);
             int size = discoverNodes.size();
-            if (target.equals(buildSeedNode(GossipApp.instance().selfNode()))) {
+            if (target.equals(buildDiscoverNode(GossipApp.instance().selfNode()))) {
                 if (size == 1) {
                     return;
                 } else {
@@ -150,14 +152,7 @@ public abstract class AbstractGossipTask implements Runnable {
         }
     }
 
-    private DiscoverNode buildSeedNode(GossipNode gossipNode) {
+    private DiscoverNode buildDiscoverNode(GossipNode gossipNode) {
         return new DiscoverNode(gossipNode.getCluster(), gossipNode.getNodeId(), gossipNode.getHost(), gossipNode.getPort());
-    }
-
-    public boolean isSeedNode() {
-        if (GossipApp.instance().getSeedNode() == null) {
-            return GossipApp.instance().setting().discoverNodes().contains(buildSeedNode(GossipApp.instance().selfNode()));
-        }
-        return GossipApp.instance().getSeedNode();
     }
 }

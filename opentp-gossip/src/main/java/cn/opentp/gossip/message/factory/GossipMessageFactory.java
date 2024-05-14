@@ -4,13 +4,11 @@ import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.enums.MessageTypeEnum;
 import cn.opentp.gossip.message.*;
 import cn.opentp.gossip.node.GossipNode;
-import cn.opentp.gossip.node.GossipNodeDigest;
 import cn.opentp.gossip.util.GossipJacksonUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 /**
  * Gossip 消息工具类

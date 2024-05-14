@@ -14,7 +14,7 @@ public class Demo2 {
         properties.setHost("localhost");
         properties.setPort(9003);
         properties.setNodeId(null);
-        properties.setGossipInterval(10000);
+        properties.setGossipInterval(5000);
         properties.setClusterNodes("localhost:9001,localhost:9002");
 
         // 初始化
