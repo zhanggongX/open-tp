@@ -10,9 +10,9 @@ import java.util.List;
 
 public class OpentpProperties {
 
-    private int reportServerPort;
-    private int transportServerPort;
-    private int httpServerPort;
+    private int reportPort;
+    private int gossipPort;
+    private int httpPort;
     private String deploy;
     private String cluster;
 
@@ -20,33 +20,33 @@ public class OpentpProperties {
      * 配置，设置默认值
      */
     public OpentpProperties() {
-        reportServerPort = OpentpServerConstant.DEFAULT_REPORT_SERVER_PORT;
-        transportServerPort = OpentpServerConstant.DEFAULT_TRANSPORT_SERVER_PORT;
-        httpServerPort = OpentpServerConstant.DEFAULT_REST_SERVER_PORT;
+        reportPort = OpentpServerConstant.DEFAULT_REPORT_SERVER_PORT;
+        gossipPort = OpentpServerConstant.DEFAULT_TRANSPORT_SERVER_PORT;
+        httpPort = OpentpServerConstant.DEFAULT_REST_SERVER_PORT;
     }
 
-    public int getReportServerPort() {
-        return reportServerPort;
+    public int getReportPort() {
+        return reportPort;
     }
 
-    public void setReportServerPort(int reportServerPort) {
-        this.reportServerPort = reportServerPort;
+    public void setReportPort(int reportPort) {
+        this.reportPort = reportPort;
     }
 
-    public int getTransportServerPort() {
-        return transportServerPort;
+    public int getGossipPort() {
+        return gossipPort;
     }
 
-    public void setTransportServerPort(int transportServerPort) {
-        this.transportServerPort = transportServerPort;
+    public void setGossipPort(int gossipPort) {
+        this.gossipPort = gossipPort;
     }
 
-    public int getHttpServerPort() {
-        return httpServerPort;
+    public int getHttpPort() {
+        return httpPort;
     }
 
-    public void setHttpServerPort(int httpServerPort) {
-        this.httpServerPort = httpServerPort;
+    public void setHttpPort(int httpPort) {
+        this.httpPort = httpPort;
     }
 
     public DeployEnum getDeploy() {
@@ -57,7 +57,12 @@ public class OpentpProperties {
         this.deploy = deploy;
     }
 
-    public List<SocketAddress> getCluster() {
+
+    public String getCluster() {
+        return cluster;
+    }
+
+    public List<SocketAddress> cluster() {
         try {
             List<SocketAddress> socketAddresses = new ArrayList<>();
 

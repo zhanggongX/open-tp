@@ -33,13 +33,13 @@ public class PropertiesUtil {
             }
 
             String reportPort = cmd.getOptionValue("rp");
-            if (reportPort != null) properties.setReportServerPort(Integer.parseInt(reportPort));
+            if (reportPort != null) properties.setReportPort(Integer.parseInt(reportPort));
 
             String httpPort = cmd.getOptionValue("hp");
-            if (httpPort != null) properties.setHttpServerPort(Integer.parseInt(httpPort));
+            if (httpPort != null) properties.setHttpPort(Integer.parseInt(httpPort));
 
-            String transportPort = cmd.getOptionValue("tp");
-            if (transportPort != null) properties.setTransportServerPort(Integer.parseInt(transportPort));
+            String transportPort = cmd.getOptionValue("gp");
+            if (transportPort != null) properties.setGossipPort(Integer.parseInt(transportPort));
 
             return true;
         } catch (ParseException exp) {

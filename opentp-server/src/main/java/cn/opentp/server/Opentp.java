@@ -1,17 +1,17 @@
 package cn.opentp.server;
 
+import cn.opentp.gossip.Gossip;
+import cn.opentp.gossip.GossipProperties;
 import cn.opentp.server.constant.OpentpServerConstant;
 import cn.opentp.server.enums.DeployEnum;
 import cn.opentp.server.report.ReceiveReportServer;
 import cn.opentp.server.rest.RestServer;
-import cn.opentp.server.transport.TransportClient;
-import cn.opentp.server.transport.TransportServer;
 import cn.opentp.server.util.PropertiesUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.SocketAddress;
-import java.util.List;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * opentp 启动类
@@ -43,30 +43,41 @@ public class Opentp {
         ShutdownHook hook = new ShutdownHook();
         // 启动接收上报信息服务
         ReceiveReportServer receiveReportServer = new ReceiveReportServer();
-        receiveReportServer.start(config.getReportServerPort());
+        receiveReportServer.start(config.getReportPort());
         hook.add(receiveReportServer);
 
         // 启动 restful 服务信息
         RestServer restServer = new RestServer();
-        restServer.start(config.getHttpServerPort());
+        restServer.start(config.getHttpPort());
         hook.add(restServer);
 
         DeployEnum deploy = config.getDeploy();
-        // 集群部署，启动 TransportServer
+        // 集群部署，启动 gossip
         if (deploy == DeployEnum.cluster) {
-            List<SocketAddress> clusterSocketAddresses = config.getCluster();
-            if (clusterSocketAddresses.isEmpty()) {
-                log.warn("集群模式下不配置集群地址，则等同于单机模式");
-            }else {
-                TransportServer transportServer = new TransportServer();
-                transportServer.start(config.getTransportServerPort());
-                hook.add(transportServer);
-
-                TransportClient transportClient = new TransportClient();
-                transportClient.startup();
-            }
+            GossipProperties properties = getGossipProperties(config);
+            // 初始化
+            Gossip.init(properties);
+            // 开启服务
+            Gossip.start();
         }
 
         Runtime.getRuntime().addShutdownHook(hook);
+    }
+
+    private static GossipProperties getGossipProperties(OpentpProperties config) {
+        GossipProperties properties = new GossipProperties();
+        properties.setCluster("opentp");
+        properties.setHost("localhost");
+        try {
+            String hostAddress = InetAddress.getLocalHost().getHostAddress();
+            properties.setHost(hostAddress);
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+        properties.setPort(9001);
+        properties.setNodeId(null);
+        properties.setClusterNodes(config.getCluster());
+        properties.setGossipInterval(5000);
+        return properties;
     }
 }

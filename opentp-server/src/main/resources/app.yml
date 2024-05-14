@@ -1,7 +1,7 @@
 opentp:
-  report-server-port: 9527
-  http-server-port: 8080
-  transport-server-port: 9528
+  report-port: 9527
+  http-port: 8080
+  gossip-port: 9528
   deploy: cluster
   cluster: localhost:9528
 
