@@ -1,21 +1,13 @@
 package cn.opentp.core.net.serializer.kryo;
 
-import cn.opentp.core.auth.ClientInfo;
-import cn.opentp.core.auth.License;
-import cn.opentp.core.net.BroadcastMessage;
-import cn.opentp.core.net.BroadcastProtocol;
 import cn.opentp.core.net.serializer.Serializer;
-import cn.opentp.core.thread.pool.ThreadPoolState;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.util.DefaultInstantiatorStrategy;
-import org.objenesis.strategy.StdInstantiatorStrategy;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class KryoSerializer implements Serializer {
 
@@ -27,17 +19,17 @@ public class KryoSerializer implements Serializer {
         kryo.setReferences(true);
         //方式一：设置无需注册，那么之后就无需对需要进行序列号的类进行注册（性能略差）
         //默认值为true，避免版本变化显示设置
-        //kryo.setRegistrationRequired(false);
+        kryo.setRegistrationRequired(false);
         //设置默认的实例化器
-        ((DefaultInstantiatorStrategy) kryo.getInstantiatorStrategy()).setFallbackInstantiatorStrategy(new StdInstantiatorStrategy());
+//        ((DefaultInstantiatorStrategy) kryo.getInstantiatorStrategy()).setFallbackInstantiatorStrategy(new StdInstantiatorStrategy());
         //方式二：由于默认是需要进行注册的，若是不设置为false，那么就需要进行手动注册class类
-        kryo.register(ThreadPoolState.class);
-        kryo.register(String.class);
-        kryo.register(ArrayList.class);
-        kryo.register(ClientInfo.class);
-        kryo.register(License.class);
-        kryo.register(BroadcastProtocol.class);
-        kryo.register(BroadcastMessage.class);
+//        kryo.register(ThreadPoolState.class);
+//        kryo.register(String.class);
+//        kryo.register(ArrayList.class);
+//        kryo.register(ClientInfo.class);
+//        kryo.register(License.class);
+//        kryo.register(BroadcastProtocol.class);
+//        kryo.register(BroadcastMessage.class);
         return kryo;
     });
 
@@ -49,7 +41,7 @@ public class KryoSerializer implements Serializer {
             Kryo kryo = kryoThreadLocal.get();
             //进行序列化
             kryo.writeObject(output, obj);
-            kryoThreadLocal.remove();
+//            kryoThreadLocal.remove();
             return output.toBytes();
         } catch (IOException e) {
             throw new RuntimeException("Serialization failed");
@@ -62,7 +54,7 @@ public class KryoSerializer implements Serializer {
              Input input = new Input(byteArrayInputStream)) {
             Kryo kryo = kryoThreadLocal.get();
             Object obj = kryo.readObject(input, clazz);
-            kryoThreadLocal.remove();
+//            kryoThreadLocal.remove();
             return clazz.cast(obj);
         } catch (IOException e) {
             throw new RuntimeException("Serialization failed");

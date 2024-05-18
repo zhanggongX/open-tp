@@ -1,6 +1,6 @@
 package cn.opentp.server.rest;
 
-import cn.opentp.core.util.OpentpCoreJacksonUtils;
+import cn.opentp.core.util.JacksonUtil;
 import cn.opentp.server.OpentpApp;
 import cn.opentp.server.rest.endpoint.Endpoint;
 import io.netty.buffer.ByteBuf;
@@ -51,7 +51,7 @@ public class EndpointDispatcher {
             log.error("endpoint handler exception, ", e);
             // 统一拦截 endpoint 处理抛出的异常
             BaseRes<Void> fail = BaseRes.fail(-1, e.getMessage());
-            String json = OpentpCoreJacksonUtils.toJSONString(fail);
+            String json = JacksonUtil.toJSONString(fail);
             ByteBuf byteBuf = Unpooled.copiedBuffer(json, CharsetUtil.UTF_8);
             httpResponse.content().writeBytes(byteBuf);
             httpResponse.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, byteBuf.writerIndex());

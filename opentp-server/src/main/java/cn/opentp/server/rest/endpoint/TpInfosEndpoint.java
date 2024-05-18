@@ -6,7 +6,7 @@ import cn.opentp.core.net.OpentpMessage;
 import cn.opentp.core.net.OpentpMessageTypeEnum;
 import cn.opentp.core.net.serializer.SerializerTypeEnum;
 import cn.opentp.core.thread.pool.ThreadPoolState;
-import cn.opentp.core.util.OpentpCoreJacksonUtils;
+import cn.opentp.core.util.JacksonUtil;
 import cn.opentp.core.util.MessageTraceIdUtil;
 import cn.opentp.server.OpentpApp;
 import cn.opentp.server.exception.EndpointUnSupportException;
@@ -118,14 +118,14 @@ public class TpInfosEndpoint extends AbstractEndpointAdapter<Map<ClientInfo, Map
         if (threadPoolState == null) throw new IllegalArgumentException("未知的线程池信息");
 
         String content = httpRequest.content().toString(CharsetUtil.UTF_8);
-        JsonNode jsonNode = OpentpCoreJacksonUtils.getNode(content);
+        JsonNode jsonNode = JacksonUtil.getNode(content);
 
         ThreadPoolState newThreadPoolState = new ThreadPoolState();
         newThreadPoolState.flushDefault(threadPoolState.getThreadPoolName());
         newThreadPoolState.flushRequest(jsonNode);
 
         Channel channel = opentpApp.clientKeyChannelCache().get(clientInfoKey);
-        log.debug("线程池更新任务下发： {}", OpentpCoreJacksonUtils.toJSONString(newThreadPoolState));
+        log.debug("线程池更新任务下发： {}", JacksonUtil.toJSONString(newThreadPoolState));
         OpentpMessage opentpMessage = OpentpCoreConstant.OPENTP_MSG_PROTO.clone();
         OpentpMessage
                 .builder()

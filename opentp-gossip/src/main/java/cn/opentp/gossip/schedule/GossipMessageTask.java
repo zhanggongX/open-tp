@@ -2,7 +2,7 @@ package cn.opentp.gossip.schedule;
 
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.message.GossipMessage;
-import cn.opentp.gossip.message.factory.GossipMessageFactory;
+import cn.opentp.gossip.message.codec.GossipMessageCodec;
 import cn.opentp.gossip.message.holder.GossipMessageHolder;
 import cn.opentp.gossip.util.GossipUtil;
 import io.netty.buffer.ByteBuf;
@@ -30,7 +30,7 @@ public class GossipMessageTask extends AbstractGossipTask implements Runnable {
                 int forwardCount = message.getForwardCount();
                 int maxTry = GossipUtil.fanOut();
                 if (forwardCount < maxTry) {
-                    ByteBuf byteBuf = GossipMessageFactory.factory().encodeGossipMessage(message);
+                    ByteBuf byteBuf = GossipMessageCodec.codec().encodeGossipMessage(message);
                     sendBuf(byteBuf);
                     message.setForwardCount(forwardCount + 1);
                 }

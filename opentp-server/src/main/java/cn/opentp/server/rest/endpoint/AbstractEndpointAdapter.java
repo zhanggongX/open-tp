@@ -1,6 +1,6 @@
 package cn.opentp.server.rest.endpoint;
 
-import cn.opentp.core.util.OpentpCoreJacksonUtils;
+import cn.opentp.core.util.JacksonUtil;
 import cn.opentp.server.rest.BaseRes;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 public abstract class AbstractEndpointAdapter<T> implements Endpoint {
 
     private void dealEndpointRes(FullHttpResponse httpResponse, BaseRes<?> res) {
-        httpResponse.content().writeBytes(OpentpCoreJacksonUtils.toJSONString(res).getBytes(StandardCharsets.UTF_8));
+        httpResponse.content().writeBytes(JacksonUtil.toJSONString(res).getBytes(StandardCharsets.UTF_8));
         httpResponse.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, httpResponse.content().readableBytes());
     }
 

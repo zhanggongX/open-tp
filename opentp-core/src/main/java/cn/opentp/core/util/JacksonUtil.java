@@ -14,7 +14,7 @@ import java.util.Set;
 /**
  * 只处理简单对象
  */
-public class OpentpCoreJacksonUtils {
+public class JacksonUtil {
 
     private static ObjectMapper objectMapper = new ObjectMapper();
 

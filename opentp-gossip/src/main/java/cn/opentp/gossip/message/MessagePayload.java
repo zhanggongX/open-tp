@@ -1,6 +1,7 @@
 package cn.opentp.gossip.message;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * 网络传输消息载体
@@ -9,15 +10,15 @@ import java.io.Serializable;
 public class MessagePayload implements Serializable {
 
     // MessageTypeEnum
-    public String type;
-    public String data;
-    public String cluster;
-    public String from;
+    private String type;
+    private byte[] data;
+    private String cluster;
+    private String from;
 
     public MessagePayload() {
     }
 
-    public MessagePayload(String type, String data, String cluster, String from) {
+    public MessagePayload(String type, byte[] data, String cluster, String from) {
         this.type = type;
         this.data = data;
         this.cluster = cluster;
@@ -36,11 +37,11 @@ public class MessagePayload implements Serializable {
         this.type = type;
     }
 
-    public String getData() {
+    public byte[] getData() {
         return data;
     }
 
-    public void setData(String data) {
+    public void setData(byte[] data) {
         this.data = data;
     }
 
@@ -58,5 +59,15 @@ public class MessagePayload implements Serializable {
 
     public void setFrom(String from) {
         this.from = from;
+    }
+
+    @Override
+    public String toString() {
+        return "MessagePayload{" +
+                "type='" + type + '\'' +
+                ", data=" + Arrays.toString(data) +
+                ", cluster='" + cluster + '\'' +
+                ", from='" + from + '\'' +
+                '}';
     }
 }

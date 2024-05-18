@@ -2,7 +2,7 @@ package cn.opentp.client.spring.boot.example.controller;
 
 import cn.opentp.client.configuration.Configuration;
 import cn.opentp.core.thread.pool.ThreadPoolContext;
-import cn.opentp.core.util.OpentpCoreJacksonUtils;
+import cn.opentp.core.util.JacksonUtil;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,14 +26,14 @@ public class DemoController {
         for (Map.Entry<String, ThreadPoolContext> e : threadPoolContextCache.entrySet()) {
             res.append(e.getValue().getState().toString());
         }
-        return OpentpCoreJacksonUtils.toJSONString(res.toString());
+        return JacksonUtil.toJSONString(res.toString());
     }
 
     @GetMapping("threadPool/{tpName}")
     public String tpCoreSize(@PathVariable String tpName) {
         Map<String, ThreadPoolContext> threadPoolContextCache = Configuration.configuration().threadPoolContextCache();
         ThreadPoolContext threadPoolContext = threadPoolContextCache.get(tpName);
-        return OpentpCoreJacksonUtils.toJSONString(threadPoolContext);
+        return JacksonUtil.toJSONString(threadPoolContext);
     }
 
     @GetMapping("threadPool/report")

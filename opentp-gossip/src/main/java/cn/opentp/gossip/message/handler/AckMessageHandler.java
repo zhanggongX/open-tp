@@ -1,15 +1,17 @@
 package cn.opentp.gossip.message.handler;
 
+import cn.opentp.core.util.JacksonUtil;
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.message.Ack2Message;
 import cn.opentp.gossip.message.AckMessage;
-import cn.opentp.gossip.message.factory.GossipMessageFactory;
+import cn.opentp.gossip.message.codec.GossipMessageCodec;
 import cn.opentp.gossip.node.GossipNode;
 import cn.opentp.gossip.node.GossipNodeContext;
 import cn.opentp.gossip.node.GossipNodeDigest;
 import cn.opentp.gossip.node.HeartbeatState;
-import cn.opentp.gossip.util.GossipJacksonUtil;
 import io.netty.buffer.ByteBuf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,11 +20,14 @@ import java.util.Set;
 
 public class AckMessageHandler implements MessageHandler {
 
-    @Override
-    public void handle(String cluster, String data, String from) {
+    private final static Logger log = LoggerFactory.getLogger(AckMessageHandler.class);
 
-        AckMessage ackMessage = GossipJacksonUtil.parseJson(data, AckMessage.class);
+    @Override
+    public void handle(String cluster, byte[] data, String from) {
         GossipNodeContext nodeContext = GossipApp.instance().gossipNodeContext();
+
+        AckMessage ackMessage = GossipMessageCodec.codec().decodeMessage(data, AckMessage.class);
+        log.debug("ack message: {}", JacksonUtil.toJSONString(ackMessage));
 
         List<GossipNodeDigest> remoteNeedUpdateNodes = ackMessage.getNeedUpdateNodes();
         Map<GossipNode, HeartbeatState> newestNodes = ackMessage.getNewestNodes();
@@ -45,7 +50,7 @@ public class AckMessageHandler implements MessageHandler {
         // 同步回去对方需要更新的节点信息，完成一次信息交换。
         if (!deltaGossipNodes.isEmpty()) {
             Ack2Message ack2Message = new Ack2Message(deltaGossipNodes);
-            ByteBuf byteBuf = GossipMessageFactory.factory().encodeAck2Message(ack2Message);
+            ByteBuf byteBuf = GossipMessageCodec.codec().encodeAck2Message(ack2Message);
             if (from != null) {
                 String[] host = from.split(":");
                 GossipApp.instance().networkService().send(host[0], Integer.valueOf(host[1]), byteBuf);
@@ -63,8 +68,8 @@ public class AckMessageHandler implements MessageHandler {
      */
     private GossipNode restoreGossipNode(GossipNodeDigest nodeDigest) {
         GossipNode node = new GossipNode();
-        node.setPort(nodeDigest.getSocketAddress().getPort());
-        node.setHost(nodeDigest.getSocketAddress().getAddress().getHostAddress());
+        node.setPort(nodeDigest.getPort());
+        node.setHost(nodeDigest.getHost());
         node.setCluster(GossipApp.instance().setting().getCluster());
 
         GossipNodeContext gossipNodeContext = GossipApp.instance().gossipNodeContext();

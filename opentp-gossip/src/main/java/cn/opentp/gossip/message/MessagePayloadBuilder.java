@@ -6,7 +6,7 @@ public class MessagePayloadBuilder {
 
     // MessageTypeEnum
     private String type;
-    private String data;
+    private byte[] data;
     private String cluster;
     private String from;
 
@@ -15,7 +15,7 @@ public class MessagePayloadBuilder {
         return this;
     }
 
-    public MessagePayloadBuilder data(String data) {
+    public MessagePayloadBuilder data(byte[] data) {
         this.data = data;
         return this;
     }

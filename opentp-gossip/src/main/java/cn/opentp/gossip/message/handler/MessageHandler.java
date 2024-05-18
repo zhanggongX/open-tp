@@ -2,5 +2,5 @@ package cn.opentp.gossip.message.handler;
 
 public interface MessageHandler {
 
-    void handle(String cluster, String data, String from);
+    void handle(String cluster, byte[] data, String from);
 }

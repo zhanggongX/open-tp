@@ -1,8 +1,6 @@
 package cn.opentp.gossip.node;
 
 import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 /**
@@ -10,10 +8,12 @@ import java.net.UnknownHostException;
  */
 public class GossipNodeDigest implements Serializable, Comparable<GossipNodeDigest> {
 
+    private String host;
+    private int port;
     private String nodeId;
     private long heartbeatTime;
     private long version;
-    private InetSocketAddress socketAddress;
+
 
     @Override
     public int compareTo(GossipNodeDigest o) {
@@ -27,18 +27,27 @@ public class GossipNodeDigest implements Serializable, Comparable<GossipNodeDige
     }
 
     public GossipNodeDigest(GossipNode node, long heartbeatTime, long version) throws UnknownHostException {
-        this.socketAddress = new InetSocketAddress(InetAddress.getByName(node.getHost()), node.getPort());
+        this.host = node.getHost();
+        this.port = node.getPort();
         this.heartbeatTime = heartbeatTime;
         this.version = version;
         this.nodeId = node.getNodeId();
     }
 
-    public InetSocketAddress getSocketAddress() {
-        return socketAddress;
+    public String getHost() {
+        return host;
     }
 
-    public void setSocketAddress(InetSocketAddress socketAddress) {
-        this.socketAddress = socketAddress;
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
     }
 
     public String getNodeId() {
@@ -68,10 +77,11 @@ public class GossipNodeDigest implements Serializable, Comparable<GossipNodeDige
     @Override
     public String toString() {
         return "GossipNodeDigest{" +
-                "socketAddress=" + socketAddress +
+                "host='" + host + '\'' +
+                ", port=" + port +
+                ", nodeId='" + nodeId + '\'' +
                 ", heartbeatTime=" + heartbeatTime +
                 ", version=" + version +
-                ", nodeId='" + nodeId + '\'' +
                 '}';
     }
 }

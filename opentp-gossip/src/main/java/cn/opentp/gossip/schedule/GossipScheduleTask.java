@@ -2,7 +2,7 @@ package cn.opentp.gossip.schedule;
 
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.message.SyncMessage;
-import cn.opentp.gossip.message.factory.GossipMessageFactory;
+import cn.opentp.gossip.message.codec.GossipMessageCodec;
 import cn.opentp.gossip.node.GossipNode;
 import cn.opentp.gossip.node.GossipNodeContext;
 import cn.opentp.gossip.node.GossipNodeDigest;
@@ -45,7 +45,7 @@ public class GossipScheduleTask extends AbstractGossipTask implements Runnable {
             // 获取当前所有节点的摘要信息，并同步出去
             List<GossipNodeDigest> nodeDigests = nodeContext.randomGossipNodeDigest();
             if (!nodeDigests.isEmpty()) {
-                ByteBuf byteBuf = GossipMessageFactory.factory().encodeSyncMessage(new SyncMessage(gossipApp.setting().getCluster(), nodeDigests));
+                ByteBuf byteBuf = GossipMessageCodec.codec().encodeSyncMessage(new SyncMessage(gossipApp.setting().getCluster(), nodeDigests));
                 sendBuf(byteBuf);
             }
         } catch (UnknownHostException e) {

@@ -1,11 +1,10 @@
 package cn.opentp.gossip.network;
 
-import cn.opentp.core.util.OpentpCoreJacksonUtils;
+import cn.opentp.core.util.JacksonUtil;
 import cn.opentp.gossip.enums.MessageTypeEnum;
 import cn.opentp.gossip.message.MessagePayload;
 import cn.opentp.gossip.message.handler.*;
 import cn.opentp.gossip.network.netty.NettyMessageHandler;
-import cn.opentp.gossip.util.GossipJacksonUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -18,6 +17,8 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 public class UDPNetworkService implements NetworkService {
 
@@ -25,6 +26,17 @@ public class UDPNetworkService implements NetworkService {
 
     private Channel channel;
     private EventLoopGroup eventLoopGroup;
+    private final transient Map<MessageTypeEnum, MessageHandler> messageHandleHolder;
+
+    public UDPNetworkService() {
+        // 都是线程安全的啦
+        messageHandleHolder = new HashMap<>();
+        messageHandleHolder.put(MessageTypeEnum.SYNC, new SyncMessageHandler());
+        messageHandleHolder.put(MessageTypeEnum.ACK, new AckMessageHandler());
+        messageHandleHolder.put(MessageTypeEnum.ACK2, new Ack2MessageHandler());
+        messageHandleHolder.put(MessageTypeEnum.SHUTDOWN, new ShutdownMessageHandler());
+        messageHandleHolder.put(MessageTypeEnum.GOSSIP, new GossipMessageHandler());
+    }
 
     @Override
     public void start(String host, int port) {
@@ -48,7 +60,7 @@ public class UDPNetworkService implements NetworkService {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
-                    log.info("Socket bind success!");
+                    log.info("UDP Server Socket bind {}:{} success!", host, port);
                     channel = future.channel();
                 } else {
                     log.error("An error occurred while bind the socket: ", future.cause());
@@ -60,45 +72,30 @@ public class UDPNetworkService implements NetworkService {
     /**
      * 处理消息
      *
-     * @param data 消息内容
+     * @param gossipMessage 消息内容
      */
     @Override
-    public void handle(String data) {
-        log.trace("处理消息：{}", data);
-        MessagePayload gossipMessage = GossipJacksonUtil.parseJson(data, MessagePayload.class);
+    public void handle(MessagePayload gossipMessage) {
+        log.trace("处理消息：{}", gossipMessage);
 
-        MessageHandler handler = null;
-        MessageTypeEnum type = MessageTypeEnum.parse(gossipMessage.getType());
-        if (type == MessageTypeEnum.SYNC) {
-            handler = new SyncMessageHandler();
-        } else if (type == MessageTypeEnum.ACK) {
-            handler = new AckMessageHandler();
-        } else if (type == MessageTypeEnum.ACK2) {
-            handler = new Ack2MessageHandler();
-        } else if (type == MessageTypeEnum.SHUTDOWN) {
-            handler = new ShutdownMessageHandler();
-        } else if (type == MessageTypeEnum.GOSSIP) {
-            handler = new GossipMessageHandler();
-        } else {
+        MessageTypeEnum messageTypeEnum = MessageTypeEnum.parse(gossipMessage.getType());
+        if (messageTypeEnum == null) {
             log.error("Not supported message type");
+            return;
         }
-
-        if (handler != null) {
-            handler.handle(gossipMessage.getCluster(), gossipMessage.getData(), gossipMessage.getFrom());
-        }
+        MessageHandler messageHandler = messageHandleHolder.get(messageTypeEnum);
+        messageHandler.handle(gossipMessage.getCluster(), gossipMessage.getData(), gossipMessage.getFrom());
     }
 
     @Override
     public void send(String targetHost, Integer targetPort, Object message) {
         if (message instanceof ByteBuf sendBuf) {
-            // ps： 由于消息会多次发送，这里发送的是 copy 的信息
-            // 所以发送方要记得 release() 消息
+            // ps： 由于消息会给多个节点发送，这里发送的是 copy 的信息，所以发送方要记得 release() 消息
             ByteBuf realSendBuf = sendBuf.copy();
-            log.trace("发送消息：{}", realSendBuf.toString(StandardCharsets.UTF_8));
             DatagramPacket datagramPacket = new DatagramPacket(realSendBuf, new InetSocketAddress(targetHost, targetPort));
             channel.writeAndFlush(datagramPacket);
         } else {
-            String json = OpentpCoreJacksonUtils.toJSONString(message);
+            String json = JacksonUtil.toJSONString(message);
             DatagramPacket datagramPacket = new DatagramPacket(Unpooled.copiedBuffer(json, StandardCharsets.UTF_8), new InetSocketAddress(targetHost, targetPort));
             channel.writeAndFlush(datagramPacket);
         }

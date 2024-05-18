@@ -2,7 +2,7 @@ package cn.opentp.gossip.node;
 
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.enums.GossipStateEnum;
-import cn.opentp.gossip.message.factory.GossipMessageFactory;
+import cn.opentp.gossip.message.codec.GossipMessageCodec;
 import cn.opentp.gossip.util.GossipUtil;
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
@@ -129,7 +129,7 @@ public class GossipNodeContext {
     public void selfNodeShutdown() {
         GossipApp gossipApp = GossipApp.instance();
         GossipNode selfNode = gossipApp.selfNode();
-        ByteBuf byteBuf = GossipMessageFactory.factory().encodeShutdownMessage(selfNode);
+        ByteBuf byteBuf = GossipMessageCodec.codec().encodeShutdownMessage(selfNode);
         for (GossipNode node : liveNodes()) {
             try {
                 if (!node.equals(selfNode)) {

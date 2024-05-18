@@ -1,14 +1,14 @@
 package cn.opentp.gossip.message.handler;
 
+import cn.opentp.core.util.JacksonUtil;
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.message.AckMessage;
 import cn.opentp.gossip.message.SyncMessage;
-import cn.opentp.gossip.message.factory.GossipMessageFactory;
+import cn.opentp.gossip.message.codec.GossipMessageCodec;
 import cn.opentp.gossip.node.GossipNode;
 import cn.opentp.gossip.node.GossipNodeContext;
 import cn.opentp.gossip.node.GossipNodeDigest;
 import cn.opentp.gossip.node.HeartbeatState;
-import cn.opentp.gossip.util.GossipJacksonUtil;
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,52 +20,49 @@ public class SyncMessageHandler implements MessageHandler {
     private static final Logger log = LoggerFactory.getLogger(SyncMessageHandler.class);
 
     @Override
-    public void handle(String cluster, String data, String from) {
+    public void handle(String cluster, byte[] data, String from) {
         if (data == null) return;
 
-        try {
-            SyncMessage syncMessage = GossipJacksonUtil.parseJson(data, SyncMessage.class);
-            List<GossipNodeDigest> gossipNodeDigests = syncMessage.getDigestList();
+        SyncMessage syncMessage = GossipMessageCodec.codec().decodeMessage(data, SyncMessage.class);
+        log.debug("sync message: {}", JacksonUtil.toJSONString(syncMessage));
 
-            List<GossipNodeDigest> needUpdateNodes = new ArrayList<>();
-            Map<GossipNode, HeartbeatState> newestNodes = new HashMap<>();
+        List<GossipNodeDigest> gossipNodeDigests = syncMessage.getDigestList();
+        List<GossipNodeDigest> needUpdateNodes = new ArrayList<>();
+        Map<GossipNode, HeartbeatState> newestNodes = new HashMap<>();
 
-            List<GossipNode> syncedNodes = new ArrayList<>();
-            for (GossipNodeDigest gossipNodeDigest : gossipNodeDigests) {
-                GossipNode node = new GossipNode();
-                node.setCluster(cluster);
-                node.setHost(gossipNodeDigest.getSocketAddress().getAddress().getHostAddress());
-                node.setPort(gossipNodeDigest.getSocketAddress().getPort());
-                node.setNodeId(gossipNodeDigest.getNodeId());
-                syncedNodes.add(node);
+        List<GossipNode> syncedNodes = new ArrayList<>();
+        for (GossipNodeDigest gossipNodeDigest : gossipNodeDigests) {
+            GossipNode node = new GossipNode();
+            node.setCluster(cluster);
+            node.setHost(gossipNodeDigest.getHost());
+            node.setPort(gossipNodeDigest.getPort());
+            node.setNodeId(gossipNodeDigest.getNodeId());
+            syncedNodes.add(node);
 
-                compareDigest(gossipNodeDigest, node, needUpdateNodes, newestNodes);
+            compareDigest(gossipNodeDigest, node, needUpdateNodes, newestNodes);
+        }
+
+        GossipApp gossipApp = GossipApp.instance();
+        GossipNodeContext nodeContext = gossipApp.gossipNodeContext();
+        // 本节点记录的集群节点信息
+        Map<GossipNode, HeartbeatState> clusterNodes = nodeContext.clusterNodes();
+        Set<GossipNode> clusterNodeKeys = clusterNodes.keySet();
+        for (GossipNode node : clusterNodeKeys) {
+            // 我有，你没有。
+            if (!syncedNodes.contains(node)) {
+                newestNodes.put(node, clusterNodes.get(node));
             }
-
-            GossipApp gossipApp = GossipApp.instance();
-            GossipNodeContext nodeContext = gossipApp.gossipNodeContext();
-            // 本节点记录的集群节点信息
-            Map<GossipNode, HeartbeatState> clusterNodes = nodeContext.clusterNodes();
-            Set<GossipNode> clusterNodeKeys = clusterNodes.keySet();
-            for (GossipNode node : clusterNodeKeys) {
-                // 我有，你没有。
-                if (!syncedNodes.contains(node)) {
-                    newestNodes.put(node, clusterNodes.get(node));
-                }
-                // 如果是本节点，不管对方有没有，都返回。
-                if (node.equals(gossipApp.selfNode())) {
-                    newestNodes.put(node, clusterNodes.get(node));
-                }
+            // 如果是本节点，不管对方有没有，都返回。
+            if (node.equals(gossipApp.selfNode())) {
+                newestNodes.put(node, clusterNodes.get(node));
             }
+        }
 
-            AckMessage ackMessage = new AckMessage(needUpdateNodes, newestNodes);
-            ByteBuf ackByteBuf = GossipMessageFactory.factory().encodeAckMessage(ackMessage);
-            if (from != null) {
-                String[] host = from.split(":");
-                gossipApp.networkService().send(host[0], Integer.parseInt(host[1]), ackByteBuf);
-            }
-        } catch (NumberFormatException e) {
-            log.error(e.getMessage());
+        AckMessage ackMessage = new AckMessage(needUpdateNodes, newestNodes);
+        ByteBuf ackByteBuf = GossipMessageCodec.codec().encodeAckMessage(ackMessage);
+        if (from != null) {
+            String[] host = from.split(":");
+            gossipApp.networkService().send(host[0], Integer.parseInt(host[1]), ackByteBuf);
         }
     }
 

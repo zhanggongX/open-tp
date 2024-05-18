@@ -1,13 +1,13 @@
-#opentp:
-#  report-port: 9527
-#  http-port: 8080
-#  gossip-port: 9528
-#  deploy: cluster
-#  cluster: localhost:9628
-
 opentp:
-  report-port: 9627
-  http-port: 8081
-  gossip-port: 9628
+  report-port: 9527
+  http-port: 8080
+  gossip-port: 9528
   deploy: cluster
-  cluster: localhost:9528
+  cluster: 192.168.31.181:9628
+
+#opentp:
+#  report-port: 9627
+#  http-port: 8081
+#  gossip-port: 9628
+#  deploy: cluster
+#  cluster: 192.168.31.181:9528

@@ -1,10 +1,11 @@
 package cn.opentp.gossip.message.handler;
 
+import cn.opentp.core.util.JacksonUtil;
 import cn.opentp.gossip.GossipApp;
 import cn.opentp.gossip.enums.GossipStateEnum;
 import cn.opentp.gossip.message.GossipMessage;
+import cn.opentp.gossip.message.codec.GossipMessageCodec;
 import cn.opentp.gossip.message.holder.GossipMessageHolder;
-import cn.opentp.gossip.util.GossipJacksonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,11 +21,12 @@ public class GossipMessageHandler implements MessageHandler {
     private static final ConcurrentHashMap<String, String> RECEIVED_MSG = new ConcurrentHashMap<>();
 
     @Override
-    public void handle(String cluster, String data, String from) {
-
-        GossipMessage gossipMessage = GossipJacksonUtil.parseJson(data, GossipMessage.class);
+    public void handle(String cluster, byte[] data, String from) {
         GossipMessageHolder messageHolder = GossipApp.instance().gossipMessageHolder();
 
+        GossipMessage gossipMessage = GossipMessageCodec.codec().decodeMessage(data, GossipMessage.class);
+        log.debug("gossip message: {}", JacksonUtil.toJSONString(gossipMessage));
+        
         // 流言发布节点ID
         String publishNodeId = gossipMessage.getPublishNode().getNodeId();
         if (!RECEIVED_MSG.containsKey(publishNodeId)) {
