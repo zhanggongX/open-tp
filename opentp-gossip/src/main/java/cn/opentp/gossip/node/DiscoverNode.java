@@ -59,17 +59,23 @@ public class DiscoverNode implements Serializable {
         return getCluster().concat(":").concat(getHost()).concat(":").concat(getPort().toString());
     }
 
+    /**
+     * 不比较 nodeId
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DiscoverNode seedNode = (DiscoverNode) o;
-        return Objects.equals(nodeId, seedNode.nodeId) && Objects.equals(cluster, seedNode.cluster) && Objects.equals(host, seedNode.host) && Objects.equals(port, seedNode.port);
+        return Objects.equals(cluster, seedNode.cluster) && Objects.equals(host, seedNode.host) && Objects.equals(port, seedNode.port);
     }
 
+    /**
+     * 不计算 nodeId
+     */
     @Override
     public int hashCode() {
-        return Objects.hash(nodeId, cluster, host, port);
+        return Objects.hash(cluster, host, port);
     }
 
     @Override

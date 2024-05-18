@@ -19,7 +19,7 @@ public class Ack2MessageHandler implements MessageHandler {
     public void handle(String cluster, byte[] data, String from) {
 
         Ack2Message ack2Message = GossipMessageCodec.codec().decodeMessage(data, Ack2Message.class);
-        log.debug("ack2 message: {}", JacksonUtil.toJSONString(ack2Message));
+        log.trace("ack2 message: {}", JacksonUtil.toJSONString(ack2Message));
         
         Map<GossipNode, HeartbeatState> deltaGossipNodes = ack2Message.getClusterNodes();
         GossipApp.instance().gossipNodeContext().updateLocalClusterNodes(deltaGossipNodes);

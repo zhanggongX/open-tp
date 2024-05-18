@@ -64,7 +64,7 @@ public class GossipSettings {
         for (String host : hosts) {
             try {
                 InetSocketAddress inetSocketAddress = SocketAddressUtil.parseSocketAddress(host);
-                gossipSettings.discoverNodes().add(new DiscoverNode(properties.getCluster(), null, inetSocketAddress.getHostName(), inetSocketAddress.getPort()));
+                gossipSettings.discoverNodes().add(new DiscoverNode(properties.getCluster(), null, inetSocketAddress.getHostString(), inetSocketAddress.getPort()));
             } catch (UnknownHostException ex) {
                 log.warn("Seed provider couldn't lookup host {}", host);
             }

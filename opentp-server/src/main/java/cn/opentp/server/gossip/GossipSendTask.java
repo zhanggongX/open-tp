@@ -15,6 +15,6 @@ public class GossipSendTask implements Runnable {
     public void run() {
         Map<ServerInfo, List<ClientInfo>> serverInfoListMap = OpentpApp.instance().clusterServerInfoCache();
         String jsonInfo = JacksonUtil.toJSONString(serverInfoListMap);
-        GossipApp.instance().publish("i am opentp");
+        GossipApp.instance().publish("i am opentp111");
     }
 }

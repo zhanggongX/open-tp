@@ -25,7 +25,7 @@ public class GossipMessageHandler implements MessageHandler {
         GossipMessageHolder messageHolder = GossipApp.instance().gossipMessageHolder();
 
         GossipMessage gossipMessage = GossipMessageCodec.codec().decodeMessage(data, GossipMessage.class);
-        log.debug("gossip message: {}", JacksonUtil.toJSONString(gossipMessage));
+        log.trace("gossip message: {}", JacksonUtil.toJSONString(gossipMessage));
         
         // 流言发布节点ID
         String publishNodeId = gossipMessage.getPublishNode().getNodeId();

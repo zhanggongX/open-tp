@@ -18,7 +18,7 @@ public class ShutdownMessageHandler implements MessageHandler {
     public void handle(String cluster, byte[] data, String from) {
 
         GossipNode remoteNode = GossipMessageCodec.codec().decodeMessage(data, GossipNode.class);
-        log.debug("shutdown message: {}", JacksonUtil.toJSONString(remoteNode));
+        log.trace("shutdown message: {}", JacksonUtil.toJSONString(remoteNode));
 
         if (remoteNode != null) {
             GossipApp.instance().gossipNodeContext().down(remoteNode);

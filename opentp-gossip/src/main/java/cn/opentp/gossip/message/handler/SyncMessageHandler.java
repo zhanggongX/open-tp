@@ -24,7 +24,7 @@ public class SyncMessageHandler implements MessageHandler {
         if (data == null) return;
 
         SyncMessage syncMessage = GossipMessageCodec.codec().decodeMessage(data, SyncMessage.class);
-        log.debug("sync message: {}", JacksonUtil.toJSONString(syncMessage));
+        log.trace("sync message: {}", JacksonUtil.toJSONString(syncMessage));
 
         List<GossipNodeDigest> gossipNodeDigests = syncMessage.getDigestList();
         List<GossipNodeDigest> needUpdateNodes = new ArrayList<>();
@@ -59,6 +59,8 @@ public class SyncMessageHandler implements MessageHandler {
         }
 
         AckMessage ackMessage = new AckMessage(needUpdateNodes, newestNodes);
+        log.trace("sync, sendNeed: {}", JacksonUtil.toJSONString(needUpdateNodes));
+        log.trace("sync, sendNew: {}", JacksonUtil.toJSONString(newestNodes));
         ByteBuf ackByteBuf = GossipMessageCodec.codec().encodeAckMessage(ackMessage);
         if (from != null) {
             String[] host = from.split(":");
@@ -84,6 +86,9 @@ public class SyncMessageHandler implements MessageHandler {
             if (heartbeatState != null) {
                 long localHeartbeatTime = heartbeatState.getHeartbeatTime();
                 long localVersion = heartbeatState.getVersion();
+                log.trace("sync compare, remote: {}, {}, {}, local: {}, {}, {}",
+                        gossipNodeDigest.getNodeId(), gossipNodeDigest.getHeartbeatTime(), gossipNodeDigest.getVersion(),
+                        syncedNode.getNodeId(), localHeartbeatTime, localVersion);
 
                 if (remoteHeartbeatTime > localHeartbeatTime) {
                     needUpdateNodes.add(gossipNodeDigest);

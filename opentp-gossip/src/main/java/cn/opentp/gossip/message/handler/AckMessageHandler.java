@@ -27,7 +27,7 @@ public class AckMessageHandler implements MessageHandler {
         GossipNodeContext nodeContext = GossipApp.instance().gossipNodeContext();
 
         AckMessage ackMessage = GossipMessageCodec.codec().decodeMessage(data, AckMessage.class);
-        log.debug("ack message: {}", JacksonUtil.toJSONString(ackMessage));
+        log.trace("ack message: {}", JacksonUtil.toJSONString(ackMessage));
 
         List<GossipNodeDigest> remoteNeedUpdateNodes = ackMessage.getNeedUpdateNodes();
         Map<GossipNode, HeartbeatState> newestNodes = ackMessage.getNewestNodes();
