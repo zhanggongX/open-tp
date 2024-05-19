@@ -16,7 +16,7 @@ public class Example {
 
         // 设置服务端地址
         List<InetSocketAddress> inetSocketAddresses = Configuration.configuration().serverAddresses();
-        inetSocketAddresses.add(new InetSocketAddress("localhost", 9627));
+        inetSocketAddresses.add(new InetSocketAddress("192.168.31.181", 9527));
 
         // 设置断网重连重试周期，非必填
         Configuration.configuration().nettyReconnectProperties().setInitialDelay(5);
