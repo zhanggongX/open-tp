@@ -1,4 +1,4 @@
-package cn.opentp.server.rest.endpoint;
+package cn.opentp.server.network.rest.endpoint;
 
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;

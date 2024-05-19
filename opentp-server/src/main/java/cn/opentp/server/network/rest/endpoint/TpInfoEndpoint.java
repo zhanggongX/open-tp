@@ -1,18 +1,12 @@
-package cn.opentp.server.rest.endpoint;
+package cn.opentp.server.network.rest.endpoint;
 
 import cn.opentp.core.auth.ClientInfo;
-import cn.opentp.core.constant.OpentpCoreConstant;
-import cn.opentp.core.net.OpentpMessage;
-import cn.opentp.core.net.OpentpMessageTypeEnum;
-import cn.opentp.core.net.serializer.SerializerTypeEnum;
 import cn.opentp.core.thread.pool.ThreadPoolState;
 import cn.opentp.core.util.JacksonUtil;
-import cn.opentp.core.util.MessageTraceIdUtil;
 import cn.opentp.server.OpentpApp;
 import cn.opentp.server.exception.EndpointUnSupportException;
-import cn.opentp.server.rest.BaseRes;
+import cn.opentp.server.network.rest.BaseRes;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.netty.channel.Channel;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.util.CharsetUtil;
@@ -20,15 +14,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
  * 线程池数据增删改查
  */
-public class TpInfosEndpoint extends AbstractEndpointAdapter<Map<ClientInfo, Map<String, ThreadPoolState>>> {
+public class TpInfoEndpoint extends AbstractEndpointAdapter<Map<ClientInfo, Map<String, ThreadPoolState>>> {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
-    private final static String PRE_URI = "/tpInfos";
+    private final static String PRE_URI = "/tpInfo";
 
     @Override
     public BaseRes<Map<ClientInfo, Map<String, ThreadPoolState>>> doGet(FullHttpRequest httpRequest, FullHttpResponse httpResponse) {
@@ -36,13 +31,13 @@ public class TpInfosEndpoint extends AbstractEndpointAdapter<Map<ClientInfo, Map
         String uri = httpRequest.uri();
 
         OpentpApp opentpApp = OpentpApp.instance();
-        Map<ClientInfo, Map<String, ThreadPoolState>> clientThreadPoolStatesCache = opentpApp.clientThreadPoolStatesCache();
+        Map<ClientInfo, Map<String, ThreadPoolState>> clientThreadPoolStateCache = opentpApp.reportService().clientThreadPoolStateCache();
 
         String[] uris = uri.split("/");
         // /tpInfos/ || /tpInfos
         if (uris.length <= 2) {
             // todo 获取当前登录的 appKeys, 然后去获取该 appKeys 的线程池信息。
-            return BaseRes.success(clientThreadPoolStatesCache);
+            return BaseRes.success(clientThreadPoolStateCache);
         }
 
         // /tpInfos/{appKey}
@@ -52,38 +47,26 @@ public class TpInfosEndpoint extends AbstractEndpointAdapter<Map<ClientInfo, Map
         // /tpInfos/{appKey}/{ip}
         if (uris.length > 3) {
             String ip = uris[3];
-            clientThreadPoolStatesCache = clientThreadPoolStatesCache
-                    .entrySet().stream()
-                    .filter(e -> e.getKey().getHost().equals(ip))
-                    .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            Map.Entry::getValue));
+            clientThreadPoolStateCache = clientThreadPoolStateCache.entrySet().stream().filter(e -> e.getKey().getHost().equals(ip)).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         }
 
         // /tpInfos/{appKey}/{ip}/{instance}
         if (uris.length > 4) {
             String instance = uris[4];
-            clientThreadPoolStatesCache = clientThreadPoolStatesCache
-                    .entrySet().stream()
-                    .filter(e -> e.getKey().getInstance().equals(instance))
-                    .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            Map.Entry::getValue));
+            clientThreadPoolStateCache = clientThreadPoolStateCache.entrySet().stream().filter(e -> e.getKey().getInstance().equals(instance)).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         }
 
         // /tpInfos/{appKey}/{ip}/{instance}/{tpName}
         if (uris.length > 5) {
             String tpName = uris[5];
-            for (Map.Entry<ClientInfo, Map<String, ThreadPoolState>> entry : clientThreadPoolStatesCache.entrySet()) {
+            for (Map.Entry<ClientInfo, Map<String, ThreadPoolState>> entry : clientThreadPoolStateCache.entrySet()) {
                 Map<String, ThreadPoolState> threadPoolStateMap = entry.getValue();
-                threadPoolStateMap = threadPoolStateMap.entrySet().stream()
-                        .filter(e -> e.getKey().equals(tpName))
-                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                threadPoolStateMap = threadPoolStateMap.entrySet().stream().filter(e -> e.getKey().equals(tpName)).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
                 entry.setValue(threadPoolStateMap);
             }
         }
 
-        return BaseRes.success(clientThreadPoolStatesCache);
+        return BaseRes.success(clientThreadPoolStateCache);
     }
 
 
@@ -111,10 +94,16 @@ public class TpInfosEndpoint extends AbstractEndpointAdapter<Map<ClientInfo, Map
         String tpName = uris[5];
         String clientInfoKey = appKey + "/" + ip + "/" + instance;
 
-        OpentpApp opentpApp = OpentpApp.instance();
-        Map<String, Map<String, ThreadPoolState>> clientKeyThreadPoolStatesCache = opentpApp.clientKeyThreadPoolStatesCache();
-        ThreadPoolState threadPoolState = clientKeyThreadPoolStatesCache.get(clientInfoKey).get(tpName);
+        Map<ClientInfo, Map<String, ThreadPoolState>> clientThreadPoolStateCache = OpentpApp.instance().reportService().clientThreadPoolStateCache();
+        AtomicReference<Map<String, ThreadPoolState>> threadPoolStateCacheRef = new AtomicReference<>();
+        clientThreadPoolStateCache.forEach((key, value) -> {
+            if (key.clientInfoKey().equals(clientInfoKey)) {
+                threadPoolStateCacheRef.set(value);
+            }
+        });
+        if (threadPoolStateCacheRef.get() == null) throw new IllegalArgumentException("路径错误");
 
+        ThreadPoolState threadPoolState = threadPoolStateCacheRef.get().get(tpName);
         if (threadPoolState == null) throw new IllegalArgumentException("未知的线程池信息");
 
         String content = httpRequest.content().toString(CharsetUtil.UTF_8);
@@ -124,18 +113,8 @@ public class TpInfosEndpoint extends AbstractEndpointAdapter<Map<ClientInfo, Map
         newThreadPoolState.flushDefault(threadPoolState.getThreadPoolName());
         newThreadPoolState.flushRequest(jsonNode);
 
-        Channel channel = opentpApp.clientKeyChannelCache().get(clientInfoKey);
-        log.debug("线程池更新任务下发： {}", JacksonUtil.toJSONString(newThreadPoolState));
-        OpentpMessage opentpMessage = OpentpCoreConstant.OPENTP_MSG_PROTO.clone();
-        OpentpMessage
-                .builder()
-                .messageType(OpentpMessageTypeEnum.THREAD_POOL_UPDATE.getCode())
-                .serializerType(SerializerTypeEnum.Kryo.getType())
-                .data(newThreadPoolState)
-                .traceId(MessageTraceIdUtil.traceId())
-                .buildTo(opentpMessage);
-
-        channel.writeAndFlush(opentpMessage);
+        // 线程值更新
+        OpentpApp.instance().reportService().send(clientInfoKey, newThreadPoolState);
 
         return BaseRes.success();
     }

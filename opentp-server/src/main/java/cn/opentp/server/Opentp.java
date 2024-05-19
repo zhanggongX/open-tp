@@ -5,8 +5,8 @@ import cn.opentp.gossip.GossipProperties;
 import cn.opentp.server.constant.OpentpServerConstant;
 import cn.opentp.server.enums.DeployEnum;
 import cn.opentp.server.gossip.GossipSendTask;
-import cn.opentp.server.report.ReceiveReportServer;
-import cn.opentp.server.rest.RestServer;
+import cn.opentp.server.network.report.ThreadPoolReportService;
+import cn.opentp.server.network.rest.RestfulService;
 import cn.opentp.server.util.PropertiesUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,17 +41,23 @@ public class Opentp {
     private static void startServers() {
 
         OpentpProperties config = opentpApp.properties();
+        String host = "";
+        try {
+            host = InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
 
-        ShutdownHook hook = new ShutdownHook();
+//        ShutdownHook hook = new ShutdownHook();
         // 启动接收上报信息服务
-        ReceiveReportServer receiveReportServer = new ReceiveReportServer();
-        receiveReportServer.start(config.getReportPort());
-        hook.add(receiveReportServer);
+        ThreadPoolReportService threadPoolReportService = opentpApp.reportService();
+        threadPoolReportService.start(host, config.getReportPort());
+//        hook.add(receiveReportServer);
 
         // 启动 restful 服务信息
-        RestServer restServer = new RestServer();
-        restServer.start(config.getHttpPort());
-        hook.add(restServer);
+        RestfulService restfulService = opentpApp.restfulService();
+        restfulService.start(host, config.getHttpPort());
+//        hook.add(restServer);
 
         DeployEnum deploy = config.getDeploy();
         // 集群部署，启动 gossip
@@ -61,10 +67,10 @@ public class Opentp {
             GossipBootstrap.init(properties);
             // 开启服务
             GossipBootstrap.start();
-            OpentpApp.instance().gossipSendExecutor().scheduleAtFixedRate(new GossipSendTask(), 5, 5, TimeUnit.SECONDS);
+            OpentpApp.instance().gossipPublishExecutor().scheduleAtFixedRate(new GossipSendTask(), 5, 5, TimeUnit.SECONDS);
         }
 
-        Runtime.getRuntime().addShutdownHook(hook);
+//        Runtime.getRuntime().addShutdownHook(hook);
     }
 
     /**

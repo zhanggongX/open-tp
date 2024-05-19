@@ -20,6 +20,8 @@ public class ClientInfo implements Serializable {
     private String appSecret;
     private String host;
     private String instance;
+    // 该客户端连接的服务端信息, 不参与 hash 等
+    private ServerInfo serverInfo;
 
     public ClientInfo() {
         InetAddress localHost = null;
@@ -74,6 +76,14 @@ public class ClientInfo implements Serializable {
         this.instance = instance;
     }
 
+    public ServerInfo getServerInfo() {
+        return serverInfo;
+    }
+
+    public void setServerInfo(ServerInfo serverInfo) {
+        this.serverInfo = serverInfo;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -89,10 +99,16 @@ public class ClientInfo implements Serializable {
 
     @Override
     public String toString() {
-        return appKey + "/" + host + "/" + instance;
+        return "ClientInfo{" +
+                "appKey='" + appKey + '\'' +
+                ", appSecret='" + appSecret + '\'' +
+                ", host='" + host + '\'' +
+                ", instance='" + instance + '\'' +
+                ", serverInfo=" + serverInfo +
+                '}';
     }
 
-    public String clientKey() {
-        return appKey + "/" + host + "/" + instance;
+    public String clientInfoKey() {
+        return appKey + ":" + host + ":" + instance;
     }
 }

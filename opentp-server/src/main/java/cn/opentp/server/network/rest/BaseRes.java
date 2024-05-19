@@ -1,5 +1,10 @@
-package cn.opentp.server.rest;
+package cn.opentp.server.network.rest;
 
+/**
+ * 统一返回结果
+ *
+ * @param <T>
+ */
 public class BaseRes<T> {
 
     private int code;

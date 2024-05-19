@@ -1,16 +1,9 @@
 package cn.opentp.server;
 
-import cn.opentp.core.auth.ClientInfo;
 import cn.opentp.core.auth.ServerInfo;
-import cn.opentp.core.thread.pool.ThreadPoolState;
-import cn.opentp.server.rest.EndpointMapping;
-import io.netty.channel.Channel;
+import cn.opentp.server.network.report.ThreadPoolReportService;
+import cn.opentp.server.network.rest.RestfulService;
 
-import java.net.SocketAddress;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -22,28 +15,16 @@ public class OpentpApp {
     private final OpentpProperties properties = new OpentpProperties();
     // app 类加载器
     private final ClassLoader appClassLoader = OpentpApp.class.getClassLoader();
-    // rest endpoint 映射
-    private final EndpointMapping endpointMapping = new EndpointMapping();
-    // key = appId, value = 所有连接上来的客户端
-    private final Map<String, List<ClientInfo>> appKeyClientCache = new ConcurrentHashMap<>();
-    // key = 客户端, value = channel
-    private final Map<ClientInfo, Channel> clientChannelCache = new ConcurrentHashMap<>();
-    private final Map<String, Channel> clientKeyChannelCache = new ConcurrentHashMap<>();
-    // key = 客户端, value = <key = threadKey, value = threadPoolSate>
-    private final Map<ClientInfo, Map<String, ThreadPoolState>> clientThreadPoolStatesCache = new ConcurrentHashMap<>();
-    private final Map<String, Map<String, ThreadPoolState>> clientKeyThreadPoolStatesCache = new ConcurrentHashMap<>();
-    // key = licenseKey value = ClientInfo
-    private final Map<String, ClientInfo> licenseKeyClientCache = new ConcurrentHashMap<>();
-    // 集群 key = 线程客户端信息， value = 所在的服务端信息
-    private final Map<ClientInfo, ServerInfo> clusterClientInfoCache = new ConcurrentHashMap<>();
+    // 本机信息
+    private final ServerInfo serverInfo = new ServerInfo();
 
-    private final Map<ServerInfo, List<ClientInfo>> clusterServerInfoCache = new ConcurrentHashMap<>();
+    // 线程信息上报监听服务
+    private final ThreadPoolReportService reportService = new ThreadPoolReportService();
+    // restful 接口服务
+    private final RestfulService restfulService = new RestfulService();
 
-    private final ScheduledExecutorService gossipSendExecutor = Executors.newSingleThreadScheduledExecutor();
-
-
-    private final Map<SocketAddress, Channel> clusterConnected = new ConcurrentHashMap<>();
-    private final List<SocketAddress> clusterFailConnects = new CopyOnWriteArrayList<>();
+    // 流言发布定时任务
+    private final ScheduledExecutorService gossipPublishExecutor = Executors.newSingleThreadScheduledExecutor();
 
     private OpentpApp() {
     }
@@ -60,51 +41,19 @@ public class OpentpApp {
         return appClassLoader;
     }
 
-    public EndpointMapping endpointMapping() {
-        return endpointMapping;
+    public ServerInfo selfInfo() {
+        return serverInfo;
     }
 
-    public Map<String, List<ClientInfo>> appKeyClientCache() {
-        return appKeyClientCache;
+    public ThreadPoolReportService reportService() {
+        return reportService;
     }
 
-    public Map<ClientInfo, Channel> clientChannelCache() {
-        return clientChannelCache;
+    public RestfulService restfulService() {
+        return restfulService;
     }
 
-    public Map<ClientInfo, Map<String, ThreadPoolState>> clientThreadPoolStatesCache() {
-        return clientThreadPoolStatesCache;
-    }
-
-    public Map<String, ClientInfo> licenseKeyClientCache() {
-        return licenseKeyClientCache;
-    }
-
-    public Map<String, Map<String, ThreadPoolState>> clientKeyThreadPoolStatesCache() {
-        return clientKeyThreadPoolStatesCache;
-    }
-
-    public ScheduledExecutorService gossipSendExecutor() {
-        return gossipSendExecutor;
-    }
-
-    public Map<String, Channel> clientKeyChannelCache() {
-        return clientKeyChannelCache;
-    }
-
-    public Map<ClientInfo, ServerInfo> clusterClientInfoCache() {
-        return clusterClientInfoCache;
-    }
-
-    public Map<ServerInfo, List<ClientInfo>> clusterServerInfoCache() {
-        return clusterServerInfoCache;
-    }
-
-    public List<SocketAddress> clusterFailConnects() {
-        return clusterFailConnects;
-    }
-
-    public Map<SocketAddress, Channel> clusterConnected() {
-        return clusterConnected;
+    public ScheduledExecutorService gossipPublishExecutor() {
+        return gossipPublishExecutor;
     }
 }

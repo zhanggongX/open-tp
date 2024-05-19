@@ -1,4 +1,4 @@
-package cn.opentp.server.rest.annotation;
+package cn.opentp.server.network.rest.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

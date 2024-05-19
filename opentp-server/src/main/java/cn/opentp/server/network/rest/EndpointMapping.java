@@ -1,7 +1,7 @@
-package cn.opentp.server.rest;
+package cn.opentp.server.network.rest;
 
 import cn.opentp.server.exception.EndpointUnSupportException;
-import cn.opentp.server.rest.endpoint.*;
+import cn.opentp.server.network.rest.endpoint.*;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,12 +17,14 @@ public class EndpointMapping {
      * todo 增加扫描的方式添加
      */
     public EndpointMapping() {
-        // 添加 handler
+        // 默认处理
         endPoints.put("", new DefaultEndpoint());
+        // favicon
         endPoints.put("favicon.ico", new FaviconEndpoint());
 
+        // 自定义端点处理
         endPoints.put("appKeys", new AppKeysEndpoint());
-        endPoints.put("tpInfos", new TpInfosEndpoint());
+        endPoints.put("tpInfo", new TpInfoEndpoint());
     }
 
 

@@ -1,8 +1,5 @@
 package cn.opentp.server.constant;
 
-import cn.opentp.core.net.OpentpMessage;
-import cn.opentp.core.net.OpentpMessageConstant;
-
 public class OpentpServerConstant {
 
     // todo 后续迭代认证服务
@@ -21,4 +18,6 @@ public class OpentpServerConstant {
     public static final int DEFAULT_TRANSPORT_SERVER_PORT = 9528;
     // 默认 REST API 服务端口
     public static final int DEFAULT_REST_SERVER_PORT = 8001;
+
+    public static final String URI_SPLIT = "/";
 }

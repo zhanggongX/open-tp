@@ -12,7 +12,7 @@ import java.net.UnknownHostException;
 public class ServerInfo {
 
     private String host;
-    private String instance;
+    private final String instance;
 
     public ServerInfo() {
         try {
