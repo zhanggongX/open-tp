@@ -1,6 +1,6 @@
 package cn.opentp.gossip.util;
 
-import cn.opentp.gossip.GossipApp;
+import cn.opentp.gossip.GossipEnvironment;
 import cn.opentp.gossip.GossipSettings;
 
 public class GossipUtil {
@@ -10,7 +10,7 @@ public class GossipUtil {
      */
     public static long convictedTime() {
         long executeGossipTime = 500;
-        GossipSettings setting = GossipApp.instance().setting();
+        GossipSettings setting = GossipEnvironment.instance().setting();
         return ((fanOut() * (setting.getNetworkDelay() * 3L + executeGossipTime)) << 1) + setting.getGossipInterval();
     }
 
@@ -20,7 +20,7 @@ public class GossipUtil {
      * 扇出是指由一个服务或消息路由器向多个用户分发消息，通常是同时分发。
      */
     public static int fanOut() {
-        int size = GossipApp.instance().gossipNodeContext().clusterNodes().size();
+        int size = GossipEnvironment.instance().gossipNodeContext().clusterNodes().size();
         return (int) Math.floor(Math.log10(size) + Math.log(size) + 1);
     }
 }

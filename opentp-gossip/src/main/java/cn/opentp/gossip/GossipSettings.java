@@ -55,8 +55,8 @@ public class GossipSettings {
         DiscoverNode selfDiscoverNode = new DiscoverNode(properties.getCluster(), properties.getNodeId(), properties.getHost(), properties.getPort());
 
         // 解析 clusterNodes
-        GossipApp gossipApp = GossipApp.instance();
-        GossipSettings gossipSettings = gossipApp.setting();
+        GossipEnvironment environment = GossipEnvironment.instance();
+        GossipSettings gossipSettings = environment.setting();
         String clusterNodes = properties.getClusterNodes();
         String[] hosts = clusterNodes.split(",", -1);
 
@@ -95,7 +95,7 @@ public class GossipSettings {
         gossipNode.setState(GossipStateEnum.JOIN);
         gossipSettings.setLocalNode(gossipNode);
 
-        gossipApp.gossipNodeContext().clusterNodes().put(gossipNode, new HeartbeatState());
+        environment.gossipNodeContext().clusterNodes().put(gossipNode, new HeartbeatState());
     }
 
     public GossipNode getLocalNode() {

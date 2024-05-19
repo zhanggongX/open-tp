@@ -1,6 +1,6 @@
 package cn.opentp.gossip.node;
 
-import cn.opentp.gossip.GossipApp;
+import cn.opentp.gossip.GossipEnvironment;
 import cn.opentp.gossip.enums.GossipStateEnum;
 import cn.opentp.gossip.message.codec.GossipMessageCodec;
 import cn.opentp.gossip.util.GossipUtil;
@@ -53,7 +53,7 @@ public class GossipNodeContext {
      * @param node 上线节点
      */
     public void up(GossipNode node) {
-        ReentrantReadWriteLock.WriteLock writeLock = GossipApp.instance().lock().writeLock();
+        ReentrantReadWriteLock.WriteLock writeLock = GossipEnvironment.instance().lock().writeLock();
         try {
             writeLock.lock();
             node.setState(GossipStateEnum.UP);
@@ -66,9 +66,9 @@ public class GossipNodeContext {
             // 终止节点移除
             downedNodes().remove(node);
 
-            if (!node.equals(GossipApp.instance().selfNode())) {
+            if (!node.equals(GossipEnvironment.instance().selfNode())) {
                 // 触发上线事件
-                GossipApp.instance().gossipListenerContext().fireGossipEvent(node, GossipStateEnum.UP);
+                GossipEnvironment.instance().gossipListenerContext().fireGossipEvent(node, GossipStateEnum.UP);
             }
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -103,7 +103,7 @@ public class GossipNodeContext {
      * @param node 下线节点
      */
     public void down(GossipNode node) {
-        ReentrantReadWriteLock.WriteLock writeLock = GossipApp.instance().lock().writeLock();
+        ReentrantReadWriteLock.WriteLock writeLock = GossipEnvironment.instance().lock().writeLock();
         try {
             writeLock.lock();
             node.setState(GossipStateEnum.DOWN);
@@ -115,7 +115,7 @@ public class GossipNodeContext {
                 downedNodes().add(node);
             }
             // 触发下线事件
-            GossipApp.instance().gossipListenerContext().fireGossipEvent(node, GossipStateEnum.DOWN);
+            GossipEnvironment.instance().gossipListenerContext().fireGossipEvent(node, GossipStateEnum.DOWN);
         } catch (Exception e) {
             log.error(e.getMessage());
         } finally {
@@ -127,13 +127,13 @@ public class GossipNodeContext {
      * 本节点下线，发送下线信息
      */
     public void selfNodeShutdown() {
-        GossipApp gossipApp = GossipApp.instance();
-        GossipNode selfNode = gossipApp.selfNode();
+        GossipEnvironment environment = GossipEnvironment.instance();
+        GossipNode selfNode = environment.selfNode();
         ByteBuf byteBuf = GossipMessageCodec.codec().encodeShutdownMessage(selfNode);
         for (GossipNode node : liveNodes()) {
             try {
                 if (!node.equals(selfNode)) {
-                    gossipApp.networkService().send(node.getHost(), node.getPort(), byteBuf);
+                    environment.networkService().send(node.getHost(), node.getPort(), byteBuf);
                 }
             } catch (Exception e) {
                 log.error(e.getMessage());
@@ -171,7 +171,7 @@ public class GossipNodeContext {
      */
     public void checkStatus() {
         try {
-            GossipNode localNode = GossipApp.instance().selfNode();
+            GossipNode localNode = GossipEnvironment.instance().selfNode();
             Map<GossipNode, HeartbeatState> clusteredNodes = clusterNodes();
 
             for (Map.Entry<GossipNode, HeartbeatState> nodeEntry : clusteredNodes.entrySet()) {
@@ -186,11 +186,11 @@ public class GossipNodeContext {
                 long duration = now - heartbeatState.getHeartbeatTime();
                 long convictedTime = GossipUtil.convictedTime();
                 log.debug("check: {}, state: {}, duration: {}, convictedTime: {}", node, heartbeatState, duration, convictedTime);
-                if (duration > convictedTime && (isAlive(node) || GossipApp.instance().gossipNodeContext().liveNodes().contains(node))) {
+                if (duration > convictedTime && (isAlive(node) || GossipEnvironment.instance().gossipNodeContext().liveNodes().contains(node))) {
                     // 长时间没有心跳，准备下线
                     downing(node, heartbeatState);
                 }
-                if (duration <= convictedTime && (discoverable(node) || GossipApp.instance().gossipNodeContext().downedNodes().contains(node))) {
+                if (duration <= convictedTime && (discoverable(node) || GossipEnvironment.instance().gossipNodeContext().downedNodes().contains(node))) {
                     // 重新上线
                     up(node);
                 }
@@ -209,8 +209,8 @@ public class GossipNodeContext {
      */
     public void updateLocalClusterNodes(Map<GossipNode, HeartbeatState> remoteClusterNodes) {
 
-        GossipNode selfNode = GossipApp.instance().selfNode();
-        Map<GossipNode, HeartbeatState> clusterNodes = GossipApp.instance().gossipNodeContext().clusterNodes();
+        GossipNode selfNode = GossipEnvironment.instance().selfNode();
+        Map<GossipNode, HeartbeatState> clusterNodes = GossipEnvironment.instance().gossipNodeContext().clusterNodes();
 
         for (Map.Entry<GossipNode, HeartbeatState> nodeEntry : remoteClusterNodes.entrySet()) {
             GossipNode remoteNode = nodeEntry.getKey();
@@ -244,7 +244,7 @@ public class GossipNodeContext {
      * @param remoteState 远程节点状态
      */
     private void updateClusterNodes(GossipNode remoteNode, HeartbeatState remoteState) {
-        GossipNodeContext nodeContext = GossipApp.instance().gossipNodeContext();
+        GossipNodeContext nodeContext = GossipEnvironment.instance().gossipNodeContext();
         if (remoteNode.getState() == GossipStateEnum.UP) {
             nodeContext.up(remoteNode);
         }

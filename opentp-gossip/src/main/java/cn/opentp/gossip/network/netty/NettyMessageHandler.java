@@ -1,6 +1,6 @@
 package cn.opentp.gossip.network.netty;
 
-import cn.opentp.gossip.GossipApp;
+import cn.opentp.gossip.GossipEnvironment;
 import cn.opentp.gossip.message.MessagePayload;
 import cn.opentp.gossip.message.codec.GossipMessageCodec;
 import cn.opentp.gossip.network.NetworkService;
@@ -16,8 +16,8 @@ public class NettyMessageHandler extends SimpleChannelInboundHandler<DatagramPac
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, DatagramPacket packet) {
-        GossipApp gossipApp = GossipApp.instance();
-        NetworkService networkService = gossipApp.networkService();
+        GossipEnvironment environment = GossipEnvironment.instance();
+        NetworkService networkService = environment.networkService();
         if (packet.content() == null) return;
         MessagePayload messagePayload = GossipMessageCodec.codec().decodeMessage(packet.content());
         networkService.handle(messagePayload);

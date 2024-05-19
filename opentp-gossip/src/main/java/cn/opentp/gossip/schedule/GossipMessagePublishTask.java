@@ -1,6 +1,6 @@
 package cn.opentp.gossip.schedule;
 
-import cn.opentp.gossip.GossipApp;
+import cn.opentp.gossip.GossipEnvironment;
 import cn.opentp.gossip.message.GossipMessage;
 import cn.opentp.gossip.message.codec.GossipMessageCodec;
 import cn.opentp.gossip.message.holder.GossipMessageHolder;
@@ -11,14 +11,14 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
-public class GossipMessageTask extends AbstractGossipTask implements Runnable {
+public class GossipMessagePublishTask extends AbstractGossipTask implements Runnable {
 
-    private static final Logger log = LoggerFactory.getLogger(GossipMessageTask.class);
+    private static final Logger log = LoggerFactory.getLogger(GossipMessagePublishTask.class);
 
     @Override
     public void run() {
-        GossipApp gossipApp = GossipApp.instance();
-        GossipMessageHolder messageHolder = gossipApp.gossipMessageHolder();
+        GossipEnvironment environment = GossipEnvironment.instance();
+        GossipMessageHolder messageHolder = environment.gossipMessageHolder();
         if (messageHolder.isEmpty()) {
             return;
         }

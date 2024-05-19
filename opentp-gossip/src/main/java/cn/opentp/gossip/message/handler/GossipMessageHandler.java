@@ -1,7 +1,7 @@
 package cn.opentp.gossip.message.handler;
 
 import cn.opentp.core.util.JacksonUtil;
-import cn.opentp.gossip.GossipApp;
+import cn.opentp.gossip.GossipEnvironment;
 import cn.opentp.gossip.enums.GossipStateEnum;
 import cn.opentp.gossip.message.GossipMessage;
 import cn.opentp.gossip.message.codec.GossipMessageCodec;
@@ -22,7 +22,7 @@ public class GossipMessageHandler implements MessageHandler {
 
     @Override
     public void handle(String cluster, byte[] data, String from) {
-        GossipMessageHolder messageHolder = GossipApp.instance().gossipMessageHolder();
+        GossipMessageHolder messageHolder = GossipEnvironment.instance().gossipMessageHolder();
 
         GossipMessage gossipMessage = GossipMessageCodec.codec().decodeMessage(data, GossipMessage.class);
         log.trace("gossip message: {}", JacksonUtil.toJSONString(gossipMessage));
@@ -53,7 +53,7 @@ public class GossipMessageHandler implements MessageHandler {
             gossipMessage.setForwardCount(0);
             messageHolder.add(gossipMessage);
             // 触发事件，用户自定义处理该事件。
-            GossipApp.instance().gossipListenerContext().fireGossipEvent(gossipMessage.getPublishNode(), GossipStateEnum.RECEIVE, gossipMessage.getPayload());
+            GossipEnvironment.instance().gossipListenerContext().fireGossipEvent(gossipMessage.getPublishNode(), GossipStateEnum.RECEIVE, gossipMessage.getPayload());
         }
     }
 }

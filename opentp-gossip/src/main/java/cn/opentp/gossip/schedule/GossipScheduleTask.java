@@ -1,6 +1,6 @@
 package cn.opentp.gossip.schedule;
 
-import cn.opentp.gossip.GossipApp;
+import cn.opentp.gossip.GossipEnvironment;
 import cn.opentp.gossip.message.SyncMessage;
 import cn.opentp.gossip.message.codec.GossipMessageCodec;
 import cn.opentp.gossip.node.GossipNode;
@@ -26,17 +26,17 @@ public class GossipScheduleTask extends AbstractGossipTask implements Runnable {
 
     @Override
     public void run() {
-        GossipApp gossipApp = GossipApp.instance();
-        GossipNodeContext nodeContext = gossipApp.gossipNodeContext();
+        GossipEnvironment environment = GossipEnvironment.instance();
+        GossipNodeContext nodeContext = environment.gossipNodeContext();
 
         //Update local member version
         Map<GossipNode, HeartbeatState> endpointMembers = nodeContext.clusterNodes();
-        HeartbeatState heartbeatState = endpointMembers.get(gossipApp.selfNode());
+        HeartbeatState heartbeatState = endpointMembers.get(environment.selfNode());
         long version = heartbeatState.updateVersion();
         log.trace("heartbeat version is {}", version);
 
         // 如果当前节点处于待加入集群状态，执行上线
-        GossipNode selfNode = gossipApp.selfNode();
+        GossipNode selfNode = environment.selfNode();
         if (nodeContext.discoverable(selfNode)) {
             nodeContext.up(selfNode);
         }
@@ -45,7 +45,7 @@ public class GossipScheduleTask extends AbstractGossipTask implements Runnable {
             // 获取当前所有节点的摘要信息，并同步出去
             List<GossipNodeDigest> nodeDigests = nodeContext.randomGossipNodeDigest();
             if (!nodeDigests.isEmpty()) {
-                ByteBuf byteBuf = GossipMessageCodec.codec().encodeSyncMessage(new SyncMessage(gossipApp.setting().getCluster(), nodeDigests));
+                ByteBuf byteBuf = GossipMessageCodec.codec().encodeSyncMessage(new SyncMessage(environment.setting().getCluster(), nodeDigests));
                 sendBuf(byteBuf);
             }
         } catch (UnknownHostException e) {
@@ -58,7 +58,7 @@ public class GossipScheduleTask extends AbstractGossipTask implements Runnable {
         log.trace("downed nodes : {}", nodeContext.downedNodes());
         log.trace("cluster nodes : {}", nodeContext.clusterNodes());
 
-        // 处理流言信息
-        GossipApp.instance().gossipExecutorService().submit(new GossipMessageTask());
+        // 发布流言消息
+        GossipEnvironment.instance().gossipExecutorService().submit(new GossipMessagePublishTask());
     }
 }

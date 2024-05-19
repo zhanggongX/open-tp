@@ -1,7 +1,6 @@
 package cn.opentp.server;
 
-import cn.opentp.gossip.Gossip;
-import cn.opentp.gossip.GossipApp;
+import cn.opentp.gossip.GossipBootstrap;
 import cn.opentp.gossip.GossipProperties;
 import cn.opentp.server.constant.OpentpServerConstant;
 import cn.opentp.server.enums.DeployEnum;
@@ -59,9 +58,9 @@ public class Opentp {
         if (deploy == DeployEnum.cluster) {
             GossipProperties properties = getGossipProperties(config);
             // 初始化
-            Gossip.init(properties);
+            GossipBootstrap.init(properties);
             // 开启服务
-            Gossip.start();
+            GossipBootstrap.start();
             OpentpApp.instance().gossipSendExecutor().scheduleAtFixedRate(new GossipSendTask(), 5, 5, TimeUnit.SECONDS);
         }
 

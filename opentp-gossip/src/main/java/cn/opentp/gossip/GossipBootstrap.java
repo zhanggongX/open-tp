@@ -9,11 +9,11 @@ import org.slf4j.LoggerFactory;
 /**
  * Gossip 服务入口
  */
-public class Gossip {
+public class GossipBootstrap {
 
-    private static final Logger log = LoggerFactory.getLogger(Gossip.class);
+    private static final Logger log = LoggerFactory.getLogger(GossipBootstrap.class);
 
-    private static final GossipApp gossipApp = GossipApp.instance();
+    private static final GossipEnvironment environment = GossipEnvironment.instance();
 
     /**
      * 系统初始化
@@ -32,9 +32,9 @@ public class Gossip {
      */
     public static void init(GossipProperties properties, GossipListener gossipListener) {
         GossipSettings.parseConfig(properties);
-        gossipApp.gossipListenerContext().setGossipListener(gossipListener);
+        environment.gossipListenerContext().setGossipListener(gossipListener);
         // 标记配置完成
-        gossipApp.initMark();
+        environment.initMark();
     }
 
     /**
@@ -42,12 +42,12 @@ public class Gossip {
      */
     public synchronized static void start() {
 
-        if (gossipApp.working()) {
+        if (environment.working()) {
             log.error("Gossip 请勿重复启动");
             System.exit(-1);
         }
 
-        GossipNode localNode = gossipApp.selfNode();
+        GossipNode localNode = environment.selfNode();
         log.info("Starting {} gossip, host:{}, port:{}, nodeId:{}",
                 localNode.getCluster(),
                 localNode.getHost(),
@@ -55,14 +55,14 @@ public class Gossip {
                 localNode.getNodeId());
 
         // 服务器启动
-        gossipApp.startup();
-        gossipApp.workingMark();
+        environment.startup();
+        environment.workingMark();
     }
 
     /**
      * 服务关闭
      */
     public void shutdown() {
-        gossipApp.shutdown();
+        environment.shutdown();
     }
 }

@@ -2,13 +2,8 @@ package cn.opentp.server;
 
 import cn.opentp.core.auth.ClientInfo;
 import cn.opentp.core.auth.ServerInfo;
-import cn.opentp.core.jackson.ServerInfoKeyDeserializer;
-import cn.opentp.core.jackson.ServerInfoKeySerializer;
 import cn.opentp.core.thread.pool.ThreadPoolState;
 import cn.opentp.server.rest.EndpointMapping;
-import com.fasterxml.jackson.annotation.JsonKey;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.netty.channel.Channel;
 
 import java.net.SocketAddress;
@@ -42,8 +37,6 @@ public class OpentpApp {
     // 集群 key = 线程客户端信息， value = 所在的服务端信息
     private final Map<ClientInfo, ServerInfo> clusterClientInfoCache = new ConcurrentHashMap<>();
 
-    //@JsonSerialize(using = ServerInfoKeySerializer.class)
-//@JsonDeserialize(using = ServerInfoKeyDeserializer.class)
     private final Map<ServerInfo, List<ClientInfo>> clusterServerInfoCache = new ConcurrentHashMap<>();
 
     private final ScheduledExecutorService gossipSendExecutor = Executors.newSingleThreadScheduledExecutor();

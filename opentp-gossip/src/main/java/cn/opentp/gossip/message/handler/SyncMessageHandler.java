@@ -1,7 +1,7 @@
 package cn.opentp.gossip.message.handler;
 
 import cn.opentp.core.util.JacksonUtil;
-import cn.opentp.gossip.GossipApp;
+import cn.opentp.gossip.GossipEnvironment;
 import cn.opentp.gossip.message.AckMessage;
 import cn.opentp.gossip.message.SyncMessage;
 import cn.opentp.gossip.message.codec.GossipMessageCodec;
@@ -42,8 +42,8 @@ public class SyncMessageHandler implements MessageHandler {
             compareDigest(gossipNodeDigest, node, needUpdateNodes, newestNodes);
         }
 
-        GossipApp gossipApp = GossipApp.instance();
-        GossipNodeContext nodeContext = gossipApp.gossipNodeContext();
+        GossipEnvironment environment = GossipEnvironment.instance();
+        GossipNodeContext nodeContext = environment.gossipNodeContext();
         // 本节点记录的集群节点信息
         Map<GossipNode, HeartbeatState> clusterNodes = nodeContext.clusterNodes();
         Set<GossipNode> clusterNodeKeys = clusterNodes.keySet();
@@ -53,7 +53,7 @@ public class SyncMessageHandler implements MessageHandler {
                 newestNodes.put(node, clusterNodes.get(node));
             }
             // 如果是本节点，不管对方有没有，都返回。
-            if (node.equals(gossipApp.selfNode())) {
+            if (node.equals(environment.selfNode())) {
                 newestNodes.put(node, clusterNodes.get(node));
             }
         }
@@ -64,7 +64,7 @@ public class SyncMessageHandler implements MessageHandler {
         ByteBuf ackByteBuf = GossipMessageCodec.codec().encodeAckMessage(ackMessage);
         if (from != null) {
             String[] host = from.split(":");
-            gossipApp.networkService().send(host[0], Integer.parseInt(host[1]), ackByteBuf);
+            environment.networkService().send(host[0], Integer.parseInt(host[1]), ackByteBuf);
         }
     }
 
@@ -81,7 +81,7 @@ public class SyncMessageHandler implements MessageHandler {
             long remoteHeartbeatTime = gossipNodeDigest.getHeartbeatTime();
             long remoteVersion = gossipNodeDigest.getVersion();
 
-            GossipNodeContext nodeContext = GossipApp.instance().gossipNodeContext();
+            GossipNodeContext nodeContext = GossipEnvironment.instance().gossipNodeContext();
             HeartbeatState heartbeatState = nodeContext.clusterNodes().get(syncedNode);
             if (heartbeatState != null) {
                 long localHeartbeatTime = heartbeatState.getHeartbeatTime();

@@ -1,7 +1,7 @@
 package cn.opentp.gossip.message.handler;
 
 import cn.opentp.core.util.JacksonUtil;
-import cn.opentp.gossip.GossipApp;
+import cn.opentp.gossip.GossipEnvironment;
 import cn.opentp.gossip.message.Ack2Message;
 import cn.opentp.gossip.message.codec.GossipMessageCodec;
 import cn.opentp.gossip.node.GossipNode;
@@ -22,6 +22,6 @@ public class Ack2MessageHandler implements MessageHandler {
         log.trace("ack2 message: {}", JacksonUtil.toJSONString(ack2Message));
         
         Map<GossipNode, HeartbeatState> deltaGossipNodes = ack2Message.getClusterNodes();
-        GossipApp.instance().gossipNodeContext().updateLocalClusterNodes(deltaGossipNodes);
+        GossipEnvironment.instance().gossipNodeContext().updateLocalClusterNodes(deltaGossipNodes);
     }
 }

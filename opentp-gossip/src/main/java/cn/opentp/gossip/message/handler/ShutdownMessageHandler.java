@@ -1,7 +1,7 @@
 package cn.opentp.gossip.message.handler;
 
 import cn.opentp.core.util.JacksonUtil;
-import cn.opentp.gossip.GossipApp;
+import cn.opentp.gossip.GossipEnvironment;
 import cn.opentp.gossip.message.codec.GossipMessageCodec;
 import cn.opentp.gossip.node.GossipNode;
 import org.slf4j.Logger;
@@ -21,7 +21,7 @@ public class ShutdownMessageHandler implements MessageHandler {
         log.trace("shutdown message: {}", JacksonUtil.toJSONString(remoteNode));
 
         if (remoteNode != null) {
-            GossipApp.instance().gossipNodeContext().down(remoteNode);
+            GossipEnvironment.instance().gossipNodeContext().down(remoteNode);
         }
     }
 }

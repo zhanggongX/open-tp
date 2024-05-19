@@ -3,7 +3,8 @@ package cn.opentp.gossip.message.codec;
 import cn.opentp.core.net.serializer.Serializer;
 import cn.opentp.core.net.serializer.SerializerFactory;
 import cn.opentp.core.net.serializer.SerializerTypeEnum;
-import cn.opentp.gossip.GossipApp;
+import cn.opentp.gossip.GossipEnvironment;
+import cn.opentp.gossip.GossipSettings;
 import cn.opentp.gossip.enums.MessageTypeEnum;
 import cn.opentp.gossip.message.*;
 import cn.opentp.gossip.node.GossipNode;
@@ -21,7 +22,8 @@ public class GossipMessageCodec {
         return codec;
     }
 
-    private final GossipApp gossipApp = GossipApp.instance();
+    private final GossipEnvironment environment = GossipEnvironment.instance();
+    private final GossipSettings settings = environment.setting();
 
     private GossipMessageCodec() {
     }
@@ -29,35 +31,35 @@ public class GossipMessageCodec {
     public ByteBuf encodeGossipMessage(GossipMessage gossipMessage) {
         Serializer serializer = SerializerFactory.serializer(SerializerTypeEnum.Kryo.getType());
         byte[] gossipMessageByte = serializer.serialize(gossipMessage);
-        MessagePayload messagePayload = MessagePayload.builder().type(MessageTypeEnum.GOSSIP).data(gossipMessageByte).cluster(gossipApp.setting().getCluster()).from(gossipApp.selfNode().socketAddress()).build();
+        MessagePayload messagePayload = MessagePayload.builder().type(MessageTypeEnum.GOSSIP).data(gossipMessageByte).cluster(settings.getCluster()).from(environment.selfNode().socketAddress()).build();
         return buildByteBuf(serializer, messagePayload);
     }
 
     public ByteBuf encodeSyncMessage(SyncMessage syncMessage) {
         Serializer serializer = SerializerFactory.serializer(SerializerTypeEnum.Kryo.getType());
         byte[] syncMessageByte = serializer.serialize(syncMessage);
-        MessagePayload messagePayload = MessagePayload.builder().type(MessageTypeEnum.SYNC).data(syncMessageByte).cluster(gossipApp.setting().getCluster()).from(gossipApp.selfNode().socketAddress()).build();
+        MessagePayload messagePayload = MessagePayload.builder().type(MessageTypeEnum.SYNC).data(syncMessageByte).cluster(settings.getCluster()).from(environment.selfNode().socketAddress()).build();
         return buildByteBuf(serializer, messagePayload);
     }
 
     public ByteBuf encodeAckMessage(AckMessage ackMessage) {
         Serializer serializer = SerializerFactory.serializer(SerializerTypeEnum.Kryo.getType());
         byte[] ackMessageByte = serializer.serialize(ackMessage);
-        MessagePayload messagePayload = MessagePayload.builder().type(MessageTypeEnum.ACK).data(ackMessageByte).cluster(gossipApp.setting().getCluster()).from(gossipApp.selfNode().socketAddress()).build();
+        MessagePayload messagePayload = MessagePayload.builder().type(MessageTypeEnum.ACK).data(ackMessageByte).cluster(settings.getCluster()).from(environment.selfNode().socketAddress()).build();
         return buildByteBuf(serializer, messagePayload);
     }
 
     public ByteBuf encodeAck2Message(Ack2Message ack2Message) {
         Serializer serializer = SerializerFactory.serializer(SerializerTypeEnum.Kryo.getType());
         byte[] ack2MessageByte = serializer.serialize(ack2Message);
-        MessagePayload messagePayload = MessagePayload.builder().type(MessageTypeEnum.ACK2).data(ack2MessageByte).cluster(gossipApp.setting().getCluster()).from(gossipApp.selfNode().socketAddress()).build();
+        MessagePayload messagePayload = MessagePayload.builder().type(MessageTypeEnum.ACK2).data(ack2MessageByte).cluster(settings.getCluster()).from(environment.selfNode().socketAddress()).build();
         return buildByteBuf(serializer, messagePayload);
     }
 
     public ByteBuf encodeShutdownMessage(GossipNode node) {
         Serializer serializer = SerializerFactory.serializer(SerializerTypeEnum.Kryo.getType());
         byte[] nodeByte = serializer.serialize(node);
-        MessagePayload messagePayload = MessagePayload.builder().type(MessageTypeEnum.SHUTDOWN).data(nodeByte).cluster(gossipApp.setting().getCluster()).from(gossipApp.selfNode().socketAddress()).build();
+        MessagePayload messagePayload = MessagePayload.builder().type(MessageTypeEnum.SHUTDOWN).data(nodeByte).cluster(settings.getCluster()).from(environment.selfNode().socketAddress()).build();
         return buildByteBuf(serializer, messagePayload);
     }
 

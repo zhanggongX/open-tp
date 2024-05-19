@@ -1,6 +1,6 @@
 package cn.opentp.gossip.schedule;
 
-import cn.opentp.gossip.GossipApp;
+import cn.opentp.gossip.GossipEnvironment;
 import cn.opentp.gossip.GossipSettings;
 import cn.opentp.gossip.network.NetworkService;
 import cn.opentp.gossip.node.DiscoverNode;
@@ -23,8 +23,8 @@ public abstract class AbstractGossipTask implements Runnable {
         // 向终止节点发布流言
         sendToDownedNodes(byteBuf);
 
-        List<GossipNode> liveNodes = GossipApp.instance().gossipNodeContext().liveNodes();
-        List<DiscoverNode> discoverNodes = GossipApp.instance().setting().discoverNodes();
+        List<GossipNode> liveNodes = GossipEnvironment.instance().gossipNodeContext().liveNodes();
+        List<DiscoverNode> discoverNodes = GossipEnvironment.instance().setting().discoverNodes();
         if (!success || liveNodes.size() <= discoverNodes.size()) {
             // 向配置的 discovery 节点发送流言信息
             sendToDiscoveryNode(byteBuf);
@@ -38,7 +38,7 @@ public abstract class AbstractGossipTask implements Runnable {
      * @return 发送成功
      */
     private boolean sendToLiveNodes(ByteBuf byteBuf) {
-        int liveSize = GossipApp.instance().gossipNodeContext().liveNodes().size();
+        int liveSize = GossipEnvironment.instance().gossipNodeContext().liveNodes().size();
         if (liveSize == 0) {
             return false;
         }
@@ -47,7 +47,7 @@ public abstract class AbstractGossipTask implements Runnable {
         int fanOut = Math.min(liveSize, GossipUtil.fanOut());
         for (int i = 0; i < fanOut; i++) {
             int index = ThreadLocalRandom.current().nextInt(liveSize);
-            success = success || sendToNode(byteBuf, GossipApp.instance().gossipNodeContext().liveNodes(), index);
+            success = success || sendToNode(byteBuf, GossipEnvironment.instance().gossipNodeContext().liveNodes(), index);
         }
         return success;
     }
@@ -58,7 +58,7 @@ public abstract class AbstractGossipTask implements Runnable {
      * @param byteBuf 流言信息
      */
     private void sendToDownedNodes(ByteBuf byteBuf) {
-        List<GossipNode> deadNodes = GossipApp.instance().gossipNodeContext().downedNodes();
+        List<GossipNode> deadNodes = GossipEnvironment.instance().gossipNodeContext().downedNodes();
         int deadSize = deadNodes.size();
         if (deadSize == 0) {
             return;
@@ -73,7 +73,7 @@ public abstract class AbstractGossipTask implements Runnable {
      * @param byteBuf 流言信息
      */
     private void sendToDiscoveryNode(ByteBuf byteBuf) {
-        GossipSettings setting = GossipApp.instance().setting();
+        GossipSettings setting = GossipEnvironment.instance().setting();
         List<DiscoverNode> discoverNodes = setting.discoverNodes();
         int size = discoverNodes.size();
         if (size > 0) {
@@ -81,7 +81,7 @@ public abstract class AbstractGossipTask implements Runnable {
                 return;
             }
             int index = (size == 1) ? 0 : ThreadLocalRandom.current().nextInt(size);
-            if (GossipApp.instance().gossipNodeContext().liveNodes().size() == 1) {
+            if (GossipEnvironment.instance().gossipNodeContext().liveNodes().size() == 1) {
                 sendDiscoveryNode(byteBuf, discoverNodes, index);
             } else {
                 double prob = size / (double) discoverNodes.size();
@@ -107,7 +107,7 @@ public abstract class AbstractGossipTask implements Runnable {
 
         try {
             GossipNode target = nodes.get(index);
-            if (target.equals(GossipApp.instance().selfNode())) {
+            if (target.equals(GossipEnvironment.instance().selfNode())) {
                 int m_size = nodes.size();
                 if (m_size == 1) {
                     return false;
@@ -115,8 +115,8 @@ public abstract class AbstractGossipTask implements Runnable {
                     target = nodes.get((index + 1) % m_size);
                 }
             }
-            GossipApp.instance().networkService().send(target.getHost(), target.getPort(), byteBuf);
-            return GossipApp.instance().setting().discoverNodes().contains(buildDiscoverNode(target));
+            GossipEnvironment.instance().networkService().send(target.getHost(), target.getPort(), byteBuf);
+            return GossipEnvironment.instance().setting().discoverNodes().contains(buildDiscoverNode(target));
         } catch (Exception e) {
             log.error(e.getMessage());
             return false;
@@ -138,14 +138,14 @@ public abstract class AbstractGossipTask implements Runnable {
         try {
             DiscoverNode target = discoverNodes.get(index);
             int size = discoverNodes.size();
-            if (target.equals(buildDiscoverNode(GossipApp.instance().selfNode()))) {
+            if (target.equals(buildDiscoverNode(GossipEnvironment.instance().selfNode()))) {
                 if (size == 1) {
                     return;
                 } else {
                     target = discoverNodes.get((index + 1) % size);
                 }
             }
-            NetworkService messageService = GossipApp.instance().networkService();
+            NetworkService messageService = GossipEnvironment.instance().networkService();
             messageService.send(target.getHost(), target.getPort(), byteBuf);
         } catch (Exception e) {
             log.error("", e);

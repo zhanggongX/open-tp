@@ -23,11 +23,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * Gossip 全局唯一实例
  */
-public class GossipApp {
+public class GossipEnvironment {
 
-    private static final Logger log = LoggerFactory.getLogger(GossipApp.class);
+    private static final Logger log = LoggerFactory.getLogger(GossipEnvironment.class);
     // 实例
-    private static final GossipApp INSTANCE = new GossipApp();
+    private static final GossipEnvironment INSTANCE = new GossipEnvironment();
 
     // 初始化标记
     private volatile boolean hadInit = false;
@@ -53,10 +53,10 @@ public class GossipApp {
     // 执行流言线程池
     private final ExecutorService gossipExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-    private GossipApp() {
+    private GossipEnvironment() {
     }
 
-    public static GossipApp instance() {
+    public static GossipEnvironment instance() {
         return INSTANCE;
     }
 

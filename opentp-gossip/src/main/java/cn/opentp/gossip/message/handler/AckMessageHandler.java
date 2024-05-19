@@ -1,7 +1,7 @@
 package cn.opentp.gossip.message.handler;
 
 import cn.opentp.core.util.JacksonUtil;
-import cn.opentp.gossip.GossipApp;
+import cn.opentp.gossip.GossipEnvironment;
 import cn.opentp.gossip.message.Ack2Message;
 import cn.opentp.gossip.message.AckMessage;
 import cn.opentp.gossip.message.codec.GossipMessageCodec;
@@ -24,7 +24,7 @@ public class AckMessageHandler implements MessageHandler {
 
     @Override
     public void handle(String cluster, byte[] data, String from) {
-        GossipNodeContext nodeContext = GossipApp.instance().gossipNodeContext();
+        GossipNodeContext nodeContext = GossipEnvironment.instance().gossipNodeContext();
 
         AckMessage ackMessage = GossipMessageCodec.codec().decodeMessage(data, AckMessage.class);
         log.trace("ack message: {}", JacksonUtil.toJSONString(ackMessage));
@@ -53,7 +53,7 @@ public class AckMessageHandler implements MessageHandler {
             ByteBuf byteBuf = GossipMessageCodec.codec().encodeAck2Message(ack2Message);
             if (from != null) {
                 String[] host = from.split(":");
-                GossipApp.instance().networkService().send(host[0], Integer.valueOf(host[1]), byteBuf);
+                GossipEnvironment.instance().networkService().send(host[0], Integer.valueOf(host[1]), byteBuf);
             }
             byteBuf.release();
         }
@@ -70,9 +70,9 @@ public class AckMessageHandler implements MessageHandler {
         GossipNode node = new GossipNode();
         node.setPort(nodeDigest.getPort());
         node.setHost(nodeDigest.getHost());
-        node.setCluster(GossipApp.instance().setting().getCluster());
+        node.setCluster(GossipEnvironment.instance().setting().getCluster());
 
-        GossipNodeContext gossipNodeContext = GossipApp.instance().gossipNodeContext();
+        GossipNodeContext gossipNodeContext = GossipEnvironment.instance().gossipNodeContext();
         Set<GossipNode> clusterNodeKeys = gossipNodeContext.clusterNodes().keySet();
         for (GossipNode clusterNode : clusterNodeKeys) {
             if (clusterNode.equals(node)) {
