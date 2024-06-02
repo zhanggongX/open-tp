@@ -5,8 +5,8 @@ import cn.opentp.gossip.GossipProperties;
 import cn.opentp.server.constant.OpentpServerConstant;
 import cn.opentp.server.enums.DeployEnum;
 import cn.opentp.server.gossip.GossipSendTask;
-import cn.opentp.server.network.report.ThreadPoolReportService;
-import cn.opentp.server.network.rest.RestfulService;
+import cn.opentp.server.network.receive.ThreadPoolReceiveService;
+import cn.opentp.server.network.restful.RestfulService;
 import cn.opentp.server.util.PropertiesUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,8 +50,8 @@ public class Opentp {
 
 //        ShutdownHook hook = new ShutdownHook();
         // 启动接收上报信息服务
-        ThreadPoolReportService threadPoolReportService = opentpApp.reportService();
-        threadPoolReportService.start(host, config.getReportPort());
+        ThreadPoolReceiveService threadPoolReceiveService = opentpApp.receiveService();
+        threadPoolReceiveService.start(host, config.getReportPort());
 //        hook.add(receiveReportServer);
 
         // 启动 restful 服务信息

@@ -1,8 +1,8 @@
 package cn.opentp.server;
 
 import cn.opentp.core.auth.ServerInfo;
-import cn.opentp.server.network.report.ThreadPoolReportService;
-import cn.opentp.server.network.rest.RestfulService;
+import cn.opentp.server.network.receive.ThreadPoolReceiveService;
+import cn.opentp.server.network.restful.RestfulService;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -19,7 +19,7 @@ public class OpentpApp {
     private final ServerInfo serverInfo = new ServerInfo();
 
     // 线程信息上报监听服务
-    private final ThreadPoolReportService reportService = new ThreadPoolReportService();
+    private final ThreadPoolReceiveService reportService = new ThreadPoolReceiveService();
     // restful 接口服务
     private final RestfulService restfulService = new RestfulService();
 
@@ -45,7 +45,7 @@ public class OpentpApp {
         return serverInfo;
     }
 
-    public ThreadPoolReportService reportService() {
+    public ThreadPoolReceiveService receiveService() {
         return reportService;
     }
 

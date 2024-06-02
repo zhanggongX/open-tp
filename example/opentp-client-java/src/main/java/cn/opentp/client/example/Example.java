@@ -15,28 +15,28 @@ public class Example {
     public static void main(String[] args) {
 
         // 设置服务端地址
-        List<InetSocketAddress> inetSocketAddresses = Configuration.configuration().serverAddresses();
+        List<InetSocketAddress> inetSocketAddresses = Configuration._cfg().serverAddresses();
         inetSocketAddresses.add(new InetSocketAddress("192.168.31.181", 9527));
 
         // 设置断网重连重试周期，非必填
-        Configuration.configuration().nettyReconnectProperties().setInitialDelay(5);
-        Configuration.configuration().nettyReconnectProperties().setPeriod(5);
+        Configuration._cfg().nettyReconnectProperties().setInitialDelay(5);
+        Configuration._cfg().nettyReconnectProperties().setPeriod(5);
 
         // 线程上报信息周期，非必填
-        Configuration.configuration().threadPoolStateReportProperties().setInitialDelay(2);
-        Configuration.configuration().threadPoolStateReportProperties().setPeriod(2);
+        Configuration._cfg().threadPoolStateReportProperties().setInitialDelay(2);
+        Configuration._cfg().threadPoolStateReportProperties().setPeriod(2);
 
-        Configuration.configuration().clientInfo().setAppKey("opentp");
-        Configuration.configuration().clientInfo().setAppSecret("opentp-secret");
+        Configuration._cfg().clientInfo().setAppKey("opentp");
+        Configuration._cfg().clientInfo().setAppSecret("opentp-secret");
 
         // 记录线程池信息
         ThreadPoolExecutor tp1 = new ThreadPoolExecutor(10, 20, 60, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1024));
-        Configuration.configuration().threadPoolContextCache().put("tp1", new ThreadPoolContext(tp1));
+        Configuration._cfg().threadPoolContextCache().put("tp1", new ThreadPoolContext(tp1));
 
         ThreadPoolExecutor tp2 = new ThreadPoolExecutor(10, 20, 60, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1024));
-        Configuration.configuration().threadPoolContextCache().put("tp2", new ThreadPoolContext(tp2));
+        Configuration._cfg().threadPoolContextCache().put("tp2", new ThreadPoolContext(tp2));
 
         // 开启服务
-        new OpentpClientBootstrap().start();
+        new OpentpClientBootstrap().startup();
     }
 }

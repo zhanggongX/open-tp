@@ -1,18 +1,18 @@
 package cn.opentp.client;
 
-import cn.opentp.client.net.NettyBootstrap;
-import cn.opentp.client.net.keepr.NettyConnectKeeperTask;
-import cn.opentp.client.net.worker.ThreadPoolStateExportTask;
+import cn.opentp.client.configuration.Configuration;
+import cn.opentp.client.network.keepr.NettyConnectKeeperTask;
+import cn.opentp.client.network.worker.ThreadPoolStateExportTask;
 
 public class OpentpClientBootstrap {
 
-    public void start() {
-        NettyBootstrap nettyBootstrap = new NettyBootstrap();
-        nettyBootstrap.startup();
+    public void startup() {
+
+        Configuration._cfg().threadPoolReportService().startup();
 
         // 连接保持器
-        NettyConnectKeeperTask.startup(nettyBootstrap);
+        NettyConnectKeeperTask.keep();
         // 线程信息上报
-        ThreadPoolStateExportTask.startup();
+        ThreadPoolStateExportTask.report();
     }
 }
