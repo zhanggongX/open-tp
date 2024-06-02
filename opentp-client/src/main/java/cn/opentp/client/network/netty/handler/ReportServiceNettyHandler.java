@@ -1,4 +1,4 @@
-package cn.opentp.client.network.handler;
+package cn.opentp.client.network.netty.handler;
 
 import cn.opentp.client.configuration.Configuration;
 import cn.opentp.client.network.ThreadPoolReportService;
@@ -12,9 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class OpentpClientHandler extends ChannelInboundHandlerAdapter {
+public class ReportServiceNettyHandler extends ChannelInboundHandlerAdapter {
 
-    private final Logger log = LoggerFactory.getLogger(OpentpClientHandler.class);
+    private final Logger log = LoggerFactory.getLogger(ReportServiceNettyHandler.class);
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
@@ -38,7 +38,7 @@ public class OpentpClientHandler extends ChannelInboundHandlerAdapter {
             if (state == IdleState.WRITER_IDLE) {
                 Configuration configuration = Configuration._cfg();
                 ThreadPoolReportService threadPoolReportService = configuration.threadPoolReportService();
-                threadPoolReportService.heartbeat(state);
+                threadPoolReportService.heartbeat();
             }
         } else {
             super.userEventTriggered(ctx, evt);

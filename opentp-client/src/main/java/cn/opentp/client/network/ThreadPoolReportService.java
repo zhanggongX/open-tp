@@ -2,7 +2,7 @@ package cn.opentp.client.network;
 
 import cn.opentp.client.configuration.Configuration;
 import cn.opentp.client.exception.ServerAddrUnDefineException;
-import cn.opentp.client.network.handler.OpentpClientHandler;
+import cn.opentp.client.network.netty.handler.ReportServiceNettyHandler;
 import cn.opentp.core.auth.License;
 import cn.opentp.core.constant.OpentpCoreConstant;
 import cn.opentp.core.net.OpentpMessage;
@@ -20,7 +20,6 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -57,7 +56,7 @@ public class ThreadPoolReportService {
                         socketChannel.pipeline().addLast(new IdleStateHandler(0, 5, 0, TimeUnit.SECONDS));
                         socketChannel.pipeline().addLast(new OpentpMessageEncoder());
                         socketChannel.pipeline().addLast(new OpentpMessageDecoder());
-                        socketChannel.pipeline().addLast(new OpentpClientHandler());
+                        socketChannel.pipeline().addLast(new ReportServiceNettyHandler());
                     }
                 });
     }
@@ -70,7 +69,7 @@ public class ThreadPoolReportService {
         }
 
         // todo 集群迭代。
-        log.debug("服务端地址：{}, 端口：{}", inetSocketAddresses.get(0).getHostName(), inetSocketAddresses.get(0).getPort());
+        log.debug("服务端地址：{}, 端口：{}", inetSocketAddresses.get(0).getAddress().getHostAddress(), inetSocketAddresses.get(0).getPort());
         log.debug("尝试连接服务器...");
         ChannelFuture channelFuture = clientBootstrap.connect(inetSocketAddresses.get(0));
 
@@ -81,6 +80,8 @@ public class ThreadPoolReportService {
                 if (channelFuture.isSuccess()) {
                     // 发送权限信息
                     sendAuth(channelFuture.channel());
+                }else {
+                    log.error("连接 opentp 集群失败，请检查 IP 和端口是否配置正确。");
                 }
             }
         });
@@ -144,7 +145,7 @@ public class ThreadPoolReportService {
         });
     }
 
-    public void heartbeat(IdleState state) {
+    public void heartbeat() {
         OpentpMessage opentpMessage = OpentpCoreConstant.OPENTP_MSG_PROTO.clone();
         OpentpMessage.builder()
                 .messageType(OpentpMessageTypeEnum.HEART_PING.getCode())
