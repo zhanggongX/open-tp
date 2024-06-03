@@ -6,6 +6,7 @@ import cn.opentp.client.network.ThreadPoolReportService;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -18,7 +19,11 @@ public class NettyConnectKeeperTask implements Runnable {
     private final static long DEFAULT_PERIOD = 5;
 
     public static void keep() {
-        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(runnable -> {
+            Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+            thread.setDaemon(true);
+            return thread;
+        });
 
         NettyReconnectProperties nettyReconnectProperties = Configuration._cfg().nettyReconnectProperties();
         long initialDelay = nettyReconnectProperties.getInitialDelay() <= 0 ? DEFAULT_INITIAL_DELAY : nettyReconnectProperties.getInitialDelay();
