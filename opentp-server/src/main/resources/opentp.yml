@@ -1,0 +1,18 @@
+# 集群名配置
+cluster.name: opentp
+# 当前节点名配置
+node.name: opentp-1
+
+# 数据路径配置
+path.data: /data
+# 日志路径配置
+path.logs: /logs
+
+# Restful Http 端口配置
+http.port: 8080
+# 接收上报线程池信息端口
+receive.port: 9527
+# gossip udp 绑定端口，服务发现使用
+transport.port: 9627
+#cluster: "host1:port";"host2:port"
+cluster: 192.168.31.181:9528
