@@ -12,6 +12,7 @@ import java.net.UnknownHostException;
 public class ServerInfo {
 
     private String host;
+    private int port;
     private final String instance;
 
     public ServerInfo() {
@@ -39,5 +40,10 @@ public class ServerInfo {
 
     public String getInstance() {
         return instance;
+    }
+
+    @Override
+    public String toString() {
+        return host + "@" + instance;
     }
 }

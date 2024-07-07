@@ -15,4 +15,4 @@ receive.port: 9527
 # gossip udp 绑定端口，服务发现使用
 transport.port: 9627
 #cluster: "host1:port";"host2:port"
-cluster: 192.168.31.181:9528
+clusterNodes: 192.168.31.181:9528
