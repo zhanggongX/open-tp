@@ -29,7 +29,7 @@ public class OpentpApp {
     /**
      * 线程信息上报监听服务
      */
-    private final ThreadPoolReceiveService reportService = new ThreadPoolReceiveService();
+    private final ThreadPoolReceiveService receiveService = new ThreadPoolReceiveService();
     /**
      * restful 接口服务
      */
@@ -46,7 +46,7 @@ public class OpentpApp {
     /**
      * 流言发布定时任务
      */
-    private ScheduledExecutorService gossipPublishExecutor;
+    private ScheduledExecutorService gossipPublishService;
 
     private OpentpApp() {
     }
@@ -64,15 +64,15 @@ public class OpentpApp {
     }
 
     public ThreadPoolReceiveService receiveService() {
-        return reportService;
+        return receiveService;
     }
 
     public RestfulService restfulService() {
         return restfulService;
     }
 
-    public ScheduledExecutorService gossipPublishExecutor() {
-        return gossipPublishExecutor;
+    public ScheduledExecutorService gossipPublishService() {
+        return gossipPublishService;
     }
 
     public void run(Class<?> primaryClass) {
@@ -96,14 +96,14 @@ public class OpentpApp {
 
         // 集群部署，启动 gossip
         if (environment.getDeploy() == DeployEnum.cluster) {
-            this.gossipPublishExecutor = Executors.newSingleThreadScheduledExecutor();
+            this.gossipPublishService = Executors.newSingleThreadScheduledExecutor();
 
             GossipProperties properties = getGossipProperties(environment);
             // 初始化
             GossipBootstrap.init(properties);
             // 开启服务
             GossipBootstrap.start();
-            this.gossipPublishExecutor.scheduleAtFixedRate(new GossipSendTask(), 5, 5, TimeUnit.SECONDS);
+            this.gossipPublishService.scheduleAtFixedRate(new GossipSendTask(), 5, 5, TimeUnit.SECONDS);
         }
 
 //        Runtime.getRuntime().addShutdownHook(hook);
