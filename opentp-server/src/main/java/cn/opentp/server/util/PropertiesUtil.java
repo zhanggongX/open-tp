@@ -1,7 +1,7 @@
 package cn.opentp.server.util;
 
 import cn.opentp.server.command.CommandOptions;
-import cn.opentp.server.OpentpProperties;
+import cn.opentp.server.Environment;
 import cn.opentp.server.exception.ResourceLoadException;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
@@ -18,9 +18,11 @@ import java.util.Properties;
 public class PropertiesUtil {
 
     private static final Logger log = LoggerFactory.getLogger(PropertiesUtil.class);
-    private static final String CONFIG_PREFIX = "opentp";
+    private static final String CONFIG_SPLITTER = ".";
+    private static final String CONFIG_DO_SPLITTER = "\\.";
 
-    public static boolean loadCmdProps(OpentpProperties properties, String[] args) {
+
+    public static boolean loadCmdProps(Environment properties, String[] args) {
 
         CommandLineParser parser = new DefaultParser();
         Options options = CommandOptions.opentpOption();
@@ -33,13 +35,13 @@ public class PropertiesUtil {
             }
 
             String reportPort = cmd.getOptionValue("rp");
-            if (reportPort != null) properties.setReportPort(Integer.parseInt(reportPort));
+            if (reportPort != null) properties.setReceivePort(Integer.parseInt(reportPort));
 
             String httpPort = cmd.getOptionValue("hp");
             if (httpPort != null) properties.setHttpPort(Integer.parseInt(httpPort));
 
             String transportPort = cmd.getOptionValue("gp");
-            if (transportPort != null) properties.setGossipPort(Integer.parseInt(transportPort));
+            if (transportPort != null) properties.setTransportPort(Integer.parseInt(transportPort));
 
             return true;
         } catch (ParseException exp) {
@@ -48,7 +50,7 @@ public class PropertiesUtil {
         }
     }
 
-    public static void loadProps(ClassLoader classLoader, OpentpProperties config, String fileName) {
+    public static void loadProps(ClassLoader classLoader, Environment environment, String fileName) {
 
         URL resource = ResourceUtil.loadResource(classLoader, fileName);
         if (resource == null) {
@@ -64,22 +66,19 @@ public class PropertiesUtil {
                 String value = (String) entry.getValue();
 
                 String realKey = key;
-                if (key.contains("-")) {
+                if (key.contains(CONFIG_SPLITTER)) {
                     realKey = buildCamelKey(key);
-                }
-                if (realKey.equals(CONFIG_PREFIX)) {
-                    continue;
                 }
 
                 Field field = null;
                 try {
-                    field = OpentpProperties.class.getDeclaredField(realKey);
+                    field = Environment.class.getDeclaredField(realKey);
                     field.setAccessible(true);
                     String name = field.getType().getName();
                     if (name.equals("int")) {
-                        field.setInt(config, Integer.parseInt(value));
+                        field.setInt(environment, Integer.parseInt(value));
                     } else {
-                        field.set(config, String.valueOf(value));
+                        field.set(environment, String.valueOf(value));
                     }
                 } catch (NoSuchFieldException | IllegalAccessException e) {
                     log.error("", e);
@@ -91,7 +90,7 @@ public class PropertiesUtil {
     }
 
     private static String buildCamelKey(String key) {
-        String[] keys = key.split("-");
+        String[] keys = key.split(CONFIG_DO_SPLITTER, -1);
 
         StringBuilder keyBuilder = new StringBuilder();
         keyBuilder.append(keys[0]);
