@@ -19,12 +19,12 @@ public class Example {
         inetSocketAddresses.add(new InetSocketAddress("192.168.31.181", 9627));
 
         // 设置断网重连重试周期，非必填
-        Configuration._cfg().nettyReconnectProperties().setInitialDelay(5);
-        Configuration._cfg().nettyReconnectProperties().setPeriod(5);
+        Configuration._cfg().reconnectProps().setInitialDelay(5);
+        Configuration._cfg().reconnectProps().setPeriod(5);
 
         // 线程上报信息周期，非必填
-        Configuration._cfg().threadPoolStateReportProperties().setInitialDelay(2);
-        Configuration._cfg().threadPoolStateReportProperties().setPeriod(2);
+        Configuration._cfg().reportProps().setInitialDelay(2);
+        Configuration._cfg().reportProps().setPeriod(2);
 
         Configuration._cfg().clientInfo().setAppKey("opentp");
         Configuration._cfg().clientInfo().setAppSecret("opentp-secret");
