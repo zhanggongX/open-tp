@@ -1,7 +1,7 @@
 package cn.opentp.client.spring.boot.example.controller;
 
 import cn.opentp.client.configuration.Configuration;
-import cn.opentp.core.thread.pool.ThreadPoolContext;
+import cn.opentp.core.thread.pool.ThreadPoolWrapper;
 import cn.opentp.core.util.JacksonUtil;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,9 +21,9 @@ public class DemoController {
 
     @GetMapping("threadPool")
     public String tps() {
-        Map<String, ThreadPoolContext> threadPoolContextCache = Configuration.configuration().threadPoolContextCache();
+        Map<String, ThreadPoolWrapper> threadPoolContextCache = Configuration._cfg().threadPoolContextCache();
         StringBuilder res = new StringBuilder();
-        for (Map.Entry<String, ThreadPoolContext> e : threadPoolContextCache.entrySet()) {
+        for (Map.Entry<String, ThreadPoolWrapper> e : threadPoolContextCache.entrySet()) {
             res.append(e.getValue().getState().toString());
         }
         return JacksonUtil.toJSONString(res.toString());
@@ -31,17 +31,17 @@ public class DemoController {
 
     @GetMapping("threadPool/{tpName}")
     public String tpCoreSize(@PathVariable String tpName) {
-        Map<String, ThreadPoolContext> threadPoolContextCache = Configuration.configuration().threadPoolContextCache();
-        ThreadPoolContext threadPoolContext = threadPoolContextCache.get(tpName);
+        Map<String, ThreadPoolWrapper> threadPoolContextCache = Configuration._cfg().threadPoolContextCache();
+        ThreadPoolWrapper threadPoolContext = threadPoolContextCache.get(tpName);
         return JacksonUtil.toJSONString(threadPoolContext);
     }
 
     @GetMapping("threadPool/report")
     public String report() {
-        Map<String, ThreadPoolContext> threadPoolContextCache = Configuration.configuration().threadPoolContextCache();
-        for (Map.Entry<String, ThreadPoolContext> threadPoolContextEntry : threadPoolContextCache.entrySet()) {
+        Map<String, ThreadPoolWrapper> threadPoolContextCache = Configuration._cfg().threadPoolContextCache();
+        for (Map.Entry<String, ThreadPoolWrapper> threadPoolContextEntry : threadPoolContextCache.entrySet()) {
             threadPoolContextEntry.getValue().flushStateAndSetThreadPoolName(threadPoolContextEntry.getKey());
-            Configuration.configuration().threadPoolStateReportChannel().writeAndFlush(threadPoolContextEntry.getValue().getState());
+//            Configuration._cfg().reportService()..writeAndFlush(threadPoolContextEntry.getValue().getState());
         }
         return "ok";
     }

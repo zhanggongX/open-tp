@@ -1,7 +1,7 @@
 package opentp.client.spring.boot.starter.configuration;
 
 import cn.opentp.client.configuration.Configuration;
-import cn.opentp.core.thread.pool.ThreadPoolContext;
+import cn.opentp.core.thread.pool.ThreadPoolWrapper;
 import opentp.client.spring.boot.starter.annotation.Opentp;
 import opentp.client.spring.boot.starter.exception.ThreadPoolKeyDupException;
 import org.slf4j.Logger;
@@ -71,9 +71,9 @@ public class OpentpSpringBeanPostProcessor implements BeanPostProcessor, BeanFac
 
         log.debug("OpentpThreadPoolScan find @Opentp bean name: {}, annotation value: {}", beanName, opentp.value());
 
-        ThreadPoolContext threadPoolContext = new ThreadPoolContext((ThreadPoolExecutor) bean);
-        Configuration configuration = Configuration.configuration();
-        Map<String, ThreadPoolContext> threadPoolContextCache = configuration.threadPoolContextCache();
+        ThreadPoolWrapper threadPoolContext = new ThreadPoolWrapper((ThreadPoolExecutor) bean);
+        Configuration configuration = Configuration._cfg();
+        Map<String, ThreadPoolWrapper> threadPoolContextCache = configuration.threadPoolContextCache();
 
         if (threadPoolContextCache.containsKey(opentp.value())) {
             throw new ThreadPoolKeyDupException();

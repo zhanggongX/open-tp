@@ -1,6 +1,6 @@
 package cn.opentp.client.configuration;
 
-public class NettyReconnectProperties {
+public class ReportProperties {
 
     /**
      * 初始延时

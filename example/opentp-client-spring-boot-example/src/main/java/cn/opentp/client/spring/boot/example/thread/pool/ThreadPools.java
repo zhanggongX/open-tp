@@ -1,7 +1,7 @@
 package cn.opentp.client.spring.boot.example.thread.pool;
 
 import cn.opentp.client.configuration.Configuration;
-import cn.opentp.core.thread.pool.ThreadPoolContext;
+import cn.opentp.core.thread.pool.ThreadPoolWrapper;
 import opentp.client.spring.boot.starter.annotation.Opentp;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
@@ -33,7 +33,7 @@ public class ThreadPools {
         threadPoolExecutor2 = new ThreadPoolExecutor(INIT_THREAD_NUM, MAX_THREAD_NUM, KEEP_ALIVE_TIME_MINUTES, TimeUnit.MINUTES, workQueue);
 
         // 手动创建线程池方式
-        Configuration.configuration().threadPoolContextCache().put("threadPoolExecutor2", new ThreadPoolContext(threadPoolExecutor2));
+        Configuration._cfg().threadPoolContextCache().put("threadPoolExecutor2", new ThreadPoolWrapper(threadPoolExecutor2));
     }
 
     public static void execute(Runnable command) throws Exception {
