@@ -8,7 +8,7 @@ public class OpentpClientBootstrap {
 
     public void startup() {
 
-        Configuration._cfg().threadPoolReportService().startup();
+        Configuration._cfg().reportService().startup();
 
         // 连接保持器
         NettyConnectKeeperTask.keep();

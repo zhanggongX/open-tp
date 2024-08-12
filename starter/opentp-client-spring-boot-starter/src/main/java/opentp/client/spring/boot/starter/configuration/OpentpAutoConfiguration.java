@@ -12,10 +12,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.util.StringUtils;
 
 import java.net.InetSocketAddress;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -40,14 +38,14 @@ public class OpentpAutoConfiguration implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
         // 添加配置信息
         List<InetSocketAddress> configInetSocketAddress = ServerAddressParser.parse(opentpProperties.getServers());
-        Configuration configuration = Configuration.configuration();
+        Configuration configuration = Configuration._cfg();
         configuration.serverAddresses().addAll(configInetSocketAddress);
 
-        configuration.nettyReconnectProperties().setInitialDelay(opentpProperties.getReconnect().getInitialDelay());
-        configuration.nettyReconnectProperties().setPeriod(opentpProperties.getReconnect().getPeriod());
+        configuration.reconnectProps().setInitialDelay(opentpProperties.getReconnect().getInitialDelay());
+        configuration.reconnectProps().setPeriod(opentpProperties.getReconnect().getPeriod());
 
-        configuration.threadPoolStateReportProperties().setInitialDelay(opentpProperties.getExport().getInitialDelay());
-        configuration.threadPoolStateReportProperties().setPeriod(opentpProperties.getExport().getPeriod());
+        configuration.reportProps().setInitialDelay(opentpProperties.getExport().getInitialDelay());
+        configuration.reportProps().setPeriod(opentpProperties.getExport().getPeriod());
 
         if (opentpProperties.getAppKey() == null || opentpProperties.getAppKey().isEmpty()) {
             throw new IllegalArgumentException("请配置 opentp appKey");

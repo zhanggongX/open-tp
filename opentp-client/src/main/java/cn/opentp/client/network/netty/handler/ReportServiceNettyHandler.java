@@ -21,7 +21,7 @@ public class ReportServiceNettyHandler extends ChannelInboundHandlerAdapter {
         try {
             if (msg instanceof OpentpMessage opentpMessage) {
                 Configuration configuration = Configuration._cfg();
-                configuration.threadPoolReportService().handle(ctx, opentpMessage);
+                configuration.reportService().handle(ctx, opentpMessage);
             } else {
                 log.warn("未知消息，丢弃！");
             }
@@ -37,7 +37,7 @@ public class ReportServiceNettyHandler extends ChannelInboundHandlerAdapter {
 
             if (state == IdleState.WRITER_IDLE) {
                 Configuration configuration = Configuration._cfg();
-                ThreadPoolReportService threadPoolReportService = configuration.threadPoolReportService();
+                ThreadPoolReportService threadPoolReportService = configuration.reportService();
                 threadPoolReportService.heartbeat();
             }
         } else {

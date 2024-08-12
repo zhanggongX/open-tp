@@ -1,7 +1,7 @@
 package cn.opentp.client.network.worker;
 
 import cn.opentp.client.configuration.Configuration;
-import cn.opentp.client.configuration.ThreadPoolStateReportProperties;
+import cn.opentp.client.configuration.ReportProperties;
 import cn.opentp.client.network.ThreadPoolReportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,16 +27,16 @@ public class ThreadPoolStateExportTask implements Runnable {
     public static void report() {
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
-        ThreadPoolStateReportProperties threadPoolStateReportProperties = Configuration._cfg().threadPoolStateReportProperties();
-        long initialDelay = threadPoolStateReportProperties.getInitialDelay() <= 0 ? DEFAULT_INITIAL_DELAY : threadPoolStateReportProperties.getInitialDelay();
-        long period = threadPoolStateReportProperties.getInitialDelay() <= 0 ? DEFAULT_PERIOD : threadPoolStateReportProperties.getPeriod();
+        ReportProperties reportProps = Configuration._cfg().reportProps();
+        long initialDelay = reportProps.getInitialDelay() <= 0 ? DEFAULT_INITIAL_DELAY : reportProps.getInitialDelay();
+        long period = reportProps.getInitialDelay() <= 0 ? DEFAULT_PERIOD : reportProps.getPeriod();
 
         scheduledExecutorService.scheduleAtFixedRate(new ThreadPoolStateExportTask(), initialDelay, period, TimeUnit.SECONDS);
     }
 
     @Override
     public void run() {
-        ThreadPoolReportService threadPoolReportService = Configuration._cfg().threadPoolReportService();
+        ThreadPoolReportService threadPoolReportService = Configuration._cfg().reportService();
         threadPoolReportService.sendReport();
     }
 }

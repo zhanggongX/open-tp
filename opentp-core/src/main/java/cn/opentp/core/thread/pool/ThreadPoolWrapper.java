@@ -1,9 +1,8 @@
 package cn.opentp.core.thread.pool;
 
-import java.io.Serializable;
 import java.util.concurrent.ThreadPoolExecutor;
 
-public class ThreadPoolContext implements Serializable {
+public class ThreadPoolWrapper {
 
     /**
      * 线程池状态信息
@@ -15,10 +14,10 @@ public class ThreadPoolContext implements Serializable {
      */
     private ThreadPoolExecutor target;
 
-    public ThreadPoolContext() {
+    public ThreadPoolWrapper() {
     }
 
-    public ThreadPoolContext(ThreadPoolExecutor target) {
+    public ThreadPoolWrapper(ThreadPoolExecutor target) {
         this.target = target;
     }
 

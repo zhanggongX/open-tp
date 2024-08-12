@@ -2,7 +2,7 @@ package cn.opentp.client.example;
 
 import cn.opentp.client.OpentpClientBootstrap;
 import cn.opentp.client.configuration.Configuration;
-import cn.opentp.core.thread.pool.ThreadPoolContext;
+import cn.opentp.core.thread.pool.ThreadPoolWrapper;
 
 import java.net.InetSocketAddress;
 import java.util.List;
@@ -31,10 +31,10 @@ public class Example {
 
         // 记录线程池信息
         ThreadPoolExecutor tp1 = new ThreadPoolExecutor(10, 20, 60, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1024));
-        Configuration._cfg().threadPoolContextCache().put("tp1", new ThreadPoolContext(tp1));
+        Configuration._cfg().threadPoolContextCache().put("tp1", new ThreadPoolWrapper(tp1));
 
         ThreadPoolExecutor tp2 = new ThreadPoolExecutor(10, 20, 60, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1024));
-        Configuration._cfg().threadPoolContextCache().put("tp2", new ThreadPoolContext(tp2));
+        Configuration._cfg().threadPoolContextCache().put("tp2", new ThreadPoolWrapper(tp2));
 
         // 开启服务
         new OpentpClientBootstrap().startup();

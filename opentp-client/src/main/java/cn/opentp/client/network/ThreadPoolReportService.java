@@ -11,7 +11,7 @@ import cn.opentp.core.net.OpentpMessageTypeEnum;
 import cn.opentp.core.net.codec.OpentpMessageDecoder;
 import cn.opentp.core.net.codec.OpentpMessageEncoder;
 import cn.opentp.core.net.serializer.SerializerTypeEnum;
-import cn.opentp.core.thread.pool.ThreadPoolContext;
+import cn.opentp.core.thread.pool.ThreadPoolWrapper;
 import cn.opentp.core.thread.pool.ThreadPoolState;
 import cn.opentp.core.util.JacksonUtil;
 import cn.opentp.core.util.MessageTraceIdUtil;
@@ -114,10 +114,10 @@ public class ThreadPoolReportService {
 
         List<ThreadPoolState> threadPoolStates = new ArrayList<>();
 
-        Map<String, ThreadPoolContext> threadPoolContextCache = Configuration._cfg().threadPoolContextCache();
-        for (Map.Entry<String, ThreadPoolContext> threadPoolContextEntry : threadPoolContextCache.entrySet()) {
+        Map<String, ThreadPoolWrapper> threadPoolContextCache = Configuration._cfg().threadPoolContextCache();
+        for (Map.Entry<String, ThreadPoolWrapper> threadPoolContextEntry : threadPoolContextCache.entrySet()) {
             String threadPoolKey = threadPoolContextEntry.getKey();
-            ThreadPoolContext threadPoolContext = threadPoolContextEntry.getValue();
+            ThreadPoolWrapper threadPoolContext = threadPoolContextEntry.getValue();
             threadPoolContext.flushStateAndSetThreadPoolName(threadPoolKey);
             threadPoolStates.add(threadPoolContext.getState());
         }
@@ -172,8 +172,8 @@ public class ThreadPoolReportService {
                 ThreadPoolState threadPoolState = (ThreadPoolState) opentpMessage.getData();
                 log.debug("接收到线程池更新命令：{}", JacksonUtil.toJSONString(threadPoolState));
 
-                Map<String, ThreadPoolContext> threadPoolContextCache = Configuration._cfg().threadPoolContextCache();
-                ThreadPoolContext threadPoolContext = threadPoolContextCache.get(threadPoolState.getThreadPoolName());
+                Map<String, ThreadPoolWrapper> threadPoolContextCache = Configuration._cfg().threadPoolContextCache();
+                ThreadPoolWrapper threadPoolContext = threadPoolContextCache.get(threadPoolState.getThreadPoolName());
 
                 threadPoolContext.flushTargetState(threadPoolState);
                 break;

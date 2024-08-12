@@ -2,7 +2,7 @@ package cn.opentp.client.configuration;
 
 import cn.opentp.client.network.ThreadPoolReportService;
 import cn.opentp.core.auth.ClientInfo;
-import cn.opentp.core.thread.pool.ThreadPoolContext;
+import cn.opentp.core.thread.pool.ThreadPoolWrapper;
 
 import java.net.InetSocketAddress;
 import java.util.List;
@@ -17,15 +17,15 @@ public class Configuration {
     // 服务器地址
     private final List<InetSocketAddress> serverAddresses = new CopyOnWriteArrayList<>();
     // 线程池增强对象缓存
-    private final Map<String, ThreadPoolContext> ThreadPoolContextCache = new ConcurrentHashMap<>();
+    private final Map<String, ThreadPoolWrapper> ThreadPoolContextCache = new ConcurrentHashMap<>();
     // 重连配置
-    private final NettyReconnectProperties nettyReconnectProperties = new NettyReconnectProperties();
+    private final ReconnectProperties reconnectProps = new ReconnectProperties();
     // 线程池信息上报配置
-    private final ThreadPoolStateReportProperties threadPoolStateReportProperties = new ThreadPoolStateReportProperties();
+    private final ReportProperties reportProps = new ReportProperties();
     // 客户端认证信息
     private final ClientInfo clientInfo = new ClientInfo();
     // 线程信息上报服务
-    private final ThreadPoolReportService threadPoolReportService = new ThreadPoolReportService();
+    private final ThreadPoolReportService reportService = new ThreadPoolReportService();
 
     private Configuration() {
     }
@@ -34,7 +34,7 @@ public class Configuration {
         return INSTANCE;
     }
 
-    public Map<String, ThreadPoolContext> threadPoolContextCache() {
+    public Map<String, ThreadPoolWrapper> threadPoolContextCache() {
         return ThreadPoolContextCache;
     }
 
@@ -42,20 +42,20 @@ public class Configuration {
         return serverAddresses;
     }
 
-    public NettyReconnectProperties nettyReconnectProperties() {
-        return nettyReconnectProperties;
+    public ReconnectProperties reconnectProps() {
+        return reconnectProps;
     }
 
-    public ThreadPoolStateReportProperties threadPoolStateReportProperties() {
-        return threadPoolStateReportProperties;
+    public ReportProperties reportProps() {
+        return reportProps;
     }
 
     public ClientInfo clientInfo() {
         return clientInfo;
     }
 
-    public ThreadPoolReportService threadPoolReportService() {
-        return threadPoolReportService;
+    public ThreadPoolReportService reportService() {
+        return reportService;
     }
 
 }

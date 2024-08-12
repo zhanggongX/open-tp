@@ -1,6 +1,6 @@
 package cn.opentp.client.configuration;
 
-public class ThreadPoolStateReportProperties {
+public class ReconnectProperties {
 
     /**
      * 初始延时
