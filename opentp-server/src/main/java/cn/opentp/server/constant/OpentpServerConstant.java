@@ -10,7 +10,7 @@ public class OpentpServerConstant {
     public static final String ADMIN_DEFAULT_SECRET = "opentp-secret";
 
     // 默认配置文件地址
-    public static final String DEFAULT_CONFIG_FILE = "app.yml";
+    public static final String DEFAULT_CONFIG_FILE = "opentp.yml";
 
     // 默认上报服务端口
     public static final int DEFAULT_REPORT_SERVER_PORT = 9527;
