@@ -15,6 +15,9 @@ import cn.opentp.core.util.MessageTraceIdUtil;
 import cn.opentp.server.OpentpApp;
 import cn.opentp.server.auth.LicenseKeyFactory;
 import cn.opentp.server.constant.OpentpServerConstant;
+import cn.opentp.server.network.receive.message.handler.AuthMessageHandler;
+import cn.opentp.server.network.receive.message.handler.MessageHandler;
+import cn.opentp.server.network.receive.message.handler.ReceiveMessageHandler;
 import cn.opentp.server.network.receive.netty.handler.ReceiveServiceNettyHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -49,7 +52,23 @@ public class ThreadPoolReceiveService {
     private final NioEventLoopGroup bossGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors());
     private final NioEventLoopGroup workGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2);
 
+    /**
+     * 初始化
+     */
+    public ThreadPoolReceiveService() {
+        // 消息处理器初始化
+        MessageHandler.HANDLER_MAP.put(OpentpMessageTypeEnum.AUTHENTICATION_REQ, new AuthMessageHandler());
+        MessageHandler.HANDLER_MAP.put(OpentpMessageTypeEnum.THREAD_POOL_EXPORT, new ReceiveMessageHandler());
+    }
+
+    /**
+     * 服务启动
+     *
+     * @param host 主机地址
+     * @param port 主机端口
+     */
     public void start(String host, int port) {
+
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(bossGroup, workGroup)
                 .option(ChannelOption.SO_BACKLOG, 1024)
@@ -70,9 +89,9 @@ public class ThreadPoolReceiveService {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
-                    log.info("thread pool report service start bind on {}:{}", host, port);
+                    log.info("线程池信息接收服务监听成功，主机：{}，端口：{}", host, port);
                 } else {
-                    log.error("thread pool report service start error: ", future.cause());
+                    log.error("线程池信息接收服务监听失败：", future.cause());
                 }
             }
         });
@@ -86,119 +105,23 @@ public class ThreadPoolReceiveService {
      */
     public void handle(ChannelHandlerContext ctx, OpentpMessage opentpMessage) {
         OpentpMessageTypeEnum opentpMessageTypeEnum = OpentpMessageTypeEnum.parse(opentpMessage.getMessageType());
-
-        switch (Objects.requireNonNull(opentpMessageTypeEnum)) {
-            case HEART_PING:
-                log.info("接收心跳信息： {} 应答: {}", opentpMessage.getData(), OpentpMessageConstant.HEARD_PONG);
-                break;
-            case AUTHENTICATION_REQ:
-                channelReadAuthReq(ctx, opentpMessage);
-                break;
-            case THREAD_POOL_EXPORT:
-                channelReadThreadPoolExport(ctx, opentpMessage);
-                break;
-            default:
-                log.warn("未知的消息类型，不处理！");
-        }
-    }
-
-    /**
-     * 处理客户端连接信息
-     *
-     * @param ctx           channelHandler环境
-     * @param opentpMessage 消息内容
-     */
-    private void channelReadAuthReq(ChannelHandlerContext ctx, OpentpMessage opentpMessage) {
-        ClientInfo clientInfo = (ClientInfo) opentpMessage.getData();
-        clientInfo.setServerInfo(OpentpApp.instance().selfInfo());
-
-        log.debug("有新认证到来，appKey: {}, appSecret: {}, host: {}, instance: {}", clientInfo.getAppKey(), clientInfo.getAppSecret(), clientInfo.getHost(), clientInfo.getInstance());
-        // todo 认证消息动态
-        if (clientInfo.getAppKey() == null || !clientInfo.getAppKey().equals(OpentpServerConstant.ADMIN_DEFAULT_APP)) {
-            log.warn("新认证到来，未知的 appId : {}", clientInfo.getAppKey());
-            ctx.channel().close();
-            return;
-        }
-        if (clientInfo.getAppSecret() == null || !clientInfo.getAppSecret().equals(OpentpServerConstant.ADMIN_DEFAULT_SECRET)) {
-            log.warn("新认证到来, appId : {}, appSecret error ", clientInfo.getAppKey());
-            ctx.channel().close();
+        if (opentpMessageTypeEnum == null) {
+            log.warn("未知的消息类型，不处理！");
             return;
         }
 
-        String newLicenseKey = LicenseKeyFactory.get();
-        log.debug("新链接认证成功：返回 licenseKey : {}", newLicenseKey);
-
-        // 设置 licenseKey
-        ctx.channel().attr(OpentpCoreConstant.EXPORT_CHANNEL_ATTR_KEY).set(newLicenseKey);
-
-        // 记录 appKey <-> 客户端信息
-        appKeyClientCache.putIfAbsent(OpentpServerConstant.ADMIN_DEFAULT_APP, new ArrayList<>());
-        appKeyClientCache.get(OpentpServerConstant.ADMIN_DEFAULT_APP).add(clientInfo);
-
-        // 记录 licenseKey <-> 客户端信息
-        licenseClientCache.put(newLicenseKey, clientInfo);
-        // 记录 客户端信息 <-> 网络连接
-        clientChannelCache.put(clientInfo, ctx.channel());
-
-        OpentpMessage opentpMessageRes = OpentpCoreConstant.OPENTP_MSG_PROTO.clone();
-        OpentpMessage
-                .builder()
-                .messageType(OpentpMessageTypeEnum.AUTHENTICATION_RES.getCode())
-                .serializerType(SerializerTypeEnum.Kryo.getType())
-                .data(new License(newLicenseKey))
-                .traceId(opentpMessage.getTraceId())
-                .buildTo(opentpMessageRes);
-
-        // 返回 licenseKey
-        ctx.channel().writeAndFlush(opentpMessageRes);
-    }
-
-    /**
-     * 处理线程上报信息
-     *
-     * @param ctx           channelHandler环境
-     * @param opentpMessage 消息内容
-     */
-    private void channelReadThreadPoolExport(ChannelHandlerContext ctx, OpentpMessage opentpMessage) {
-        String licenseKey = opentpMessage.getLicenseKey();
-        log.debug("接受到信息，认证码：{}", licenseKey);
-
-        String channelLicenseKey = ctx.channel().attr(OpentpCoreConstant.EXPORT_CHANNEL_ATTR_KEY).get();
-        if (!licenseKey.equals(channelLicenseKey)) {
-            log.warn("licenseKey error");
-            ctx.channel().close();
+        if (opentpMessageTypeEnum == OpentpMessageTypeEnum.HEART_PING) {
+            log.info("接收心跳信息： {} 应答: {}", opentpMessage.getData(), OpentpMessageConstant.HEARD_PONG);
             return;
         }
 
-        if (!licenseClientCache.containsKey(licenseKey)) {
-            log.warn("licenseKey 异常或已过期，请重新连接");
-            ctx.channel().close();
+        MessageHandler messageHandler = MessageHandler.HANDLER_MAP.get(opentpMessageTypeEnum);
+        if (messageHandler == null) {
+            log.warn("未知的消息类型，不处理！");
             return;
         }
 
-        // clientInfo 缓存
-        ClientInfo clientInfo = licenseClientCache.get(licenseKey);
-        // 检查缓存的 channel
-        Channel channel = clientChannelCache.get(clientInfo);
-        if (!channel.equals(ctx.channel())) {
-            channel.close();
-            clientChannelCache.put(clientInfo, ctx.channel());
-        }
-
-        // 刷新线程池信息
-        clientThreadPoolStateCache.putIfAbsent(clientInfo, new ConcurrentHashMap<>());
-        Map<String, ThreadPoolState> threadPoolStateCache = clientThreadPoolStateCache.get(clientInfo);
-
-        List<?> threadPoolStates = (List<?>) opentpMessage.getData();
-        for (Object obj : threadPoolStates) {
-            ThreadPoolState threadPoolState = (ThreadPoolState) obj;
-
-            threadPoolStateCache.putIfAbsent(threadPoolState.getThreadPoolName(), new ThreadPoolState());
-            ThreadPoolState configThreadPoolState = threadPoolStateCache.get(threadPoolState.getThreadPoolName());
-            configThreadPoolState.flushState(threadPoolState);
-
-            log.debug("上报线程池信息 : {}", configThreadPoolState);
-        }
+        messageHandler.handle(this, ctx, opentpMessage);
     }
 
     /**

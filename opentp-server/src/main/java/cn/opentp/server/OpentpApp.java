@@ -87,7 +87,7 @@ public class OpentpApp {
 
 //        ShutdownHook hook = new ShutdownHook();
         // 启动接收上报信息服务
-        this.receiveService().start(selfInfo.getHost(), environment.getReceivePort());
+        this.receiveService.start(selfInfo.getHost(), environment.getReceivePort());
 //        hook.add(receiveReportServer);
 
         // 启动 restful 服务信息
