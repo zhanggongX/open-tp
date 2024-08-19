@@ -1,5 +1,6 @@
 package cn.opentp.server;
 
+import cn.opentp.core.auth.ServerInfo;
 import cn.opentp.server.constant.OpentpServerConstant;
 import cn.opentp.server.enums.DeployEnum;
 
@@ -46,6 +47,8 @@ public class Environment {
      * 部署方式
      */
     private DeployEnum deploy;
+
+    private ServerInfo serverInfo;
 
     /**
      * 配置，设置默认值
@@ -152,5 +155,13 @@ public class Environment {
         } catch (Exception e) {
             throw new IllegalArgumentException("集群地址配置异常，请配置详情的IP:PORT");
         }
+    }
+
+    public void setServerInfo(ServerInfo selfInfo) {
+        this.serverInfo = selfInfo;
+    }
+
+    public ServerInfo getServerInfo() {
+        return serverInfo;
     }
 }

@@ -1,0 +1,32 @@
+package cn.opentp.server.network.restful.register;
+
+import cn.opentp.server.network.restful.EndpointMappings;
+import cn.opentp.server.network.restful.annotation.GetMapping;
+import cn.opentp.server.network.restful.annotation.PostMapping;
+import cn.opentp.server.network.restful.mapping.EndpointMapping;
+
+import java.lang.reflect.Method;
+
+/**
+ * POST
+ */
+public class PostMappingRegister extends AbstractMappingRegister {
+
+    @Override
+    String resolveMethodRequestUrl(Method method) {
+        if (method.getAnnotation(PostMapping.class) != null) {
+            return method.getAnnotation(PostMapping.class).value();
+        }
+        return "";
+    }
+
+//    @Override
+//    String resolveHttpMethod() {
+//        return "";
+//    }
+
+    @Override
+    void registerMapping(String completeRequestUrl, EndpointMapping endpointMapping) {
+        EndpointMappings.registerPostMapping(completeRequestUrl, endpointMapping);
+    }
+}

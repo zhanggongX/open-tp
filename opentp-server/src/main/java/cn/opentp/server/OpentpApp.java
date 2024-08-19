@@ -79,7 +79,7 @@ public class OpentpApp {
         this.primaryClassLoader = primaryClass.getClassLoader();
         this.selfInfo = new ServerInfo();
 
-        prepareEnvironment();
+        prepareEnvironment(selfInfo);
 
 
         // 加载参数配置
@@ -109,9 +109,10 @@ public class OpentpApp {
 //        Runtime.getRuntime().addShutdownHook(hook);
     }
 
-    private void prepareEnvironment() {
+    private void prepareEnvironment(ServerInfo selfInfo) {
         // 加载配置
         PropertiesUtil.loadProps(this.primaryClassLoader, environment, OpentpServerConstant.DEFAULT_CONFIG_FILE);
+        environment.setServerInfo(selfInfo);
         // 部署方式
         if (environment.getClusterNodes() != null && !environment.getClusterNodes().isEmpty()) {
             environment.setDeploy(DeployEnum.cluster);
@@ -129,13 +130,7 @@ public class OpentpApp {
     private static GossipProperties getGossipProperties(Environment environment) {
         GossipProperties properties = new GossipProperties();
         properties.setCluster("opentp");
-        properties.setHost("localhost");
-        try {
-            String hostAddress = InetAddress.getLocalHost().getHostAddress();
-            properties.setHost(hostAddress);
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
+        properties.setHost(environment.getServerInfo().getHost());
         properties.setPort(environment.getTransportPort());
         properties.setNodeId(null);
         properties.setClusterNodes(environment.getClusterNodes());

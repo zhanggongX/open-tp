@@ -14,6 +14,9 @@ import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ *
+ */
 public class EndpointDispatcher {
 
     private static final Logger log = LoggerFactory.getLogger(EndpointDispatcher.class);
@@ -33,7 +36,7 @@ public class EndpointDispatcher {
 
         String endpoint = getEndpoint(uri);
 
-        EndpointMapping endpointMapping = OpentpApp.instance().restfulService().endpointMapping();
+        EndpointMappings endpointMapping = OpentpApp.instance().restfulService().endpointMapping();
         Endpoint httpHandler = endpointMapping.mappingHandler(endpoint);
 
         if (HttpMethod.GET.equals(method)) {

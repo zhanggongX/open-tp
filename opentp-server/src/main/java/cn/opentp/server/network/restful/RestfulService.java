@@ -10,17 +10,21 @@ import io.netty.handler.codec.http.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+
 public class RestfulService {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     // rest endpoint 映射
-    private final EndpointMapping endpointMapping = new EndpointMapping();
+    private final EndpointMappings endpointMapping = new EndpointMappings();
 
     private final NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
     private final NioEventLoopGroup workGroup = new NioEventLoopGroup(1);
 
     public void start(String host, int port) {
+        serverInit();
+
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(bossGroup, workGroup)
                 .option(ChannelOption.SO_BACKLOG, 1024)
@@ -39,12 +43,22 @@ public class RestfulService {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
-                    log.info("restful service start success {}:{}", host, port);
+                    log.info("RESTFul 服务启动，主机：{}，端口：{}", host, port);
                 } else {
-                    log.error("restful service start error: ", future.cause());
+                    log.error("RESTFul 服务启动启动失败：", future.cause());
                 }
             }
         });
+    }
+
+    public void serverInit() {
+        EndpointMappingFactory endpointMappingFactory = new EndpointMappingFactory();
+        try {
+            endpointMappingFactory.registerMappings("cn.opentp.server.network.restful.endpoint");
+        } catch (IOException e) {
+            log.error("RESTFul 服务初始化失败：", e);
+            throw new RuntimeException(e);
+        }
     }
 
     public void handle(ChannelHandlerContext ctx, FullHttpRequest httpRequest) {
@@ -86,7 +100,7 @@ public class RestfulService {
         workGroup.shutdownGracefully();
     }
 
-    public EndpointMapping endpointMapping() {
+    public EndpointMappings endpointMapping() {
         return endpointMapping;
     }
 }
