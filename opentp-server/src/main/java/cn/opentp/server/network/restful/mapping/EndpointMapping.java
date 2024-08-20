@@ -6,8 +6,7 @@ import java.util.List;
 /**
  * 请求映射类
  *
- * @author Leo
- * @date 2018/3/16
+ * @author zg
  */
 public final class EndpointMapping {
 

@@ -6,10 +6,12 @@ import cn.opentp.server.network.restful.register.MappingRegister;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -42,6 +44,7 @@ public class EndpointMappingFactory {
      * @return 扫描到的所有类
      */
     private Set<Class<?>> scanClasses(String packageName) throws IOException {
+        Set<Class<?>> allClasses = new HashSet<>();
 
         String packageDir = packageName.replace('.', '/');
         Enumeration<URL> allUrls = this.getClass().getClassLoader().getResources(packageDir);
@@ -49,14 +52,59 @@ public class EndpointMappingFactory {
             URL url = allUrls.nextElement();
             String protocol = url.getProtocol();
             // 暂不支持其它格式的文件类型
-            if ("jar".equals(protocol)) {
+            if ("file".equals(protocol)) {
+                // 如果是以文件的形式保存在服务器上
+                String filePath = URLDecoder.decode(url.getFile(), "UTF-8");
+                // 获取包的物理路径
+                allClasses.addAll(scanClasses(filePath, packageName));
+            } else if ("jar".equals(protocol)) {
                 // 如果是jar包文件
                 JarFile jar = ((JarURLConnection) url.openConnection()).getJarFile();
-                return scanClasses(packageName, jar);
+                allClasses.addAll(scanClasses(packageName, jar));
             }
         }
 
-        return Collections.emptySet();
+        return allClasses;
+    }
+
+    /**
+     * 扫描包下的所有class文件
+     *
+     * @param path
+     * @param packageName
+     */
+    private Set<Class<?>> scanClasses(String path, String packageName) {
+        Set<Class<?>> classes = new HashSet<>();
+
+        File dir = new File(path);
+        if (!dir.exists() || !dir.isDirectory()) {
+            return Collections.emptySet();
+        }
+        File[] files = dir.listFiles(filter -> filter.isDirectory() || filter.getName().endsWith("class"));
+        for (File f : files) {
+            if (f.isDirectory()) {
+                classes.addAll(scanClasses(packageName + "." + f.getName(), path + "/" + f.getName()));
+                continue;
+            }
+
+            // 获取类名，去掉 ".class" 后缀
+            String className = f.getName();
+            className = packageName + "." + className.substring(0, className.length() - 6);
+
+            // 加载类
+            Class<?> clazz = null;
+            try {
+                clazz = Class.forName(className);
+            } catch (ClassNotFoundException e) {
+                log.error("Class not found, {}", className);
+            }
+            if (clazz != null && clazz.getAnnotation(RestController.class) != null) {
+                if (clazz != null) {
+                    classes.add(clazz);
+                }
+            }
+        }
+        return classes;
     }
 
     /**

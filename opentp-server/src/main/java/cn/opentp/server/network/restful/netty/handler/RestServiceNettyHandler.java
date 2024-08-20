@@ -1,5 +1,7 @@
 package cn.opentp.server.network.restful.netty.handler;
 
+import cn.opentp.server.OpentpApp;
+import cn.opentp.server.network.restful.RestfulService;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -12,11 +14,11 @@ public class RestServiceNettyHandler extends SimpleChannelInboundHandler<FullHtt
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest httpRequest) throws Exception {
-
+        OpentpApp.instance().restfulService().handle(ctx, httpRequest);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error("server caught exception: ", cause);
+        log.error("Rest Service Netty Handler 捕获异常：", cause);
     }
 }
