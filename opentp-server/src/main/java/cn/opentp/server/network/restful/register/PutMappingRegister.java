@@ -1,7 +1,6 @@
 package cn.opentp.server.network.restful.register;
 
-import cn.opentp.server.network.restful.EndpointMappings;
-import cn.opentp.server.network.restful.annotation.PostMapping;
+import cn.opentp.server.network.restful.mapping.EndpointMappings;
 import cn.opentp.server.network.restful.annotation.PutMapping;
 import cn.opentp.server.network.restful.mapping.EndpointMapping;
 

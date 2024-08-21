@@ -10,13 +10,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * RESTFul 请求对象
+ */
 public class RestHttpRequest {
 
+    // 请求对象
     private final FullHttpRequest httpRequest;
 
+    // 请求参数
     private final Map<String, Object> params = new HashMap<>();
+    // 请求头
     private final Map<String, String> headers = new HashMap<>();
 
+    // 请求内容类型
+    private final String contentType;
+    // 请求体
     private String requestBody;
 
 
@@ -24,14 +33,14 @@ public class RestHttpRequest {
         this.httpRequest = httpRequest;
 
         QueryStringDecoder urlDecoder = new QueryStringDecoder(httpRequest.uri());
-        Set<Map.Entry<String, List<String>>> entrySet = urlDecoder.parameters().entrySet();
-        entrySet.forEach(entry -> {
-            params.put(entry.getKey(), entry.getValue().get(0));
-        });
+        urlDecoder.parameters().forEach((key, value) -> params.put(key, value.get(0)));
 
-        List<Map.Entry<String, String>> entries = httpRequest.headers().entries();
-        for (Map.Entry<String, String> entry : entries) {
-            headers.put(entry.getKey(), entry.getValue());
+        httpRequest.headers().forEach(e -> headers.put(e.getKey(), e.getValue()));
+
+        this.contentType = httpRequest.headers().get("Content-Type");
+        // 非 GET 请求，记录请求体。
+        if (!httpRequest.method().name().equalsIgnoreCase("GET")) {
+            this.requestBody = httpRequest.content().toString(StandardCharsets.UTF_8);
         }
     }
 
@@ -51,10 +60,6 @@ public class RestHttpRequest {
         return requestBody;
     }
 
-    public void setRequestBody() {
-        httpRequest.content().toString(StandardCharsets.UTF_8);
-    }
-
     public String uri() {
         return httpRequest.uri();
     }
@@ -67,12 +72,8 @@ public class RestHttpRequest {
         return params.get(paramName);
     }
 
-//    public void putParam(String paramName, String param) {
-//        params.put(paramName, param);
-//    }
+    public String contentType() {
+        return contentType;
 
-//    public Set<String> headerNames() {
-////        HttpHeaders headers = httpRequest.headers();
-//        return httpRequest.headers().names();
-//    }
+    }
 }

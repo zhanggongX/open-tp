@@ -1,10 +1,8 @@
 package cn.opentp.server.network.restful.register;
 
-import cn.opentp.server.network.restful.SupportHttpRequestType;
 import cn.opentp.server.network.restful.annotation.PathVariable;
 import cn.opentp.server.network.restful.annotation.RequestBody;
 import cn.opentp.server.network.restful.annotation.RequestHeader;
-import cn.opentp.server.network.restful.annotation.UrlEncodedForm;
 import cn.opentp.server.network.restful.mapping.EndPointMappingParamType;
 import cn.opentp.server.network.restful.mapping.EndpointMapping;
 import cn.opentp.server.network.restful.mapping.EndpointMappingParam;
@@ -18,7 +16,9 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * mapping 注册
@@ -29,6 +29,13 @@ public abstract class AbstractMappingRegister implements MappingRegister {
 
     private final Logger log = LoggerFactory.getLogger(AbstractMappingRegister.class);
 
+    /**
+     * mapping 注册
+     *
+     * @param clazz           RESTFul 类
+     * @param classRequestUrl 类上的请求路径
+     * @param method          具体方法
+     */
     @Override
     public void register(Class<?> clazz, String classRequestUrl, Method method) {
 
@@ -38,63 +45,15 @@ public abstract class AbstractMappingRegister implements MappingRegister {
             return;
         }
 
+        List<EndpointMappingParam> endpointMappingParams = resolveParams(clazz, method);
+
+        // build EndpointMapping
         EndpointMapping endpointMapping = new EndpointMapping();
-        endpointMapping.setUrl(completeRequestUrl);
-        endpointMapping.setClassName(clazz.getName());
-        endpointMapping.setClassMethod(method.getName());
-//        String httpMethod = resolveHttpMethod();
-//        if (httpMethod == null) {
-//            log.error("请求{}-{}不支持的请求类型，目前只支持：{}", clazz.getName(), method.getName(), SupportHttpRequestType.supportedHttpMethods());
-//            throw new IllegalCallerException(clazz.getName() + "/" + method.getName());
-//        }
+        endpointMapping.setClazz(clazz);
+        endpointMapping.setMethod(method);
+        endpointMapping.setRequestUrl(completeRequestUrl);
+        endpointMapping.getParams().addAll(endpointMappingParams);
 
-        // 得到参数
-        Parameter[] parameters = method.getParameters();
-        if (parameters.length > 0) {
-            // 得到所有参数名
-            String[] paramNames = resolveMethodParamNames(clazz, method);
-            for (int i = 0; i < parameters.length; i++) {
-                EndpointMappingParam endpointMappingParam = new EndpointMappingParam();
-                endpointMappingParam.setDataType(parameters[i].getType());
-
-                if (parameters[i].getType().equals(FullHttpRequest.class)) {
-                    endpointMappingParam.setName(paramNames[i]);
-                    endpointMappingParam.setType(EndPointMappingParamType.HTTP_REQUEST);
-                    endpointMapping.getParams().add(endpointMappingParam);
-                    continue;
-                }
-
-                if (parameters[i].getAnnotation(RequestHeader.class) != null) {
-                    RequestHeader requestHeader = parameters[i].getAnnotation(RequestHeader.class);
-                    endpointMappingParam.setName((requestHeader.value() != null && !requestHeader.value().trim().isEmpty()) ?
-                            requestHeader.value().trim() : paramNames[i]);
-                    endpointMappingParam.setRequired(requestHeader.required());
-                    endpointMappingParam.setType(EndPointMappingParamType.REQUEST_HEADER);
-                    endpointMapping.getParams().add(endpointMappingParam);
-                    continue;
-                }
-
-                if (parameters[i].getAnnotation(PathVariable.class) != null) {
-                    PathVariable pathVariable = parameters[i].getAnnotation(PathVariable.class);
-                    endpointMappingParam.setName((pathVariable.value() != null && !pathVariable.value().trim().isEmpty()) ?
-                            pathVariable.value().trim() : paramNames[i]);
-                    endpointMappingParam.setType(EndPointMappingParamType.PATH_VARIABLE);
-                    endpointMapping.getParams().add(endpointMappingParam);
-                    continue;
-                }
-
-                if (parameters[i].getAnnotation(RequestBody.class) != null) {
-                    endpointMappingParam.setName(paramNames[i]);
-                    endpointMappingParam.setType(EndPointMappingParamType.REQUEST_BODY);
-                    endpointMapping.getParams().add(endpointMappingParam);
-                    continue;
-                }
-
-                endpointMappingParam.setName(paramNames[i]);
-                endpointMappingParam.setType(EndPointMappingParamType.REQUEST_PARAM);
-                endpointMapping.getParams().add(endpointMappingParam);
-            }
-        }
         registerMapping(completeRequestUrl, endpointMapping);
     }
 
@@ -130,20 +89,60 @@ public abstract class AbstractMappingRegister implements MappingRegister {
         return completeRequestUrl.toString();
     }
 
-    /**
-     * 获取请求方法
-     *
-     * @return 请求方法
-     */
-//    abstract String resolveHttpMethod();
 
-    /**
-     * 注册 mapping
-     *
-     * @param completeRequestUrl 完整的请求路径
-     * @param endpointMapping    mapping
-     */
-    abstract void registerMapping(String completeRequestUrl, EndpointMapping endpointMapping);
+    private List<EndpointMappingParam> resolveParams(Class<?> clazz, Method method) {
+        List<EndpointMappingParam> params = new ArrayList<>();
+
+        // 得到参数
+        Parameter[] parameters = method.getParameters();
+        if (parameters.length > 0) {
+            // 得到所有参数名
+            String[] paramNames = resolveMethodParamNames(clazz, method);
+            for (int i = 0; i < parameters.length; i++) {
+                EndpointMappingParam endpointMappingParam = new EndpointMappingParam();
+                endpointMappingParam.setDataType(parameters[i].getType());
+
+                if (parameters[i].getType().equals(FullHttpRequest.class)) {
+                    endpointMappingParam.setName(paramNames[i]);
+                    endpointMappingParam.setType(EndPointMappingParamType.HTTP_REQUEST);
+                    params.add(endpointMappingParam);
+                    continue;
+                }
+
+                if (parameters[i].getAnnotation(RequestHeader.class) != null) {
+                    RequestHeader requestHeader = parameters[i].getAnnotation(RequestHeader.class);
+                    endpointMappingParam.setName((requestHeader.value() != null && !requestHeader.value().trim().isEmpty()) ?
+                            requestHeader.value().trim() : paramNames[i]);
+                    endpointMappingParam.setRequired(requestHeader.required());
+                    endpointMappingParam.setType(EndPointMappingParamType.REQUEST_HEADER);
+                    params.add(endpointMappingParam);
+                    continue;
+                }
+
+                if (parameters[i].getAnnotation(PathVariable.class) != null) {
+                    PathVariable pathVariable = parameters[i].getAnnotation(PathVariable.class);
+                    endpointMappingParam.setName((pathVariable.value() != null && !pathVariable.value().trim().isEmpty()) ?
+                            pathVariable.value().trim() : paramNames[i]);
+                    endpointMappingParam.setType(EndPointMappingParamType.PATH_VARIABLE);
+                    params.add(endpointMappingParam);
+                    continue;
+                }
+
+                if (parameters[i].getAnnotation(RequestBody.class) != null) {
+                    endpointMappingParam.setName(paramNames[i]);
+                    endpointMappingParam.setType(EndPointMappingParamType.REQUEST_BODY);
+                    params.add(endpointMappingParam);
+                    continue;
+                }
+
+                endpointMappingParam.setName(paramNames[i]);
+                endpointMappingParam.setType(EndPointMappingParamType.REQUEST_PARAM);
+                params.add(endpointMappingParam);
+            }
+        }
+
+        return params;
+    }
 
     /**
      * 得到方法的所有参数名称
@@ -199,4 +198,12 @@ public abstract class AbstractMappingRegister implements MappingRegister {
         }
         return paramNames;
     }
+
+    /**
+     * 注册 mapping
+     *
+     * @param completeRequestUrl 完整的请求路径
+     * @param endpointMapping    mapping
+     */
+    abstract void registerMapping(String completeRequestUrl, EndpointMapping endpointMapping);
 }

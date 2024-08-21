@@ -2,7 +2,7 @@ package cn.opentp.server.network.restful.endpoint;
 
 import cn.opentp.server.constant.OpentpServerConstant;
 import cn.opentp.server.exception.EndpointUnSupportException;
-import cn.opentp.server.network.restful.BaseRes;
+import cn.opentp.server.network.restful.dto.BaseRes;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 

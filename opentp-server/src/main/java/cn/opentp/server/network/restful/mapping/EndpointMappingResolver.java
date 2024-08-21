@@ -1,7 +1,7 @@
-package cn.opentp.server.network.restful;
+package cn.opentp.server.network.restful.mapping;
 
 import cn.opentp.server.network.restful.annotation.*;
-import cn.opentp.server.network.restful.register.EndpointMappingRegisterHolder;
+import cn.opentp.server.network.restful.http.SupportHttpRequestType;
 import cn.opentp.server.network.restful.register.MappingRegister;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,16 +12,20 @@ import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.*;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
- * endpoint mapping 解析
+ * endpoint mapping 解析器
  *
  * @author zg
  */
-public class EndpointMappingFactory {
+public class EndpointMappingResolver {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -51,10 +55,10 @@ public class EndpointMappingFactory {
         while (allUrls.hasMoreElements()) {
             URL url = allUrls.nextElement();
             String protocol = url.getProtocol();
-            // 暂不支持其它格式的文件类型
+
             if ("file".equals(protocol)) {
                 // 如果是以文件的形式保存在服务器上
-                String filePath = URLDecoder.decode(url.getFile(), "UTF-8");
+                String filePath = URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8);
                 // 获取包的物理路径
                 allClasses.addAll(scanClasses(filePath, packageName));
             } else if ("jar".equals(protocol)) {
@@ -70,8 +74,9 @@ public class EndpointMappingFactory {
     /**
      * 扫描包下的所有class文件
      *
-     * @param path
-     * @param packageName
+     * @param path        文件路径
+     * @param packageName 包名
+     * @return 扫描到的所有类
      */
     private Set<Class<?>> scanClasses(String path, String packageName) {
         Set<Class<?>> classes = new HashSet<>();
@@ -80,28 +85,30 @@ public class EndpointMappingFactory {
         if (!dir.exists() || !dir.isDirectory()) {
             return Collections.emptySet();
         }
+
         File[] files = dir.listFiles(filter -> filter.isDirectory() || filter.getName().endsWith("class"));
-        for (File f : files) {
-            if (f.isDirectory()) {
-                classes.addAll(scanClasses(packageName + "." + f.getName(), path + "/" + f.getName()));
+        if (files == null) {
+            return Collections.emptySet();
+        }
+
+        for (File file : files) {
+            if (file.isDirectory()) {
+                classes.addAll(scanClasses(packageName + "." + file.getName(), path + "/" + file.getName()));
                 continue;
             }
 
             // 获取类名，去掉 ".class" 后缀
-            String className = f.getName();
+            String className = file.getName();
             className = packageName + "." + className.substring(0, className.length() - 6);
 
             // 加载类
-            Class<?> clazz = null;
             try {
-                clazz = Class.forName(className);
-            } catch (ClassNotFoundException e) {
-                log.error("Class not found, {}", className);
-            }
-            if (clazz != null && clazz.getAnnotation(RestController.class) != null) {
-                if (clazz != null) {
+                Class<?> clazz = Class.forName(className);
+                if (clazz.getAnnotation(RestController.class) != null) {
                     classes.add(clazz);
                 }
+            } catch (ClassNotFoundException e) {
+                log.warn("Class not found, {}", className);
             }
         }
         return classes;
@@ -139,9 +146,8 @@ public class EndpointMappingFactory {
             }
 
             // 加载类
-            Class<?> clazz = null;
             try {
-                clazz = Class.forName(className);
+                Class<?> clazz = Class.forName(className);
                 if (clazz.getAnnotation(RestController.class) != null) {
                     classes.add(clazz);
                 }
@@ -149,6 +155,7 @@ public class EndpointMappingFactory {
                 log.error("ClassNotFoundException ：{}，：", className, e);
             }
         }
+
         return classes;
     }
 
@@ -159,34 +166,41 @@ public class EndpointMappingFactory {
      */
     private void registerClass(Class<?> clazz) {
         String className = clazz.getName();
-        log.info("find RESTFul class: {}", className);
+        log.info("发现 RESTFul 类: {}", className);
 
         RequestMapping requestMapping = clazz.getAnnotation(RequestMapping.class);
         if (requestMapping == null) {
+            log.warn("RESTFul 类: {}, 没有配置 RequestMapping ！", className);
             return;
         }
-        String url = requestMapping.value();
+        String classRequestUrl = requestMapping.value();
 
         Method[] methods = clazz.getMethods();
         for (Method method : methods) {
+            // mapping 注册器
+            MappingRegister register = getMappingRegister(clazz, method);
+            if (register == null) continue;
 
-            MappingRegister register = null;
-            // 遍历所有method，生成ControllerMapping并注册。
-            if (method.getAnnotation(GetMapping.class) != null) {
-                register = EndpointMappingRegisterHolder.MAPPING_REGISTER_MAP.get(SupportHttpRequestType.GET);
-            } else if (method.getAnnotation(PostMapping.class) != null) {
-                register = EndpointMappingRegisterHolder.MAPPING_REGISTER_MAP.get(SupportHttpRequestType.POST);
-            } else if (method.getAnnotation(PutMapping.class) != null) {
-                register = EndpointMappingRegisterHolder.MAPPING_REGISTER_MAP.get(SupportHttpRequestType.PUT);
-            } else if (method.getAnnotation(DeleteMapping.class) != null) {
-                register = EndpointMappingRegisterHolder.MAPPING_REGISTER_MAP.get(SupportHttpRequestType.DELETE);
-            } else if (method.getAnnotation(PatchMapping.class) != null) {
-                register = EndpointMappingRegisterHolder.MAPPING_REGISTER_MAP.get(SupportHttpRequestType.PATCH);
-            }
-
-            if (register != null) {
-                register.register(clazz, url, method);
-            }
+            // 执行 mapping 注册
+            register.register(clazz, classRequestUrl, method);
         }
+    }
+
+    private MappingRegister getMappingRegister(Class<?> clazz, Method method) {
+        MappingRegister register = null;
+        if (method.getAnnotation(GetMapping.class) != null) {
+            register = SupportHttpRequestType.GET.getMappingRegister();
+        } else if (method.getAnnotation(PostMapping.class) != null) {
+            register = SupportHttpRequestType.POST.getMappingRegister();
+        } else if (method.getAnnotation(PutMapping.class) != null) {
+            register = SupportHttpRequestType.PUT.getMappingRegister();
+        } else if (method.getAnnotation(DeleteMapping.class) != null) {
+            register = SupportHttpRequestType.DELETE.getMappingRegister();
+        } else if (method.getAnnotation(PatchMapping.class) != null) {
+            register = SupportHttpRequestType.PATCH.getMappingRegister();
+        } else {
+            log.error("class : {}, method : {}, 未配置 Http 注解", clazz.getName(), method.getName());
+        }
+        return register;
     }
 }

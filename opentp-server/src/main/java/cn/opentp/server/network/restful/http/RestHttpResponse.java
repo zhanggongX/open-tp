@@ -21,19 +21,19 @@ public class RestHttpResponse {
 
     private final FullHttpResponse httpResponse;
 
-    private final ChannelHandlerContext ctx;
+    private final ChannelHandlerContext channelHandlerContext;
 
     private final Map<String, String> headers = new HashMap<>();
 
     private final Map<String, String> cookies = new HashMap<>();
 
     public RestHttpResponse(ChannelHandlerContext ctx, FullHttpResponse httpResponse) {
-        this.ctx = ctx;
+        this.channelHandlerContext = ctx;
         this.httpResponse = httpResponse;
     }
 
     public ChannelHandlerContext getChannelHandlerContext() {
-        return this.ctx;
+        return this.channelHandlerContext;
     }
 
 //    public Map<String, String> getHeaders() {
@@ -52,8 +52,8 @@ public class RestHttpResponse {
      * 关闭Channel
      */
     public void closeChannel() {
-        if (this.ctx != null && this.ctx.channel() != null) {
-            this.ctx.channel().close();
+        if (this.channelHandlerContext != null && this.channelHandlerContext.channel() != null) {
+            this.channelHandlerContext.channel().close();
         }
     }
 
@@ -63,7 +63,7 @@ public class RestHttpResponse {
         }
         httpResponse.headers().setInt("Content-Length", httpResponse.content().readableBytes());
 
-        return this.ctx.writeAndFlush(new DefaultFullHttpResponse(httpVersion, httpResponseStatus, byteBuf));
+        return this.channelHandlerContext.writeAndFlush(new DefaultFullHttpResponse(httpVersion, httpResponseStatus, byteBuf));
     }
 
     /**
@@ -87,12 +87,20 @@ public class RestHttpResponse {
             response.headers().add(entry.getKey(), entry.getValue());
         }
         response.headers().setInt("Content-Length", response.content().readableBytes());
-        ctx.writeAndFlush(response);
+        channelHandlerContext.writeAndFlush(response);
     }
-
 
 
     public Map<String, String> getHeaders() {
         return headers;
+    }
+
+    public void setContent(String content) {
+        httpResponse.content().writeBytes(Unpooled.copiedBuffer(content, CharsetUtil.UTF_8));
+        httpResponse.headers().setInt("Content-Length", httpResponse.content().readableBytes());
+    }
+
+    public void setHeaders(String header, String value) {
+        httpResponse.headers().set(header, value);
     }
 }

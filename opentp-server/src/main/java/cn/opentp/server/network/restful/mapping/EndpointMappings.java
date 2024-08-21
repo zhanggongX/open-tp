@@ -1,15 +1,12 @@
-package cn.opentp.server.network.restful;
+package cn.opentp.server.network.restful.mapping;
 
 import cn.opentp.server.network.restful.http.RestHttpRequest;
-import cn.opentp.server.network.restful.mapping.EndpointMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
 
 /**
  * endpoint 映射
@@ -134,7 +131,7 @@ public class EndpointMappings {
         };
     }
 
-    public static EndpointMapping lookupMappings(RestHttpRequest request) {
+    public static EndpointMapping matchEndpointMapping(RestHttpRequest request) {
         String uri = request.uri();
         String lookupPath = uri.endsWith("/") ? uri.substring(0, uri.length() - 1) : uri;
 

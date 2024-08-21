@@ -1,11 +1,9 @@
 package cn.opentp.server.network.restful;
 
-import cn.opentp.server.exception.DefaultExceptionHandler;
-import cn.opentp.server.exception.ExceptionHandler;
 import cn.opentp.server.network.restful.http.RestHttpRequest;
 import cn.opentp.server.network.restful.http.RestHttpResponse;
-import cn.opentp.server.network.restful.http.RequestInfo;
-import cn.opentp.server.network.restful.netty.handler.RestServiceNettyHandler;
+import cn.opentp.server.network.restful.mapping.EndpointMappingResolver;
+import cn.opentp.server.network.restful.netty.handler.RestfulServiceNettyHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
@@ -18,28 +16,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
+/**
+ * RESTFul 服务
+ *
+ * @author zg
+ */
 public class RestfulService {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    // rest endpoint 映射
-//    private final EndpointMappings endpointMapping = new EndpointMappings();
-    private final ExceptionHandler exceptionHandler = new DefaultExceptionHandler();
     private final RestfulDispatcher restfulDispatcher = new RestfulDispatcher();
 
     private final NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
     private final NioEventLoopGroup workGroup = new NioEventLoopGroup(1);
-
-    public ExceptionHandler getExceptionHandler() {
-        return exceptionHandler;
-    }
 
     public void start(String host, int port) {
         serverInit();
@@ -53,7 +45,7 @@ public class RestfulService {
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
                         socketChannel.pipeline().addLast(new HttpServerCodec());
                         socketChannel.pipeline().addLast(new HttpObjectAggregator(65536));
-                        socketChannel.pipeline().addLast(new RestServiceNettyHandler());
+                        socketChannel.pipeline().addLast(new RestfulServiceNettyHandler());
                     }
                 });
 
@@ -71,9 +63,9 @@ public class RestfulService {
     }
 
     public void serverInit() {
-        EndpointMappingFactory endpointMappingFactory = new EndpointMappingFactory();
+        EndpointMappingResolver endpointMappingResolver = new EndpointMappingResolver();
         try {
-            endpointMappingFactory.registerMappings("cn.opentp.server.network.restful.endpoint");
+            endpointMappingResolver.registerMappings("cn.opentp.server.network.restful.endpoint");
         } catch (IOException e) {
             log.error("RESTFul 服务初始化失败：", e);
             throw new RuntimeException(e);
@@ -82,16 +74,12 @@ public class RestfulService {
 
     public void handle(ChannelHandlerContext ctx, FullHttpRequest httpRequest) {
         RestHttpRequest request = new RestHttpRequest(httpRequest);
-        RestHttpResponse response = new RestHttpResponse(ctx, new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK));
-        restfulDispatcher.dispatcher(request, response);
+        RestHttpResponse response = new RestHttpResponse(ctx, new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, Unpooled.copiedBuffer("", CharsetUtil.UTF_8)));
+        restfulDispatcher.doDispatch(request, response);
     }
 
     public void close() {
         bossGroup.shutdownGracefully();
         workGroup.shutdownGracefully();
     }
-
-//    public EndpointMappings endpointMapping() {
-//        return endpointMapping;
-//    }
 }

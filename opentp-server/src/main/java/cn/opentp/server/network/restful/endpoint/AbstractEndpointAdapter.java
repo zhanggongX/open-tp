@@ -1,7 +1,7 @@
 package cn.opentp.server.network.restful.endpoint;
 
 import cn.opentp.core.util.JacksonUtil;
-import cn.opentp.server.network.restful.BaseRes;
+import cn.opentp.server.network.restful.dto.BaseRes;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
