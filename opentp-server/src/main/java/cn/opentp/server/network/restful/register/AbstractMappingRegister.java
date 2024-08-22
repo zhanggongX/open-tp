@@ -40,21 +40,23 @@ public abstract class AbstractMappingRegister implements MappingRegister {
     public void register(Class<?> clazz, String classRequestUrl, Method method) {
 
         String methodRequestUrl = resolveMethodRequestUrl(method);
-        String completeRequestUrl = buildCompleteRequestUrl(classRequestUrl, methodRequestUrl);
-        if (completeRequestUrl.isEmpty()) {
+        List<String> completeRequestUrls = buildCompleteRequestUrl(classRequestUrl, methodRequestUrl);
+        if (completeRequestUrls.isEmpty()) {
             return;
         }
 
         List<EndpointMappingParam> endpointMappingParams = resolveParams(clazz, method);
 
         // build EndpointMapping
-        EndpointMapping endpointMapping = new EndpointMapping();
-        endpointMapping.setClazz(clazz);
-        endpointMapping.setMethod(method);
-        endpointMapping.setRequestUrl(completeRequestUrl);
-        endpointMapping.getParams().addAll(endpointMappingParams);
+        for (String completeRequestUrl : completeRequestUrls) {
+            EndpointMapping endpointMapping = new EndpointMapping();
+            endpointMapping.setClazz(clazz);
+            endpointMapping.setMethod(method);
+            endpointMapping.setRequestUrl(completeRequestUrl);
+            endpointMapping.getParams().addAll(endpointMappingParams);
 
-        registerMapping(completeRequestUrl, endpointMapping);
+            registerMapping(completeRequestUrl, endpointMapping);
+        }
     }
 
     /**
@@ -70,23 +72,27 @@ public abstract class AbstractMappingRegister implements MappingRegister {
      *
      * @param classRequestUrl  类上的请求URL
      * @param methodRequestUrl 方法上的请求URL
-     * @return 完整的请求路径
+     * @return 完整的请求路径列表，主要是为了兼容 index 请求。
      */
-    private String buildCompleteRequestUrl(String classRequestUrl, String methodRequestUrl) {
-        StringBuilder completeRequestUrl = new StringBuilder();
+    private List<String> buildCompleteRequestUrl(String classRequestUrl, String methodRequestUrl) {
+        StringBuilder completeRequestUrlBuilder = new StringBuilder();
 
-        completeRequestUrl.append((classRequestUrl != null && !classRequestUrl.trim().isEmpty()) ? classRequestUrl.trim() : "");
+        completeRequestUrlBuilder.append((classRequestUrl != null && !classRequestUrl.trim().isEmpty()) ? classRequestUrl.trim() : "");
 
         if (methodRequestUrl != null && !methodRequestUrl.trim().isEmpty()) {
             methodRequestUrl = methodRequestUrl.trim();
             // 如果方法上的请求URL不是以/开头，并且类上的请求URL不是以/结尾，则添加/
-            if (!methodRequestUrl.startsWith("/") && !completeRequestUrl.toString().endsWith("/")) {
+            if (!methodRequestUrl.startsWith("/") && !completeRequestUrlBuilder.toString().endsWith("/")) {
                 methodRequestUrl = "/" + methodRequestUrl;
             }
 
-            completeRequestUrl.append(methodRequestUrl);
+            completeRequestUrlBuilder.append(methodRequestUrl);
         }
-        return completeRequestUrl.toString();
+        String completeRequestUrl = completeRequestUrlBuilder.toString();
+        if (completeRequestUrl.equals("/") || completeRequestUrl.equals("//") || completeRequestUrl.isEmpty()) {
+            return List.of("/", "//", "");
+        }
+        return List.of(completeRequestUrlBuilder.toString());
     }
 
 
