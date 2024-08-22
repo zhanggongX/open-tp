@@ -175,7 +175,7 @@ public class EndpointMappingResolver {
         }
         String classRequestUrl = requestMapping.value();
 
-        Method[] methods = clazz.getMethods();
+        Method[] methods = clazz.getDeclaredMethods();
         for (Method method : methods) {
             // mapping 注册器
             MappingRegister register = getMappingRegister(clazz, method);
@@ -199,7 +199,7 @@ public class EndpointMappingResolver {
         } else if (method.getAnnotation(PatchMapping.class) != null) {
             register = SupportHttpRequestType.PATCH.getMappingRegister();
         } else {
-            log.error("class : {}, method : {}, 未配置 Http 注解", clazz.getName(), method.getName());
+            log.warn("class : {}, method : {}, 未配置 Http 注解", clazz.getName(), method.getName());
         }
         return register;
     }

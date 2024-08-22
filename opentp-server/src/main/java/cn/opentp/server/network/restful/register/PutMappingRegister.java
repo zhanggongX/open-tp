@@ -18,11 +18,6 @@ public class PutMappingRegister extends AbstractMappingRegister {
         return "";
     }
 
-//    @Override
-//    String resolveHttpMethod() {
-//        return "";
-//    }
-
     @Override
     void registerMapping(String completeRequestUrl, EndpointMapping endpointMapping) {
         EndpointMappings.registerPutMapping(completeRequestUrl, endpointMapping);

@@ -24,7 +24,7 @@ public class RestHttpRequest {
     private final Map<String, String> headers = new HashMap<>();
 
     // 请求内容类型
-    private final String contentType;
+    private String contentType;
     // 请求体
     private String requestBody;
 
@@ -38,6 +38,12 @@ public class RestHttpRequest {
         httpRequest.headers().forEach(e -> headers.put(e.getKey(), e.getValue()));
 
         this.contentType = httpRequest.headers().get("Content-Type");
+        if (this.contentType != null) {
+            this.contentType = this.contentType.split(";")[0];
+        }else {
+            this.contentType = SupportHttpContentType.APPLICATION_JSON.getContentType();
+        }
+
         // 非 GET 请求，记录请求体。
         if (!httpRequest.method().name().equalsIgnoreCase("GET")) {
             this.requestBody = httpRequest.content().toString(StandardCharsets.UTF_8);

@@ -19,11 +19,6 @@ public class PostMappingRegister extends AbstractMappingRegister {
         return "";
     }
 
-//    @Override
-//    String resolveHttpMethod() {
-//        return "";
-//    }
-
     @Override
     void registerMapping(String completeRequestUrl, EndpointMapping endpointMapping) {
         EndpointMappings.registerPostMapping(completeRequestUrl, endpointMapping);

@@ -1,9 +1,12 @@
 package cn.opentp.server.network.restful.mapping;
 
+import cn.opentp.server.exception.ResourceNotFoundException;
 import cn.opentp.server.network.restful.http.RestHttpRequest;
+import com.sun.jdi.request.DuplicateRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,101 +24,88 @@ public class EndpointMappings {
     private static final Map<String, EndpointMapping> putMappings = new ConcurrentHashMap<>();
     private static final Map<String, EndpointMapping> deleteMappings = new ConcurrentHashMap<>();
 
-    private static final Map<String, Object> singletons = new ConcurrentHashMap<>(128);
-
-    /**
-     * 注册Controller类的单例
-     *
-     * @param name
-     * @param singleton
-     */
-    public static void registerSingleton(String name, Object singleton) {
-        singletons.put(name, singleton);
-    }
+    private static final Map<Class<?>, Object> singletons = new ConcurrentHashMap<>();
+    private static final Object lock = new Object();
 
     /**
      * 得到单例
      *
-     * @param name
-     * @return
+     * @param clazz 类
+     * @return 类对象
      */
-    public static Object getSingleton(String name) {
-        if (singletons.containsKey(name)) {
-            return singletons.get(name);
-        }
+    public static Object getSingleton(Class<?> clazz) {
+        return singletons.get(clazz);
+    }
 
-        Class<?> clazz = null;
-        try {
-            clazz = Class.forName(name);
-        } catch (ClassNotFoundException e) {
-            log.error("Class not found: {}", name);
-            return null;
+    private static void registerSingleton(Class<?> clazz) {
+        if (!singletons.containsKey(clazz)) {
+            synchronized (lock) {
+                if (!singletons.containsKey(clazz)) {
+                    Object instance = null;
+                    try {
+                        instance = clazz.getDeclaredConstructor().newInstance();
+                    } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
+                             IllegalAccessException e) {
+                        log.error("Create class instance failure: {}, : ", clazz.getName(), e);
+                        throw new ResourceNotFoundException("class[" + clazz.getName() + "]创建对象失败");
+                    }
+                    singletons.put(clazz, instance);
+                }
+            }
         }
-        Object instance = null;
-        try {
-            instance = clazz.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            log.error("Create class instance failure: {}", name);
-            return null;
-        }
-        Object result = singletons.putIfAbsent(name, instance);
-        if (result == null) {
-            return instance;
-        }
-        return result;
     }
 
 
     public static synchronized void registerDeleteMapping(String completeRequestUrl, EndpointMapping endpointMapping) {
         EndpointMapping added = deleteMappings.get(completeRequestUrl);
         if (added != null) {
-            log.error("重复的 url: {}", completeRequestUrl);
-            throw new IllegalArgumentException("URL重复");
+            throw new RuntimeException("URL重复：" + completeRequestUrl);
         }
         deleteMappings.put(completeRequestUrl, endpointMapping);
+        registerSingleton(endpointMapping.getClazz());
     }
 
     public static synchronized void registerGetMapping(String completeRequestUrl, EndpointMapping endpointMapping) {
         EndpointMapping added = getMappings.get(completeRequestUrl);
         if (added != null) {
-            log.error("重复的 url: {}", completeRequestUrl);
-            throw new IllegalArgumentException("URL重复");
+            throw new RuntimeException("URL重复：" + completeRequestUrl);
         }
         getMappings.put(completeRequestUrl, endpointMapping);
+        registerSingleton(endpointMapping.getClazz());
     }
 
     public static synchronized void registerPatchMapping(String completeRequestUrl, EndpointMapping endpointMapping) {
         EndpointMapping added = patchMappings.get(completeRequestUrl);
         if (added != null) {
-            log.error("重复的 url: {}", completeRequestUrl);
-            throw new IllegalArgumentException("URL重复");
+            throw new RuntimeException("URL重复：" + completeRequestUrl);
         }
         patchMappings.put(completeRequestUrl, endpointMapping);
+        registerSingleton(endpointMapping.getClazz());
     }
 
     public static synchronized void registerPostMapping(String completeRequestUrl, EndpointMapping endpointMapping) {
         EndpointMapping added = postMappings.get(completeRequestUrl);
         if (added != null) {
-            log.error("重复的 url: {}", completeRequestUrl);
-            throw new IllegalArgumentException("URL重复");
+            throw new RuntimeException("URL重复：" + completeRequestUrl);
         }
         postMappings.put(completeRequestUrl, endpointMapping);
+        registerSingleton(endpointMapping.getClazz());
     }
 
     public static synchronized void registerPutMapping(String completeRequestUrl, EndpointMapping endpointMapping) {
         EndpointMapping added = putMappings.get(completeRequestUrl);
         if (added != null) {
-            log.error("重复的 url: {}", completeRequestUrl);
-            throw new IllegalArgumentException("URL重复");
+            throw new RuntimeException("URL重复：" + completeRequestUrl);
         }
         putMappings.put(completeRequestUrl, endpointMapping);
+        registerSingleton(endpointMapping.getClazz());
     }
 
     /**
      * 得到控制器映射哈希表
      *
-     * @param httpMethod
-     * @return
+     * @param httpMethod http 请求类型
+     * @return endpoint 映射哈希表
      */
     private static Map<String, EndpointMapping> matchMappings(String httpMethod) {
         if (httpMethod == null) {

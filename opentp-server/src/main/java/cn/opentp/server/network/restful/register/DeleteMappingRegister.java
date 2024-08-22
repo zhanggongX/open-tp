@@ -16,11 +16,6 @@ public class DeleteMappingRegister extends AbstractMappingRegister {
         return "";
     }
 
-//    @Override
-//    String resolveHttpMethod() {
-//        return SupportHttpRequestType.DELETE.name();
-//    }
-
     @Override
     void registerMapping(String completeRequestUrl, EndpointMapping endpointMapping) {
         EndpointMappings.registerDeleteMapping(completeRequestUrl, endpointMapping);

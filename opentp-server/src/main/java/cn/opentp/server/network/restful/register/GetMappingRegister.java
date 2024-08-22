@@ -19,11 +19,6 @@ public class GetMappingRegister extends AbstractMappingRegister {
         return "";
     }
 
-//    @Override
-//    String resolveHttpMethod() {
-//        return "";
-//    }
-
     @Override
     void registerMapping(String completeRequestUrl, EndpointMapping endpointMapping) {
         EndpointMappings.registerGetMapping(completeRequestUrl, endpointMapping);

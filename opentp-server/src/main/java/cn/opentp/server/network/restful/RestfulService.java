@@ -3,6 +3,7 @@ package cn.opentp.server.network.restful;
 import cn.opentp.server.network.restful.http.RestHttpRequest;
 import cn.opentp.server.network.restful.http.RestHttpResponse;
 import cn.opentp.server.network.restful.mapping.EndpointMappingResolver;
+import cn.opentp.server.network.restful.mapping.EndpointMappings;
 import cn.opentp.server.network.restful.netty.handler.RestfulServiceNettyHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
@@ -74,7 +75,7 @@ public class RestfulService {
 
     public void handle(ChannelHandlerContext ctx, FullHttpRequest httpRequest) {
         RestHttpRequest request = new RestHttpRequest(httpRequest);
-        RestHttpResponse response = new RestHttpResponse(ctx, new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, Unpooled.copiedBuffer("", CharsetUtil.UTF_8)));
+        RestHttpResponse response = new RestHttpResponse(ctx);
         restfulDispatcher.doDispatch(request, response);
     }
 

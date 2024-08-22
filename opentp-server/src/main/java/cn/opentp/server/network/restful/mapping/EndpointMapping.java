@@ -29,11 +29,7 @@ public final class EndpointMapping {
 
     private Class<?> clazz;
 
-//    private String className;
-
     private Method method;
-
-//    private String methodName;
 
     private List<EndpointMappingParam> params = new ArrayList<>();
 
@@ -53,14 +49,6 @@ public final class EndpointMapping {
         this.clazz = clazz;
     }
 
-//    public String getClassName() {
-//        return className;
-//    }
-//
-//    public void setClassName(String className) {
-//        this.className = className;
-//    }
-
     public Method getMethod() {
         return method;
     }
@@ -68,14 +56,6 @@ public final class EndpointMapping {
     public void setMethod(Method method) {
         this.method = method;
     }
-
-//    public String getMethodName() {
-//        return methodName;
-//    }
-//
-//    public void setMethodName(String methodName) {
-//        this.methodName = methodName;
-//    }
 
     public List<EndpointMappingParam> getParams() {
         return params;

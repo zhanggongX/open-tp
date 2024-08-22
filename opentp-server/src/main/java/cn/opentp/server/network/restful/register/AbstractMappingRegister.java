@@ -170,7 +170,7 @@ public abstract class AbstractMappingRegister implements MappingRegister {
         try {
             assert is != null;
             ClassReader classReader = new ClassReader(is);
-            classReader.accept(new ClassVisitor(Opcodes.ASM4) {
+            classReader.accept(new ClassVisitor(Opcodes.ASM5) {
                 @Override
                 public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
                     // 只处理指定的方法
@@ -178,7 +178,7 @@ public abstract class AbstractMappingRegister implements MappingRegister {
                     if (!method.getName().equals(name) || !Arrays.equals(argumentTypes, types)) {
                         return null;
                     }
-                    return new MethodVisitor(Opcodes.ASM4) {
+                    return new MethodVisitor(Opcodes.ASM5) {
                         @Override
                         public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
                             if (Modifier.isStatic(method.getModifiers())) {

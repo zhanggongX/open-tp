@@ -72,15 +72,14 @@ public class RestfulDispatcher {
         // 查找匹配的Mapping
         EndpointMapping mapping = EndpointMappings.matchEndpointMapping(request);
         if (mapping == null) {
-            // 全局异常处理
+            // 对应的接口不存在
             response.httpResponse().setStatus(HttpResponseStatus.NOT_FOUND);
-            response.httpResponse().content().writeBytes(Unpooled.copiedBuffer("接口不存在", CharsetUtil.UTF_8));
             return;
         }
 
         // 准备方法参数
         Object[] paramValues = new Object[mapping.getParams().size()];
-        Class<?>[] paramTypes = new Class[mapping.getParams().size()];
+//        Class<?>[] paramTypes = new Class[mapping.getParams().size()];
         for (int i = 0; i < paramValues.length; i++) {
             EndpointMappingParam endpointMappingParam = mapping.getParams().get(i);
             Converter<?> converter = null;
@@ -120,37 +119,20 @@ public class RestfulDispatcher {
 //                    break;
             }
 
-            paramTypes[i] = endpointMappingParam.getDataType();
+//            paramTypes[i] = endpointMappingParam.getDataType();
         }
 
         // 执行method
         Object result = null;
         try {
-            result = this.execute(mapping, paramTypes, paramValues);
+            result = this.execute(mapping, paramValues);
         } catch (Throwable e) {
             // 全局异常处理
             result = BaseRes.fail(BaseResCode.FAIL.getCode(), e.getMessage());
         }
-        buildResponse(result, response);
-    }
-
-
-    private boolean checkRequest(RestHttpRequest request, RestHttpResponse response) {
-        List<String> supports = SupportHttpRequestType.supportTypes();
-        boolean noneMatch = supports.stream().noneMatch(e -> e.equalsIgnoreCase(request.methodName()));
-        if (noneMatch) {
-            response.httpResponse().setStatus(HttpResponseStatus.METHOD_NOT_ALLOWED);
-            response.httpResponse().content().writeBytes(Unpooled.copiedBuffer("", CharsetUtil.UTF_8));
-            return false;
-        }
-
-        if (!SupportHttpContentType.APPLICATION_JSON.getContentType().equalsIgnoreCase(request.contentType())) {
-            response.httpResponse().setStatus(HttpResponseStatus.METHOD_NOT_ALLOWED);
-            response.httpResponse().content().writeBytes(Unpooled.copiedBuffer("content-type不支持", CharsetUtil.UTF_8));
-            return false;
-        }
-
-        return true;
+        // 返回统一的逻辑结果
+        String jsonResult = JacksonUtil.toJSONString(result);
+        response.setContent(jsonResult);
     }
 
     /**
@@ -170,7 +152,6 @@ public class RestfulDispatcher {
         for (String requestHeader : requestHeaders) {
             if (!requestHeaderAllowed(requestHeader, response)) {
                 response.httpResponse().setStatus(HttpResponseStatus.NOT_FOUND);
-                response.httpResponse().content().writeBytes(Unpooled.copiedBuffer("", CharsetUtil.UTF_8));
                 return;
             }
         }
@@ -192,47 +173,40 @@ public class RestfulDispatcher {
         return false;
     }
 
-    private void buildResponse(Object result, RestHttpResponse response) {
+    /**
+     * 校验请求方法 和 content-type
+     *
+     * @param request  restful 请求
+     * @param response restful 响应
+     * @return 校验结果
+     */
+    private boolean checkRequest(RestHttpRequest request, RestHttpResponse response) {
+        List<String> supports = SupportHttpRequestType.supportTypes();
+        boolean noneMatch = supports.stream().noneMatch(e -> e.equalsIgnoreCase(request.methodName()));
+        if (noneMatch) {
+            response.httpResponse().setStatus(HttpResponseStatus.METHOD_NOT_ALLOWED);
+            return false;
+        }
 
-        String jsonStr = JacksonUtil.toJSONString(result);
-        response.setContent(jsonStr);
+        if (!SupportHttpContentType.APPLICATION_JSON.getContentType().equalsIgnoreCase(request.contentType())) {
+            response.httpResponse().setStatus(HttpResponseStatus.NOT_ACCEPTABLE);
+            return false;
+        }
 
-        // 只支持 JSON 格式
-        String contentType = "application/json; charset=UTF-8";
-        response.setHeaders("Content-Type", contentType);
-
-
-//        // 写入Cookie
-//        Map<String, String> cookies = response.getCookies();
-//        Set<Entry<String, String>> cookiesEntrySet = cookies.entrySet();
-//        for (Entry<String, String> entry : cookiesEntrySet) {
-//            Cookie cookie = new DefaultCookie(entry.getKey(), entry.getValue());
-//            cookie.setPath("/");
-//            httpResponse.headers().set(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(cookie));
-//        }
-
-//        Map<String, String> responseHeaders = response.getHeaders();
-////        Map<String, String> responseHeaders = HttpContextHolder.getResponse().getHeaders();
-//        Set<Entry<String, String>> headersEntrySet = responseHeaders.entrySet();
-//        for (Entry<String, String> entry : headersEntrySet) {
-//            httpResponse.headers().add(entry.getKey(), entry.getValue());
-//        }
-
-
-//        return response.getChannelHandlerContext().writeAndFlush(httpResponse);
-//        return HttpContextHolder.getResponse().getChannelHandlerContext().writeAndFlush(response);
+        return true;
     }
 
     /**
-     * 得到Controller类的实例
+     * 执行 Endpoint 方法
      *
-     * @return
-     * @throws Exception
+     * @param mapping     endpoint 方法映射
+     * @param paramValues 参数值列表
+     * @throws Exception 执行方法异常
      */
-    private Object execute(EndpointMapping mapping, Class<?>[] paramTypes, Object[] paramValues) throws Exception {
-        Object instance = EndpointMappings.getSingleton(mapping.getClazz().getName());
-        Method method = instance.getClass().getMethod(mapping.getMethod().getName(), paramTypes);
-        return method.invoke(instance, paramValues);
+    private Object execute(EndpointMapping mapping, Object[] paramValues) throws Exception {
+        Object instance = EndpointMappings.getSingleton(mapping.getClazz());
+//        Method method = instance.getClass().getMethod(mapping.getMethod().getName(), paramTypes);
+        return mapping.getMethod().invoke(instance, paramValues);
     }
 
     /**

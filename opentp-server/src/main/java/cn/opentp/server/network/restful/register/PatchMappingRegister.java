@@ -11,16 +11,11 @@ public class PatchMappingRegister extends AbstractMappingRegister {
 
     @Override
     String resolveMethodRequestUrl(Method method) {
-        if(method.getAnnotation(PatchMapping.class) != null) {
+        if (method.getAnnotation(PatchMapping.class) != null) {
             return method.getAnnotation(PatchMapping.class).value();
         }
         return "";
     }
-
-//    @Override
-//    String resolveHttpMethod() {
-//        return "";
-//    }
 
     @Override
     void registerMapping(String completeRequestUrl, EndpointMapping endpointMapping) {
