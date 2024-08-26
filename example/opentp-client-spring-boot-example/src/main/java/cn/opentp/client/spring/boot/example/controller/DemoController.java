@@ -4,6 +4,7 @@ import cn.opentp.client.configuration.Configuration;
 import cn.opentp.core.thread.pool.ThreadPoolWrapper;
 import cn.opentp.core.util.JacksonUtil;
 import jakarta.annotation.Resource;
+import org.slf4j.Logger;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 @RestController
 @RequestMapping("test")
 public class DemoController {
+
+    private final Logger log = org.slf4j.LoggerFactory.getLogger(this.getClass());
 
     @Resource
     private ThreadPoolExecutor threadPoolExecutor;
@@ -54,7 +57,7 @@ public class DemoController {
                 try {
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    log.error("中断", e);
                 }
             }
         });
