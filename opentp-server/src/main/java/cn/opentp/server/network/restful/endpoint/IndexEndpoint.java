@@ -9,11 +9,16 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("")
 public class IndexEndpoint {
 
     @GetMapping("/")
     public BaseRes<String> index() {
+        return BaseRes.success("hello openTp");
+    }
+
+    @GetMapping("")
+    public BaseRes<String> indexEmpty() {
         return BaseRes.success("hello openTp");
     }
 }

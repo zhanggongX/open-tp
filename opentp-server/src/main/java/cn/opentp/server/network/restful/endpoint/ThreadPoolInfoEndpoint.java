@@ -19,12 +19,12 @@ import java.util.stream.Collectors;
  * 线程池数据增删改查
  */
 @RestController
-@RequestMapping("/threadPool/info")
+@RequestMapping("/threadPool/infos")
 public class ThreadPoolInfoEndpoint {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    @GetMapping("/")
+    @GetMapping("")
     public BaseRes<Map<ClientInfo, Map<String, ThreadPoolState>>> infos() {
         OpentpApp opentpApp = OpentpApp.instance();
         return BaseRes.success(opentpApp.receiveService().clientThreadPoolStateCache());
@@ -84,16 +84,6 @@ public class ThreadPoolInfoEndpoint {
 
         ThreadPoolState threadPoolState = threadPoolStateCacheRef.get().get(name);
         if (threadPoolState == null) throw new IllegalArgumentException("未知的线程池信息");
-
-//        String content = httpRequest.content().toString(CharsetUtil.UTF_8);
-//        JsonNode jsonNode = JacksonUtil.getNode(content);
-//
-//        ThreadPoolState newThreadPoolState = new ThreadPoolState();
-//        newThreadPoolState.flushDefault(threadPoolState.getThreadPoolName());
-//        newThreadPoolState.flushRequest(jsonNode);
-//
-//        // 线程值更新
-//        OpentpApp.instance().receiveService().send(clientInfoKey, newThreadPoolState);
 
         return BaseRes.success();
     }

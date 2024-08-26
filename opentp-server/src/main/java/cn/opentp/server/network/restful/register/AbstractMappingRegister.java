@@ -88,10 +88,6 @@ public abstract class AbstractMappingRegister implements MappingRegister {
 
             completeRequestUrlBuilder.append(methodRequestUrl);
         }
-        String completeRequestUrl = completeRequestUrlBuilder.toString();
-        if (completeRequestUrl.equals("/") || completeRequestUrl.equals("//") || completeRequestUrl.isEmpty()) {
-            return List.of("/", "//", "");
-        }
         return List.of(completeRequestUrlBuilder.toString());
     }
 
