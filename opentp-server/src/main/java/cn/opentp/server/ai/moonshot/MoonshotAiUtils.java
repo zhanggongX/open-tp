@@ -6,24 +6,27 @@ import cn.opentp.server.ai.moonshot.bean.Choice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Stream;
 
 
 public class MoonshotAiUtils {
 
     private static final Logger log = LoggerFactory.getLogger(MoonshotAiUtils.class);
 
-    private static final String API_KEY = "yourKey";
+    private static final String API_KEY = "";
     private static final String MODELS_URL = "https://api.moonshot.cn/v1/models";
     // private static final String FILES_URL = "https://api.moonshot.cn/v1/files";
     // private static final String ESTIMATE_TOKEN_COUNT_URL = "https://api.moonshot.cn/v1/tokenizers/estimate-token-count";
@@ -58,11 +61,13 @@ public class MoonshotAiUtils {
         body.put("stream", true);
         String requestBody = JacksonUtil.toJSONString(body);
 
+        String appKey = getApiKey(API_KEY);
+
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(CHAT_COMPLETION_URL))
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + API_KEY)
+                .header("Authorization", "Bearer " + appKey)
                 .build();
 
         // 创建 AtomicReference 用于汇总所有行
@@ -111,9 +116,22 @@ public class MoonshotAiUtils {
     }
 
     private static HttpRequest getCommonRequest(String url) {
+        String appKey = getApiKey(API_KEY);
         return HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .header("Authorization", "Bearer " + API_KEY)
+                .header("Authorization", "Bearer " + appKey)
                 .build();
+    }
+
+    private static String getApiKey(String apiKey) {
+        if (apiKey == null || apiKey.isEmpty()) {
+            try {
+                return Files.readString(Paths.get("/opt/moonshot.key")).trim();
+            } catch (IOException e) {
+                log.error("读取文件 moonshot.key 内容失败：", e);
+                return "";
+            }
+        }
+        return apiKey;
     }
 }
