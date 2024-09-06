@@ -1,0 +1,4 @@
+### GET request to example server
+GET http://10.253.52.32:8080/thread-pools/opentp-test
+
+###

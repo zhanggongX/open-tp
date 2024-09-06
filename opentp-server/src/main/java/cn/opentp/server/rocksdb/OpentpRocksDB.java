@@ -64,6 +64,14 @@ public class OpentpRocksDB implements Closeable {
         }
     }
 
+    public void delete(String key) {
+        try {
+            rocksDB.delete(key.getBytes(StandardCharsets.UTF_8));
+        } catch (RocksDBException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void close() {
         try {
             rocksDB.close();

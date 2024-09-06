@@ -5,6 +5,7 @@ import cn.opentp.server.network.restful.convert.Converter;
 import cn.opentp.server.network.restful.convert.ConverterFactory;
 import cn.opentp.server.network.restful.dto.BaseRes;
 import cn.opentp.server.network.restful.dto.BaseResCode;
+import cn.opentp.server.network.restful.exception.RESTfulException;
 import cn.opentp.server.network.restful.http.*;
 import cn.opentp.server.network.restful.mapping.EndpointMapping;
 import cn.opentp.server.network.restful.mapping.EndpointMappingParam;
@@ -22,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -127,8 +127,14 @@ public class RestfulDispatcher {
         try {
             result = this.execute(mapping, paramValues);
         } catch (Throwable e) {
+            Throwable ex = e.getCause();
+            log.error("执行方法异常", ex);
             // 全局异常处理
-            result = BaseRes.fail(BaseResCode.FAIL.getCode(), e.getMessage());
+            if (ex instanceof RESTfulException restfulEx) {
+                result = BaseRes.fail(restfulEx.getCode(), restfulEx.getMessage());
+            } else {
+                result = BaseRes.fail(BaseResCode.FAIL.getCode(), ex.getMessage());
+            }
         }
         // 返回统一的逻辑结果
         String jsonResult = JacksonUtil.toJSONString(result);

@@ -73,6 +73,11 @@
             <version>9.5</version>
         </dependency>
         <!-- asm end -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.15</version>
+        </dependency>
     </dependencies>
 
 

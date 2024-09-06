@@ -19,20 +19,15 @@ import java.util.stream.Collectors;
  * 线程池数据增删改查
  */
 @RestController
-@RequestMapping("/threadPool/infos")
-public class ThreadPoolInfoEndpoint {
+@RequestMapping("/thread-pools")
+public class ThreadPoolEndpoint {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
-
-    @GetMapping("")
-    public BaseRes<Map<ClientInfo, Map<String, ThreadPoolState>>> infos() {
-        OpentpApp opentpApp = OpentpApp.instance();
-        return BaseRes.success(opentpApp.receiveService().clientThreadPoolStateCache());
-    }
+    OpentpApp opentpApp = OpentpApp.instance();
 
     @GetMapping("/{appKey}")
-    public BaseRes<Map<ClientInfo, Map<String, ThreadPoolState>>> infosByAppKey(String appKey) {
-        OpentpApp opentpApp = OpentpApp.instance();
+    public BaseRes<Map<ClientInfo, Map<String, ThreadPoolState>>> threadPools(String appKey) {
+
         Map<ClientInfo, Map<String, ThreadPoolState>> clientInfoMap = opentpApp.receiveService().clientThreadPoolStateCache();
         return BaseRes.success(clientInfoMap.entrySet().stream()
                 .filter(e -> e.getKey().getAppKey().equals(appKey))

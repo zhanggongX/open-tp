@@ -2,16 +2,14 @@ package cn.opentp.server.constant;
 
 public class OpentpServerConstant {
 
-    // todo 后续迭代认证服务
-    private static final String DEFAULT_USER = "admin";
-    private static final String DEFAULT_PW = "123456";
-    // todo 后续迭代去掉
-    public static final String ADMIN_DEFAULT_APP = "opentp";
-    public static final String ADMIN_DEFAULT_SECRET = "opentp-secret";
+    // todo 后续迭代，认证授权后续完善。
+    // 认证服务，默认登录人员
+    public static final String DEFAULT_USER = "admin";
+    // 默认登录人员密码
+    public static final String DEFAULT_PW = "123456";
 
     // 默认配置文件地址
     public static final String DEFAULT_CONFIG_FILE = "opentp.yml";
-
 
     /**
      * 默认集群名

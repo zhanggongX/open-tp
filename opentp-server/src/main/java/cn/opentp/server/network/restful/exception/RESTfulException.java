@@ -7,18 +7,24 @@ import cn.opentp.server.network.restful.dto.BaseResCode;
  *
  * @author zg
  */
-public class RestfulException extends RuntimeException {
+public class RESTfulException extends RuntimeException {
 
     private final String code;
     private final String message;
 
-    public RestfulException(String code, String message) {
+    public RESTfulException(BaseResCode baseResCode, String message) {
+        super(message);
+        this.code = baseResCode.getCode();
+        this.message = message;
+    }
+
+    public RESTfulException(String code, String message) {
         super(message);
         this.code = code;
         this.message = message;
     }
 
-    public RestfulException(BaseResCode baseResCode) {
+    public RESTfulException(BaseResCode baseResCode) {
         super(baseResCode.getMessage());
         this.code = baseResCode.getCode();
         this.message = baseResCode.getMessage();

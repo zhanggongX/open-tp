@@ -26,8 +26,8 @@ public class Example {
         Configuration._cfg().reportProps().setInitialDelay(2);
         Configuration._cfg().reportProps().setPeriod(2);
 
-        Configuration._cfg().clientInfo().setAppKey("opentp");
-        Configuration._cfg().clientInfo().setAppSecret("opentp-secret");
+        Configuration._cfg().clientInfo().setAppKey("opentp-test");
+        Configuration._cfg().clientInfo().setAppSecret("a8cc547067e0e7fbc8cbe3f2736f3e32");
 
         // 记录线程池信息
         ThreadPoolExecutor tp1 = new ThreadPoolExecutor(10, 20, 60, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1024));

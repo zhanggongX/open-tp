@@ -137,7 +137,7 @@ public class ThreadPoolReceiveService {
         if (clientInfo == null) return;
 
         // 删除客户端信息
-        List<ClientInfo> clientInfoList = appKeyClientCache.get(OpentpServerConstant.ADMIN_DEFAULT_APP);
+        List<ClientInfo> clientInfoList = appKeyClientCache.get(clientInfo.getAppKey());
         clientInfoList.remove(clientInfo);
 
         // 删除线程记录

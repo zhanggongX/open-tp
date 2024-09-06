@@ -10,6 +10,7 @@ import cn.opentp.server.OpentpApp;
 import cn.opentp.server.auth.LicenseKeyFactory;
 import cn.opentp.server.constant.OpentpServerConstant;
 import cn.opentp.server.network.receive.ThreadPoolReceiveService;
+import cn.opentp.server.rocksdb.OpentpRocksDB;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,12 +37,15 @@ public class AuthMessageHandler implements MessageHandler {
 
         log.debug("有新认证到来，appKey: {}, appSecret: {}, host: {}, instance: {}", clientInfo.getAppKey(), clientInfo.getAppSecret(), clientInfo.getHost(), clientInfo.getInstance());
         // todo 认证消息动态
-        if (clientInfo.getAppKey() == null || !clientInfo.getAppKey().equals(OpentpServerConstant.ADMIN_DEFAULT_APP)) {
+        OpentpRocksDB opentpRocksDB = OpentpRocksDB.rocksDB();
+
+        if (clientInfo.getAppKey() == null) {
             log.warn("新认证到来，未知的 appId : {}", clientInfo.getAppKey());
             ctx.channel().close();
             return;
         }
-        if (clientInfo.getAppSecret() == null || !clientInfo.getAppSecret().equals(OpentpServerConstant.ADMIN_DEFAULT_SECRET)) {
+        String appSecret = opentpRocksDB.get(clientInfo.getAppKey());
+        if (clientInfo.getAppSecret() == null || !clientInfo.getAppSecret().equals(appSecret)) {
             log.warn("新认证到来, appId : {}, appSecret error ", clientInfo.getAppKey());
             ctx.channel().close();
             return;
@@ -54,8 +58,8 @@ public class AuthMessageHandler implements MessageHandler {
         ctx.channel().attr(OpentpCoreConstant.EXPORT_CHANNEL_ATTR_KEY).set(newLicenseKey);
 
         // 记录 appKey <-> 客户端信息
-        service.appKeyClientCache().putIfAbsent(OpentpServerConstant.ADMIN_DEFAULT_APP, new ArrayList<>());
-        service.appKeyClientCache().get(OpentpServerConstant.ADMIN_DEFAULT_APP).add(clientInfo);
+        service.appKeyClientCache().putIfAbsent(clientInfo.getAppKey(), new ArrayList<>());
+        service.appKeyClientCache().get(clientInfo.getAppKey()).add(clientInfo);
 
         // 记录 licenseKey <-> 客户端信息
         service.licenseClientCache().put(newLicenseKey, clientInfo);
