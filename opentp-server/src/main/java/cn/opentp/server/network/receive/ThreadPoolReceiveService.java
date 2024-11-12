@@ -19,6 +19,8 @@ import cn.opentp.server.network.receive.message.handler.AuthMessageHandler;
 import cn.opentp.server.network.receive.message.handler.MessageHandler;
 import cn.opentp.server.network.receive.message.handler.ReceiveMessageHandler;
 import cn.opentp.server.network.receive.netty.handler.ReceiveServiceNettyHandler;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -48,6 +50,8 @@ public class ThreadPoolReceiveService {
     private final Map<ClientInfo, Channel> clientChannelCache = new ConcurrentHashMap<>();
     // key = 客户端信息, value = <key = threadKey, value = threadPoolSate>
     private final Map<ClientInfo, Map<String, ThreadPoolState>> clientThreadPoolStateCache = new ConcurrentHashMap<>();
+
+    private final Table<ClientInfo, String, ThreadPoolState> clientThreadPoolStateTable = HashBasedTable.create();
 
     private final NioEventLoopGroup bossGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors());
     private final NioEventLoopGroup workGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2);
