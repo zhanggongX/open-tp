@@ -3,12 +3,12 @@ package cn.opentp.server;
 import cn.opentp.core.auth.ServerInfo;
 import cn.opentp.gossip.GossipBootstrap;
 import cn.opentp.gossip.GossipProperties;
-import cn.opentp.server.constant.OpentpServerConstant;
-import cn.opentp.server.enums.DeployEnum;
-import cn.opentp.server.gossip.GossipSendTask;
+import cn.opentp.server.infrastructure.constant.OpentpServerConstant;
+import cn.opentp.server.infrastructure.enums.DeployEnum;
+import cn.opentp.server.infrastructure.gossip.GossipSendTask;
 import cn.opentp.server.network.receive.ThreadPoolReceiveService;
 import cn.opentp.server.network.restful.RestfulServer;
-import cn.opentp.server.util.PropertiesUtil;
+import cn.opentp.server.infrastructure.util.PropertiesUtil;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

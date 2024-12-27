@@ -1,7 +1,6 @@
 package cn.opentp.server.network.receive;
 
 import cn.opentp.core.auth.ClientInfo;
-import cn.opentp.core.auth.License;
 import cn.opentp.core.constant.OpentpCoreConstant;
 import cn.opentp.core.net.OpentpMessage;
 import cn.opentp.core.net.OpentpMessageConstant;
@@ -12,9 +11,6 @@ import cn.opentp.core.net.serializer.SerializerTypeEnum;
 import cn.opentp.core.thread.pool.ThreadPoolState;
 import cn.opentp.core.util.JacksonUtil;
 import cn.opentp.core.util.MessageTraceIdUtil;
-import cn.opentp.server.OpentpApp;
-import cn.opentp.server.auth.LicenseKeyFactory;
-import cn.opentp.server.constant.OpentpServerConstant;
 import cn.opentp.server.network.receive.message.handler.AuthMessageHandler;
 import cn.opentp.server.network.receive.message.handler.MessageHandler;
 import cn.opentp.server.network.receive.message.handler.ReceiveMessageHandler;
@@ -30,10 +26,8 @@ import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 

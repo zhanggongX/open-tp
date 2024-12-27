@@ -1,8 +1,8 @@
 package cn.opentp.server;
 
 import cn.opentp.core.auth.ServerInfo;
-import cn.opentp.server.constant.OpentpServerConstant;
-import cn.opentp.server.enums.DeployEnum;
+import cn.opentp.server.infrastructure.constant.OpentpServerConstant;
+import cn.opentp.server.infrastructure.enums.DeployEnum;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
