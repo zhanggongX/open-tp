@@ -1,0 +1,19 @@
+@baseUrl = http://localhost
+@jwtToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTczNTI5MDU2M30.ltE6TAEDoXcvSk0RFh9EVmtESh55TwWpkU5fceznncU
+
+### GET request to example server
+POST {{baseUrl}}/auth/login
+
+{
+"userName": "admin",
+"password": "password123"
+}
+
+
+### GET request to example server
+GET {{baseUrl}}/api/business/demo
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+{}
+###

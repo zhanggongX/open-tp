@@ -7,11 +7,8 @@ import cn.opentp.server.constant.OpentpServerConstant;
 import cn.opentp.server.enums.DeployEnum;
 import cn.opentp.server.gossip.GossipSendTask;
 import cn.opentp.server.network.receive.ThreadPoolReceiveService;
-import cn.opentp.server.network.restful.RestfulService;
 import cn.opentp.server.util.PropertiesUtil;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -30,10 +27,6 @@ public class OpentpApp {
      * 线程信息上报监听服务
      */
     private final ThreadPoolReceiveService receiveService = new ThreadPoolReceiveService();
-    /**
-     * restful 接口服务
-     */
-    private final RestfulService restfulService = new RestfulService();
 
     /**
      * 本机信息
@@ -67,10 +60,6 @@ public class OpentpApp {
         return receiveService;
     }
 
-    public RestfulService restfulService() {
-        return restfulService;
-    }
-
     public ScheduledExecutorService gossipPublishService() {
         return gossipPublishService;
     }
@@ -89,10 +78,6 @@ public class OpentpApp {
         // 启动接收上报信息服务
         this.receiveService.start(selfInfo.getHost(), environment.getReceivePort());
 //        hook.add(receiveReportServer);
-
-        // 启动 restful 服务信息
-        restfulService.start(selfInfo.getHost(), environment.getHttpPort());
-//        hook.add(restServer);
 
         // 集群部署，启动 gossip
         if (environment.getDeploy() == DeployEnum.cluster) {

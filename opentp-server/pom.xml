@@ -56,7 +56,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.101.Final</version>
+            <version>4.1.111.Final</version>
         </dependency>
         <!-- netty end -->
         <!-- rocksDB start -->
@@ -82,6 +82,16 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>33.2.1-jre</version>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-web</artifactId>
+            <version>4.5.10</version>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-auth-jwt</artifactId>
+            <version>4.5.10</version>
         </dependency>
     </dependencies>
 
