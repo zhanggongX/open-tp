@@ -7,6 +7,7 @@ import cn.opentp.server.constant.OpentpServerConstant;
 import cn.opentp.server.enums.DeployEnum;
 import cn.opentp.server.gossip.GossipSendTask;
 import cn.opentp.server.network.receive.ThreadPoolReceiveService;
+import cn.opentp.server.network.restful.RestfulServer;
 import cn.opentp.server.util.PropertiesUtil;
 
 import java.util.concurrent.Executors;
@@ -78,6 +79,9 @@ public class OpentpApp {
         // 启动接收上报信息服务
         this.receiveService.start(selfInfo.getHost(), environment.getReceivePort());
 //        hook.add(receiveReportServer);
+
+//         restfulService.start(selfInfo.getHost(), environment.getHttpPort());
+        RestfulServer.start(environment.getHttpPort());
 
         // 集群部署，启动 gossip
         if (environment.getDeploy() == DeployEnum.cluster) {

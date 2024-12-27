@@ -12,6 +12,7 @@ import io.vertx.ext.web.Router;
 public class BusinessHandler {
 
     private final Router router;
+    public static final String BASE_URL = "/api/business/*";
 
     public BusinessHandler(Vertx vertx) {
         this.router = Router.router(vertx);
@@ -20,15 +21,7 @@ public class BusinessHandler {
             ctx.json("hello world");
         });
 
-        router.get("/api/businesses/:id").handler(ctx -> {
-            ctx.json("hello world");
-        });
-
-        router.post("/api/businesses").handler(ctx -> {
-            ctx.json("hello world");
-        });
-
-        router.put("/api/businesses/:id").handler(ctx -> {
+        router.get("/:id").handler(ctx -> {
             ctx.json("hello world");
         });
 

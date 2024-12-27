@@ -5,7 +5,10 @@ import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 
 public class ConnectHandler {
+
+    public static final String BASE_URL = "/api/connect/*";
     private final Router router;
+
     public ConnectHandler(Vertx vertx) {
         this.router = Router.router(vertx);
 

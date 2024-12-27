@@ -6,6 +6,7 @@ import io.vertx.ext.web.Router;
 
 public class ThreadPoolHandler {
 
+    public static final String BASE_URL = "/api/thread-pool/*";
     private final Router router;
 
     public ThreadPoolHandler(Vertx vertx) {

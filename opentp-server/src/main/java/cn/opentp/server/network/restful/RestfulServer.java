@@ -23,9 +23,14 @@ import org.slf4j.LoggerFactory;
 public class RestfulServer extends AbstractVerticle {
 
     private final Logger log = LoggerFactory.getLogger(RestfulServer.class);
+    private final int port;
 
-    public static void main(String[] args) {
-        Vertx.vertx().deployVerticle(new RestfulServer());
+    public RestfulServer(int port) {
+        this.port = port;
+    }
+
+    public static void start(int port) {
+        Vertx.vertx().deployVerticle(new RestfulServer(port));
     }
 
     @Override
@@ -35,7 +40,7 @@ public class RestfulServer extends AbstractVerticle {
 
         // resolve body;
         mainRouter.route().handler(BodyHandler.create());
-        // reset timeout time;
+        // set timeout time;
         mainRouter.route().handler(TimeoutHandler.create(5000));
 
         // handlers
@@ -48,19 +53,20 @@ public class RestfulServer extends AbstractVerticle {
         // register all router
         // register static resource router
         mainRouter.route("/*").handler(StaticHandler.create("static"));
-        mainRouter.route("/auth/*").subRouter(jwtAuthHandler.getRouter());
+        mainRouter.route(JwtAuthHandler.AUTH_URL).subRouter(jwtAuthHandler.getRouter());
         // jwt auth control
-        mainRouter.route("/api/*").handler(JWTAuthHandler.create(jwtAuthHandler.getJwtAuth()));
+        mainRouter.route(JwtAuthHandler.PERMISSION_BASE_URL).handler(JWTAuthHandler.create(jwtAuthHandler.getJwtAuth()));
         // register handlers
-        mainRouter.route("/api/business/*").subRouter(businessHandler.getRouter());
-        mainRouter.route("/api/connect/*").subRouter(connectHandler.getRouter());
-        mainRouter.route("/api/thread-pool/*").subRouter(threadPoolHandler.getRouter());
+        mainRouter.route(BusinessHandler.BASE_URL).subRouter(businessHandler.getRouter());
+        mainRouter.route(ConnectHandler.BASE_URL).subRouter(connectHandler.getRouter());
+        mainRouter.route(ThreadPoolHandler.BASE_URL).subRouter(threadPoolHandler.getRouter());
 
         // start vert.x server
-        vertx.createHttpServer().requestHandler(mainRouter).listen(80).onSuccess(e -> {
-            log.info("Restful server start success on port: {}", 80);
-        }).onFailure(e -> {
-            log.error("Restful server start failure, the port is: {}", 80);
-        });
+        vertx.createHttpServer().requestHandler(mainRouter).listen(port)
+                .onSuccess(e -> {
+                    log.info("Restful server start success on port: {}", port);
+                }).onFailure(e -> {
+                    log.error("Restful server start failure");
+                });
     }
 }

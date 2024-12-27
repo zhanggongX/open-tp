@@ -10,6 +10,15 @@ import io.vertx.ext.web.Router;
 
 public class JwtAuthHandler {
 
+    /**
+     * login or logout base url;
+     */
+    public static final String AUTH_URL = "/auth/*";
+    /**
+     * All APIs under this path require permission verification；
+     */
+    public static final String PERMISSION_BASE_URL = "/api/*";
+
     private final Router router;
     private final JWTAuth jwtAuth;
 
