@@ -1,5 +1,6 @@
 package cn.opentp.server.repository.rocksdb;
 
+import com.google.inject.Singleton;
 import org.apache.logging.log4j.util.Strings;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
@@ -10,14 +11,12 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.nio.charset.StandardCharsets;
 
+@Singleton
 public class OpentpRocksDB implements Closeable {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    private static volatile OpentpRocksDB INSTANCE;
-
     private final RocksDB rocksDB;
-    private final String path = "../opentp-rocks";
 
     private OpentpRocksDB() {
         RocksDB.loadLibrary();
@@ -25,21 +24,12 @@ public class OpentpRocksDB implements Closeable {
         options.setCreateIfMissing(true);
 
         try {
+            // todo config
+            String path = "../opentp-rocks";
             rocksDB = RocksDB.open(options, path);
         } catch (RocksDBException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public static OpentpRocksDB rocksDB() {
-        if (INSTANCE == null) {
-            synchronized (OpentpRocksDB.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new OpentpRocksDB();
-                }
-            }
-        }
-        return INSTANCE;
     }
 
     public void set(String key, String value) {
@@ -59,6 +49,14 @@ public class OpentpRocksDB implements Closeable {
             if (bytes == null) return Strings.EMPTY;
 
             return new String(bytes, StandardCharsets.UTF_8);
+        } catch (RocksDBException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean exist(String key) {
+        try {
+            return rocksDB.get(key.getBytes(StandardCharsets.UTF_8)) != null;
         } catch (RocksDBException e) {
             throw new RuntimeException(e);
         }

@@ -9,6 +9,8 @@ import cn.opentp.server.infrastructure.gossip.GossipSendTask;
 import cn.opentp.server.network.receive.ThreadPoolReceiveService;
 import cn.opentp.server.network.restful.RestfulServer;
 import cn.opentp.server.infrastructure.util.PropertiesUtil;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -28,6 +30,8 @@ public class OpentpApp {
      * 线程信息上报监听服务
      */
     private final ThreadPoolReceiveService receiveService = new ThreadPoolReceiveService();
+
+    private final Injector injector = Guice.createInjector();
 
     /**
      * 本机信息
@@ -63,6 +67,10 @@ public class OpentpApp {
 
     public ScheduledExecutorService gossipPublishService() {
         return gossipPublishService;
+    }
+
+    public Injector injector() {
+        return injector;
     }
 
     public void run(Class<?> primaryClass) {
