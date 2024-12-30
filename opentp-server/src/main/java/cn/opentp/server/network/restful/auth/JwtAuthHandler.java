@@ -1,14 +1,9 @@
 package cn.opentp.server.network.restful.auth;
 
-import cn.opentp.server.Opentp;
 import cn.opentp.server.OpentpApp;
-import cn.opentp.server.domain.DomainCommandHandler;
-import cn.opentp.server.domain.EventQueue;
 import cn.opentp.server.domain.manager.ManagerRegCommand;
 import cn.opentp.server.domain.manager.ManagerRegCommandHandler;
-import cn.opentp.server.service.domain.DefaultEventQueue;
 import cn.opentp.server.service.domain.DomainCommandInvoker;
-import com.google.inject.Inject;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.JWTOptions;
@@ -17,8 +12,6 @@ import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-
-import java.time.LocalDateTime;
 
 public class JwtAuthHandler {
 
@@ -69,7 +62,9 @@ public class JwtAuthHandler {
         DomainCommandInvoker domainCommandInvoker = OpentpApp.instance().injector().getInstance(DomainCommandInvoker.class);
         ManagerRegCommandHandler managerRegCommandHandler = OpentpApp.instance().injector().getInstance(ManagerRegCommandHandler.class);
         ManagerRegCommand managerRegCommand = new ManagerRegCommand(userName, password);
-        Object invoke = domainCommandInvoker.invoke(managerRegCommand, managerRegCommandHandler::handle);
+        boolean invoke = domainCommandInvoker.invoke(managerRegCommand, (q, c) -> managerRegCommandHandler.handle(q, managerRegCommand));
+
+        ctx.json(new JsonObject().put("res", invoke));
     }
 
 

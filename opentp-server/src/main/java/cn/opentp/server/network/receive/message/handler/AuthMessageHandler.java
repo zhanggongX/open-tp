@@ -10,6 +10,7 @@ import cn.opentp.server.OpentpApp;
 import cn.opentp.server.infrastructure.auth.LicenseKeyFactory;
 import cn.opentp.server.network.receive.ThreadPoolReceiveService;
 import cn.opentp.server.repository.rocksdb.OpentpRocksDB;
+import com.google.inject.Inject;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,9 @@ import java.util.ArrayList;
 public class AuthMessageHandler implements MessageHandler {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
+
+    @Inject
+    private OpentpRocksDB opentpRocksDB;
 
     /**
      * 处理客户端连接信息
@@ -36,8 +40,6 @@ public class AuthMessageHandler implements MessageHandler {
 
         log.debug("有新认证到来，appKey: {}, appSecret: {}, host: {}, instance: {}", clientInfo.getAppKey(), clientInfo.getAppSecret(), clientInfo.getHost(), clientInfo.getInstance());
         // todo 认证消息动态
-        OpentpRocksDB opentpRocksDB = OpentpRocksDB.rocksDB();
-
         if (clientInfo.getAppKey() == null) {
             log.warn("新认证到来，未知的 appId : {}", clientInfo.getAppKey());
             ctx.channel().close();

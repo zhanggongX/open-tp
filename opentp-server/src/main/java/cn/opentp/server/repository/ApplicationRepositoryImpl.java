@@ -4,6 +4,7 @@ import cn.opentp.core.util.JacksonUtil;
 import cn.opentp.server.domain.DomainCache;
 import cn.opentp.server.domain.DomainException;
 import cn.opentp.server.domain.application.*;
+import cn.opentp.server.domain.manager.ManagerRegCommand;
 import cn.opentp.server.repository.rocksdb.OpentpRocksDB;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;

@@ -1,5 +1,7 @@
 package cn.opentp.server.domain.application;
 
+import cn.opentp.server.domain.manager.ManagerRegCommand;
+
 /**
  * application repository
  *
@@ -16,11 +18,4 @@ public interface ApplicationRepository {
     Application checkOrGenerate(ApplicationRegCommand command);
 
     void save(Application application);
-
-    /**
-     * 校验管理员
-     *
-     * @param command 管理员注册命令
-     */
-    void checkManager(ManagerRegCommand command);
 }

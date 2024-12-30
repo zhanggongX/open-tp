@@ -1,5 +1,7 @@
 package cn.opentp.server.domain.application;
 
+import cn.opentp.server.domain.manager.Manager;
+
 import java.util.List;
 
 /**

@@ -13,6 +13,6 @@ import java.util.function.Function;
  */
 public interface DomainCommandInvoker {
 
-    <R> R invoke(DomainCommand domainCommand, DomainCommandHandler<EventQueue, DomainCommand, R> function);
+    boolean invoke(DomainCommand domainCommand, DomainCommandHandler<EventQueue, DomainCommand> function);
 
 }

@@ -9,6 +9,14 @@ POST {{baseUrl}}/auth/login
 "password": "password123"
 }
 
+###
+POST {{baseUrl}}/auth/register
+
+{
+"userName": "admin",
+"password": "password123"
+}
+
 
 ### GET request to example server
 GET {{baseUrl}}/api/business/demo

@@ -3,23 +3,23 @@ package cn.opentp.server.service.domain;
 import cn.opentp.server.domain.DomainCommand;
 import cn.opentp.server.domain.DomainCommandHandler;
 import cn.opentp.server.domain.EventQueue;
-import cn.opentp.server.domain.manager.ManagerRegCommand;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 @Singleton
 public class DefaultDomainCommandInvoker implements DomainCommandInvoker {
 
+    private final DomainEventDispatcher domainEventDispatcher;
+
     @Inject
-    private DomainEventDispatcher domainEventDispatcher;
+    public DefaultDomainCommandInvoker(DomainEventDispatcher domainEventDispatcher) {
+        this.domainEventDispatcher = domainEventDispatcher;
+    }
 
     @Override
-    public <R> R invoke(DomainCommand domainCommand, DomainCommandHandler<EventQueue, DomainCommand, R> function) {
+    public boolean invoke(DomainCommand domainCommand, DomainCommandHandler<EventQueue, DomainCommand> function) {
         EventQueue queue = new DefaultEventQueue();
-        R r = function.handle(queue, domainCommand);
+        boolean r = function.handle(queue, domainCommand);
         domainEventDispatcher.dispatch(queue);
         return r;
     }

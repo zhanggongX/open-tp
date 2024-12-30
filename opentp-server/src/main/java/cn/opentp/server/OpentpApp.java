@@ -9,6 +9,8 @@ import cn.opentp.server.infrastructure.gossip.GossipSendTask;
 import cn.opentp.server.network.receive.ThreadPoolReceiveService;
 import cn.opentp.server.network.restful.RestfulServer;
 import cn.opentp.server.infrastructure.util.PropertiesUtil;
+import cn.opentp.server.repository.RepositoryModule;
+import cn.opentp.server.service.ServiceModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
@@ -31,7 +33,7 @@ public class OpentpApp {
      */
     private final ThreadPoolReceiveService receiveService = new ThreadPoolReceiveService();
 
-    private final Injector injector = Guice.createInjector();
+    private Injector injector;
 
     /**
      * 本机信息
@@ -74,11 +76,13 @@ public class OpentpApp {
     }
 
     public void run(Class<?> primaryClass) {
+        // 配置 google guice
+        configGuice();
+
         this.primaryClassLoader = primaryClass.getClassLoader();
         this.selfInfo = new ServerInfo();
 
         prepareEnvironment(selfInfo);
-
 
         // 加载参数配置
 //        if (!PropertiesUtil.loadCmdProps(opentpApp.properties(), args)) return;
@@ -104,6 +108,13 @@ public class OpentpApp {
         }
 
 //        Runtime.getRuntime().addShutdownHook(hook);
+    }
+
+    /**
+     * 配置 google guice
+     */
+    private void configGuice() {
+        injector = Guice.createInjector(new ServiceModule(), new RepositoryModule());
     }
 
     private void prepareEnvironment(ServerInfo selfInfo) {

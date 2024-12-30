@@ -1,10 +1,7 @@
 package cn.opentp.server.domain;
 
-import cn.opentp.server.domain.manager.ManagerRegCommand;
-import cn.opentp.server.infrastructure.auth.LicenseKeyFactory;
-
 @FunctionalInterface
-public interface DomainCommandHandler<U extends EventQueue, T extends DomainCommand, R> {
+public interface DomainCommandHandler<Q extends EventQueue, T extends DomainCommand> {
 
-    R handle(U eventQueue, T command);
+    boolean handle(Q eventQueue, T command);
 }
