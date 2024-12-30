@@ -6,14 +6,14 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
-public class ManagerRegCommandHandler implements DomainCommandHandler<EventQueue, ManagerRegCommand> {
+public class ManagerChangeCommandHandler implements DomainCommandHandler<EventQueue, ManagerChangeCommand> {
 
     @Inject
     private ManagerRepository managerRepository;
 
     @Override
-    public boolean handle(EventQueue eventQueue, ManagerRegCommand command) {
-        ManagerImpl manager = managerRepository.checkOrGenerate(command);
+    public boolean handle(EventQueue eventQueue, ManagerChangeCommand command) {
+        ManagerImpl manager = managerRepository.checkAndBuildManger(command);
         manager.handle(eventQueue, command);
         return managerRepository.save(manager);
     }

@@ -1,6 +1,6 @@
 package cn.opentp.server.domain.application;
 
-import cn.opentp.server.domain.manager.Manager;
+import cn.opentp.server.domain.manager.ManagerImpl;
 
 import java.util.List;
 
@@ -34,7 +34,7 @@ public class ApplicationImpl implements Application {
     /**
      * 该应用的负责人
      */
-    List<Manager> managers;
+    List<ManagerImpl> managers;
 
     /**
      * 处理注册命令
@@ -78,11 +78,11 @@ public class ApplicationImpl implements Application {
         this.appSecret = appSecret;
     }
 
-    public List<Manager> getManagers() {
+    public List<ManagerImpl> getManagers() {
         return managers;
     }
 
-    public void setManagers(List<Manager> managers) {
+    public void setManagers(List<ManagerImpl> managers) {
         this.managers = managers;
     }
 }

@@ -1,9 +1,10 @@
 package cn.opentp.server.domain.manager;
 
-/**
- * 管理员
- */
-public class Manager {
+import cn.opentp.server.domain.EventQueue;
 
-    private String userName;
+public interface Manager {
+
+    void handle(EventQueue eventQueue, ManagerRegCommand command);
+
+    void handle(EventQueue eventQueue, ManagerChangeCommand command);
 }

@@ -1,6 +1,14 @@
 package cn.opentp.server.domain.manager;
 
+import cn.opentp.server.domain.DomainCommand;
+
 public interface ManagerRepository {
 
-    void checkManager(ManagerRegCommand command);
+    ManagerImpl checkOrGenerate(ManagerRegCommand command);
+
+    boolean checkRegisterAndPassword(ManagerLoginCommand command);
+
+    boolean save(Manager manager);
+
+    ManagerImpl checkAndBuildManger(ManagerChangeCommand command);
 }

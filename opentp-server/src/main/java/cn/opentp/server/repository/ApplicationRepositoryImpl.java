@@ -1,11 +1,9 @@
 package cn.opentp.server.repository;
 
 import cn.opentp.core.util.JacksonUtil;
-import cn.opentp.server.domain.DomainCache;
 import cn.opentp.server.domain.DomainException;
 import cn.opentp.server.domain.application.*;
-import cn.opentp.server.domain.manager.ManagerRegCommand;
-import cn.opentp.server.repository.rocksdb.OpentpRocksDB;
+import cn.opentp.server.repository.rocksdb.OpentpRocksDBImpl;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -17,7 +15,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     private static final String APPLICATION_KEY_PREFIX = "application:";
 
     @Inject
-    OpentpRocksDB rocksDB;
+    OpentpRocksDBImpl rocksDB;
 
     @Override
     public Application checkOrGenerate(ApplicationRegCommand command) {

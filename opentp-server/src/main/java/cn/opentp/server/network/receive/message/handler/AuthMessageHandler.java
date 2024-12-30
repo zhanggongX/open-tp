@@ -9,7 +9,7 @@ import cn.opentp.core.net.serializer.SerializerTypeEnum;
 import cn.opentp.server.OpentpApp;
 import cn.opentp.server.infrastructure.auth.LicenseKeyFactory;
 import cn.opentp.server.network.receive.ThreadPoolReceiveService;
-import cn.opentp.server.repository.rocksdb.OpentpRocksDB;
+import cn.opentp.server.repository.rocksdb.OpentpRocksDBImpl;
 import com.google.inject.Inject;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
@@ -25,7 +25,7 @@ public class AuthMessageHandler implements MessageHandler {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Inject
-    private OpentpRocksDB opentpRocksDB;
+    private OpentpRocksDBImpl opentpRocksDB;
 
     /**
      * 处理客户端连接信息

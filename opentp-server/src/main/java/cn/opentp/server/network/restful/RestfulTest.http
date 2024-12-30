@@ -5,17 +5,27 @@
 POST {{baseUrl}}/auth/login
 
 {
-"userName": "admin",
-"password": "password123"
+"userName": "zg",
+"password": "zg1234"
 }
 
 ###
 POST {{baseUrl}}/auth/register
 
 {
-"userName": "admin",
-"password": "password123"
+"userName": "zg",
+"password": "zg123"
 }
+
+###
+POST {{baseUrl}}/auth/change
+
+{
+"userName": "zg",
+"password": "zg123",
+"newPassword": "zg1234"
+}
+
 
 
 ### GET request to example server
