@@ -3,6 +3,7 @@ package cn.opentp.server.network.restful;
 import cn.opentp.server.network.restful.handler.BusinessHandler;
 import cn.opentp.server.network.restful.handler.ConnectHandler;
 import cn.opentp.server.network.restful.auth.JwtAuthHandler;
+import cn.opentp.server.network.restful.handler.ManagerHandler;
 import cn.opentp.server.network.restful.handler.ThreadPoolHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
@@ -44,7 +45,7 @@ public class RestfulServer extends AbstractVerticle {
         BusinessHandler businessHandler = new BusinessHandler(vertx);
         ConnectHandler connectHandler = new ConnectHandler(vertx);
         ThreadPoolHandler threadPoolHandler = new ThreadPoolHandler(vertx);
-        // auth handler
+        ManagerHandler managerHandler = new ManagerHandler(vertx);
         JwtAuthHandler jwtAuthHandler = new JwtAuthHandler(vertx);
 
         // register all router
@@ -52,12 +53,11 @@ public class RestfulServer extends AbstractVerticle {
         mainRouter.route("/*").handler(CorsHandler.create());
         mainRouter.route("/*").handler(StaticHandler.create("static"));
         mainRouter.route(JwtAuthHandler.AUTH_URL).subRouter(jwtAuthHandler.getRouter());
-        // jwt auth control
         mainRouter.route(JwtAuthHandler.PERMISSION_BASE_URL).handler(JWTAuthHandler.create(jwtAuthHandler.getJwtAuth()));
-        // register handlers
         mainRouter.route(BusinessHandler.BASE_URL).subRouter(businessHandler.getRouter());
         mainRouter.route(ConnectHandler.BASE_URL).subRouter(connectHandler.getRouter());
         mainRouter.route(ThreadPoolHandler.BASE_URL).subRouter(threadPoolHandler.getRouter());
+        mainRouter.route(ManagerHandler.BASE_URL).subRouter(managerHandler.getRouter());
 
         // start vert.x server
         vertx.createHttpServer().requestHandler(mainRouter).listen(port)

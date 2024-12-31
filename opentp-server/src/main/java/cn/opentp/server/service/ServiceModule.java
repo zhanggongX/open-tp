@@ -12,5 +12,7 @@ public class ServiceModule extends AbstractModule {
     protected void configure() {
         bind(DomainEventDispatcher.class).to(DefaultDomainEventDispatcher.class);
         bind(DomainCommandInvoker.class).to(DefaultDomainCommandInvoker.class);
+
+        bind(ManagerService.class).to(ManagerServiceImpl.class);
     }
 }

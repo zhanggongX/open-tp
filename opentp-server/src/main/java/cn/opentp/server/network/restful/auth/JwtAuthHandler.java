@@ -5,6 +5,7 @@ import cn.opentp.server.OpentpApp;
 import cn.opentp.server.domain.manager.*;
 import cn.opentp.server.infrastructure.secret.MD5Util;
 import cn.opentp.server.network.restful.Result;
+import cn.opentp.server.service.ManagerService;
 import cn.opentp.server.service.domain.DomainCommandInvoker;
 import com.google.inject.Injector;
 import io.vertx.core.Vertx;
@@ -62,7 +63,7 @@ public class JwtAuthHandler {
         boolean checkPassed = domainCommandInvoker.invoke(managerLoginCommand, (q, c) -> managerLoginCommandHandler.handle(q, managerLoginCommand));
         if (checkPassed) {
             String token = jwtAuth.generateToken(new JsonObject().put("sub", username), new JWTOptions());
-            ctx.json(new JsonObject().put("token", token));
+            ctx.json(Result.success(new JsonObject().put("token", token)));
         } else {
             ctx.response().setStatusCode(401).end("Invalid credentials");
         }

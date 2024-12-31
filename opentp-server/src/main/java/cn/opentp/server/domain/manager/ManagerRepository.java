@@ -11,4 +11,6 @@ public interface ManagerRepository {
     boolean save(Manager manager);
 
     ManagerImpl checkAndBuildManger(ManagerChangeCommand command);
+
+    ManagerImpl queryUserInfo(String username);
 }

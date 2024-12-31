@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:8080
-@jwtToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTczNTI5MTU0MX0.lowvmwphKT4fwFNuw5ZolRFmHQtDP20aFnQaprnQHPU
+@jwtToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ6ZyIsImlhdCI6MTczNTYyOTk1NX0.cIQH0gMaEGZFKr0x0AydVmx98KepdVFgfwpqVDdn5uA
 
 ### GET request to example server
 POST {{baseUrl}}/auth/login
@@ -7,6 +7,12 @@ POST {{baseUrl}}/auth/login
 {
 "userName": "zg",
 "password": "zg1234"
+}
+
+### GET request to example server
+POST {{baseUrl}}/api/manager/info
+
+{
 }
 
 ###

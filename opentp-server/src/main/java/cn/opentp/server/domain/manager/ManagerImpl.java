@@ -11,6 +11,10 @@ public class ManagerImpl implements Manager {
 
     private String userName;
     private String password;
+    /**
+     * '' | '*' | 'admin' | 'user';
+     */
+    private String role;
     private List<String> applications;
 
     public ManagerImpl() {
@@ -43,6 +47,14 @@ public class ManagerImpl implements Manager {
 
     public void setApplications(List<String> applications) {
         this.applications = applications;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public void handle(EventQueue eventQueue, ManagerRegCommand command) {

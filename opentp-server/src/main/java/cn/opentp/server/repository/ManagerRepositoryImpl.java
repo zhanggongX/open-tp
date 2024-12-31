@@ -20,7 +20,7 @@ public class ManagerRepositoryImpl implements ManagerRepository {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private boolean checkManagerRegistered(ManagerRegCommand command) {
-        String managerInfo = opentpRocksDB.get(command.getUserName());
+        String managerInfo = opentpRocksDB.get(command.getUsername());
         return managerInfo != null && !managerInfo.isEmpty();
     }
 
@@ -29,7 +29,7 @@ public class ManagerRepositoryImpl implements ManagerRepository {
         if (checkManagerRegistered(command)) {
             throw new DomainException("该用户已注册");
         } else {
-            return new ManagerImpl(command.getUserName(), command.getPassword());
+            return new ManagerImpl(command.getUsername(), command.getPassword());
         }
     }
 
@@ -45,8 +45,8 @@ public class ManagerRepositoryImpl implements ManagerRepository {
 
     @Override
     public boolean checkRegisterAndPassword(ManagerLoginCommand command) {
-        String managerInfo = opentpRocksDB.get(command.getUserName());
-        if (managerInfo == null) {
+        String managerInfo = opentpRocksDB.get(command.getUsername());
+        if (managerInfo.isEmpty()) {
             throw new DomainException("该用户未注册");
         }
         ManagerImpl manager = JacksonUtil.parseJson(managerInfo, ManagerImpl.class);
@@ -56,12 +56,21 @@ public class ManagerRepositoryImpl implements ManagerRepository {
     @Override
     public ManagerImpl checkAndBuildManger(ManagerChangeCommand command) {
 
-        String managerInfo = opentpRocksDB.get(command.getUserName());
-        if (managerInfo == null) {
+        String managerInfo = opentpRocksDB.get(command.getUsername());
+        if (managerInfo.isEmpty()) {
             throw new DomainException("该用户未注册");
         }
         ManagerImpl manager = JacksonUtil.parseJson(managerInfo, ManagerImpl.class);
         log.info("manager : {}", manager);
         return manager;
+    }
+
+    @Override
+    public ManagerImpl queryUserInfo(String username) {
+        String managerInfo = opentpRocksDB.get(username);
+        if (managerInfo.isEmpty()) {
+            throw new DomainException("该用户未注册");
+        }
+        return JacksonUtil.parseJson(managerInfo, ManagerImpl.class);
     }
 }
