@@ -1,0 +1,1 @@
+import{z as t}from"./index.8db9e24f.js";function s(){return t.post("/api/user/my-project/list")}function a(){return t.post("/api/user/my-team/list")}function u(){return t.post("/api/user/latest-activity")}function o(){return t.post("/api/user/certification")}function n(i,r){return t.post("/api/user/upload",i,r)}export{u as a,a as b,o as c,s as q,n as u};
