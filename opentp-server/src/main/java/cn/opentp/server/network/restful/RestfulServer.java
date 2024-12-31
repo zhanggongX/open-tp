@@ -7,10 +7,7 @@ import cn.opentp.server.network.restful.handler.ThreadPoolHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.ext.web.handler.JWTAuthHandler;
-import io.vertx.ext.web.handler.StaticHandler;
-import io.vertx.ext.web.handler.TimeoutHandler;
+import io.vertx.ext.web.handler.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +49,7 @@ public class RestfulServer extends AbstractVerticle {
 
         // register all router
         // register static resource router
+        mainRouter.route("/*").handler(CorsHandler.create());
         mainRouter.route("/*").handler(StaticHandler.create("static"));
         mainRouter.route(JwtAuthHandler.AUTH_URL).subRouter(jwtAuthHandler.getRouter());
         // jwt auth control

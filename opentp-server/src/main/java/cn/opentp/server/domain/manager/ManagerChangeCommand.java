@@ -9,25 +9,25 @@ import cn.opentp.server.domain.DomainCommand;
  */
 public class ManagerChangeCommand implements DomainCommand {
 
-    private String userName;
+    private String username;
     private String password;
     private String newPassword;
 
     public ManagerChangeCommand() {
     }
 
-    public ManagerChangeCommand(String userName, String password, String newPassword) {
-        this.userName = userName;
+    public ManagerChangeCommand(String username, String password, String newPassword) {
+        this.username = username;
         this.password = password;
         this.newPassword = newPassword;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getPassword() {

@@ -52,16 +52,16 @@ public class JwtAuthHandler {
      */
     private void login(RoutingContext ctx) {
         JsonObject body = ctx.body().asJsonObject();
-        String userName = body.getString("userName");
+        String username = body.getString("username");
         String password = body.getString("password");
 
 
         DomainCommandInvoker domainCommandInvoker = injector.getInstance(DomainCommandInvoker.class);
         ManagerLoginCommandHandler managerLoginCommandHandler = injector.getInstance(ManagerLoginCommandHandler.class);
-        ManagerLoginCommand managerLoginCommand = new ManagerLoginCommand(userName, MD5Util.md5(password));
+        ManagerLoginCommand managerLoginCommand = new ManagerLoginCommand(username, MD5Util.md5(password));
         boolean checkPassed = domainCommandInvoker.invoke(managerLoginCommand, (q, c) -> managerLoginCommandHandler.handle(q, managerLoginCommand));
         if (checkPassed) {
-            String token = jwtAuth.generateToken(new JsonObject().put("sub", userName), new JWTOptions());
+            String token = jwtAuth.generateToken(new JsonObject().put("sub", username), new JWTOptions());
             ctx.json(new JsonObject().put("token", token));
         } else {
             ctx.response().setStatusCode(401).end("Invalid credentials");
@@ -75,25 +75,30 @@ public class JwtAuthHandler {
      */
     public void register(RoutingContext ctx) {
         JsonObject body = ctx.body().asJsonObject();
-        String userName = body.getString("userName");
+        String username = body.getString("username");
         String password = body.getString("password");
 
         DomainCommandInvoker domainCommandInvoker = injector.getInstance(DomainCommandInvoker.class);
         ManagerRegCommandHandler managerRegCommandHandler = injector.getInstance(ManagerRegCommandHandler.class);
-        ManagerRegCommand managerRegCommand = new ManagerRegCommand(userName, MD5Util.md5(password));
+        ManagerRegCommand managerRegCommand = new ManagerRegCommand(username, MD5Util.md5(password));
         boolean invoke = domainCommandInvoker.invoke(managerRegCommand, (q, c) -> managerRegCommandHandler.handle(q, managerRegCommand));
         ctx.json(Result.success(invoke));
     }
 
+    /**
+     * 密码变更
+     *
+     * @param ctx routing context
+     */
     public void changePassword(RoutingContext ctx) {
         JsonObject body = ctx.body().asJsonObject();
-        String userName = body.getString("userName");
+        String username = body.getString("username");
         String password = body.getString("password");
         String newPassword = body.getString("newPassword");
 
         DomainCommandInvoker domainCommandInvoker = injector.getInstance(DomainCommandInvoker.class);
         ManagerChangeCommandHandler managerChangeCommandHandler = injector.getInstance(ManagerChangeCommandHandler.class);
-        ManagerChangeCommand managerChangeCommand = new ManagerChangeCommand(userName, MD5Util.md5(password), MD5Util.md5(newPassword));
+        ManagerChangeCommand managerChangeCommand = new ManagerChangeCommand(username, MD5Util.md5(password), MD5Util.md5(newPassword));
         boolean invoke = domainCommandInvoker.invoke(managerChangeCommand, (q, c) -> managerChangeCommandHandler.handle(q, managerChangeCommand));
         ctx.json(Result.success(invoke));
     }

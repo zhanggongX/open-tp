@@ -5,23 +5,23 @@ import cn.opentp.server.domain.DomainCommand;
 
 public class ManagerLoginCommand implements DomainCommand {
 
-    private String userName;
+    private String username;
     private String password;
 
     public ManagerLoginCommand() {
     }
 
-    public ManagerLoginCommand(String userName, String password) {
-        this.userName = userName;
+    public ManagerLoginCommand(String username, String password) {
+        this.username = username;
         this.password = password;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getPassword() {
