@@ -1,12 +1,12 @@
 @baseUrl = http://localhost:8080
-@jwtToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ6ZyIsImlhdCI6MTczNTgwMjc3MH0.aZwYY_6a0ykmvxYOC6rV2ZPYdG6vUUw8MnsAoMNFYjc
+@jwtToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTczNTgwMzc3MX0.UMcUI8xxA-kVRXirOVoXCdH6plxkqUPrUp2jSiUiAj4
 
 ### GET request to example server
 POST {{baseUrl}}/auth/login
 
 {
-"username": "zg",
-"password": "zg1234"
+"username": "admin",
+"password": "adminP"
 }
 
 ### GET request to example server
@@ -21,8 +21,8 @@ Content-Type: application/json
 POST {{baseUrl}}/auth/register
 
 {
-"username": "zg",
-"password": "zg123"
+"username": "admin",
+"password": "adminP"
 }
 
 ###
