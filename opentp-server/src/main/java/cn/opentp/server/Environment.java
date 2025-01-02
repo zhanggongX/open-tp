@@ -1,6 +1,7 @@
 package cn.opentp.server;
 
 import cn.opentp.core.auth.ServerInfo;
+import cn.opentp.server.domain.manager.ManagerImpl;
 import cn.opentp.server.infrastructure.constant.OpentpServerConstant;
 import cn.opentp.server.infrastructure.enums.DeployEnum;
 
@@ -49,6 +50,8 @@ public class Environment {
     private DeployEnum deploy;
 
     private ServerInfo serverInfo;
+
+    private final ThreadLocal<ManagerImpl> managerHolder = new ThreadLocal<>();
 
     /**
      * 配置，设置默认值
@@ -163,5 +166,9 @@ public class Environment {
 
     public ServerInfo getServerInfo() {
         return serverInfo;
+    }
+
+    public ThreadLocal<ManagerImpl> getManagerHolder() {
+        return managerHolder;
     }
 }

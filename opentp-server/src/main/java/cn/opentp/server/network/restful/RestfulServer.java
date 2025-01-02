@@ -1,6 +1,6 @@
 package cn.opentp.server.network.restful;
 
-import cn.opentp.server.network.restful.handler.BusinessHandler;
+import cn.opentp.server.network.restful.handler.ApplicationHandler;
 import cn.opentp.server.network.restful.handler.ConnectHandler;
 import cn.opentp.server.network.restful.auth.JwtAuthHandler;
 import cn.opentp.server.network.restful.handler.ManagerHandler;
@@ -42,7 +42,7 @@ public class RestfulServer extends AbstractVerticle {
         mainRouter.route().handler(TimeoutHandler.create(5000));
 
         // handlers
-        BusinessHandler businessHandler = new BusinessHandler(vertx);
+        ApplicationHandler applicationHandler = new ApplicationHandler(vertx);
         ConnectHandler connectHandler = new ConnectHandler(vertx);
         ThreadPoolHandler threadPoolHandler = new ThreadPoolHandler(vertx);
         ManagerHandler managerHandler = new ManagerHandler(vertx);
@@ -54,7 +54,7 @@ public class RestfulServer extends AbstractVerticle {
         mainRouter.route("/*").handler(StaticHandler.create("static"));
         mainRouter.route(JwtAuthHandler.AUTH_URL).subRouter(jwtAuthHandler.getRouter());
         mainRouter.route(JwtAuthHandler.PERMISSION_BASE_URL).handler(JWTAuthHandler.create(jwtAuthHandler.getJwtAuth()));
-        mainRouter.route(BusinessHandler.BASE_URL).subRouter(businessHandler.getRouter());
+        mainRouter.route(ApplicationHandler.BASE_URL).subRouter(applicationHandler.getRouter());
         mainRouter.route(ConnectHandler.BASE_URL).subRouter(connectHandler.getRouter());
         mainRouter.route(ThreadPoolHandler.BASE_URL).subRouter(threadPoolHandler.getRouter());
         mainRouter.route(ManagerHandler.BASE_URL).subRouter(managerHandler.getRouter());

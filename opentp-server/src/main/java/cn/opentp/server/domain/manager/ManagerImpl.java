@@ -9,7 +9,7 @@ import java.util.List;
  */
 public class ManagerImpl implements Manager {
 
-    private String userName;
+    private String username;
     private String password;
     /**
      * '' | '*' | 'admin' | 'user';
@@ -20,17 +20,21 @@ public class ManagerImpl implements Manager {
     public ManagerImpl() {
     }
 
-    public ManagerImpl(String userName, String password) {
-        this.userName = userName;
+    public ManagerImpl(String username, String password) {
+        this.username = username;
         this.password = password;
     }
 
-    public String getUserName() {
-        return userName;
+    public ManagerImpl(String username) {
+        this.username = username;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getPassword() {

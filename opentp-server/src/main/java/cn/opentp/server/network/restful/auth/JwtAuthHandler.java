@@ -30,7 +30,9 @@ public class JwtAuthHandler {
 
     private final Router router;
     private final JWTAuth jwtAuth;
-    private final Injector injector = OpentpApp.instance().injector();
+    private OpentpApp opentpApp = OpentpApp.instance();
+    private final Injector injector = opentpApp.injector();
+    private final DomainCommandInvoker domainCommandInvoker = injector.getInstance(DomainCommandInvoker.class);
 
     public JwtAuthHandler(Vertx vertx) {
         // todo `my-secret-key 配置化
@@ -56,12 +58,11 @@ public class JwtAuthHandler {
         String username = body.getString("username");
         String password = body.getString("password");
 
-
-        DomainCommandInvoker domainCommandInvoker = injector.getInstance(DomainCommandInvoker.class);
         ManagerLoginCommandHandler managerLoginCommandHandler = injector.getInstance(ManagerLoginCommandHandler.class);
         ManagerLoginCommand managerLoginCommand = new ManagerLoginCommand(username, MD5Util.md5(password));
         boolean checkPassed = domainCommandInvoker.invoke(managerLoginCommand, (q, c) -> managerLoginCommandHandler.handle(q, managerLoginCommand));
         if (checkPassed) {
+            opentpApp.setManager(new ManagerImpl(username));
             String token = jwtAuth.generateToken(new JsonObject().put("sub", username), new JWTOptions());
             ctx.json(Result.success(new JsonObject().put("token", token)));
         } else {
@@ -79,7 +80,6 @@ public class JwtAuthHandler {
         String username = body.getString("username");
         String password = body.getString("password");
 
-        DomainCommandInvoker domainCommandInvoker = injector.getInstance(DomainCommandInvoker.class);
         ManagerRegCommandHandler managerRegCommandHandler = injector.getInstance(ManagerRegCommandHandler.class);
         ManagerRegCommand managerRegCommand = new ManagerRegCommand(username, MD5Util.md5(password));
         boolean invoke = domainCommandInvoker.invoke(managerRegCommand, (q, c) -> managerRegCommandHandler.handle(q, managerRegCommand));
@@ -97,7 +97,6 @@ public class JwtAuthHandler {
         String password = body.getString("password");
         String newPassword = body.getString("newPassword");
 
-        DomainCommandInvoker domainCommandInvoker = injector.getInstance(DomainCommandInvoker.class);
         ManagerChangeCommandHandler managerChangeCommandHandler = injector.getInstance(ManagerChangeCommandHandler.class);
         ManagerChangeCommand managerChangeCommand = new ManagerChangeCommand(username, MD5Util.md5(password), MD5Util.md5(newPassword));
         boolean invoke = domainCommandInvoker.invoke(managerChangeCommand, (q, c) -> managerChangeCommandHandler.handle(q, managerChangeCommand));
@@ -111,5 +110,13 @@ public class JwtAuthHandler {
 
     public Router getRouter() {
         return router;
+    }
+
+    public OpentpApp getOpentpApp() {
+        return opentpApp;
+    }
+
+    public void setOpentpApp(OpentpApp opentpApp) {
+        this.opentpApp = opentpApp;
     }
 }

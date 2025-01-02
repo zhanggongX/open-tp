@@ -3,17 +3,21 @@ package cn.opentp.server;
 import cn.opentp.core.auth.ServerInfo;
 import cn.opentp.gossip.GossipBootstrap;
 import cn.opentp.gossip.GossipProperties;
+import cn.opentp.server.domain.GuiceDomainModule;
+import cn.opentp.server.domain.manager.ManagerImpl;
 import cn.opentp.server.infrastructure.constant.OpentpServerConstant;
 import cn.opentp.server.infrastructure.enums.DeployEnum;
 import cn.opentp.server.infrastructure.gossip.GossipSendTask;
+import cn.opentp.server.infrastructure.util.PropertiesUtil;
 import cn.opentp.server.network.receive.ThreadPoolReceiveService;
 import cn.opentp.server.network.restful.RestfulServer;
-import cn.opentp.server.infrastructure.util.PropertiesUtil;
-import cn.opentp.server.repository.RepositoryModule;
-import cn.opentp.server.service.ServiceModule;
+import cn.opentp.server.repository.GuiceRepositoryModule;
+import cn.opentp.server.service.GuiceServiceModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import org.apache.logging.log4j.util.Strings;
 
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -114,7 +118,7 @@ public class OpentpApp {
      * 配置 google guice
      */
     private void configGuice() {
-        injector = Guice.createInjector(new ServiceModule(), new RepositoryModule());
+        injector = Guice.createInjector(new GuiceServiceModule(), new GuiceRepositoryModule(), new GuiceDomainModule());
     }
 
     private void prepareEnvironment(ServerInfo selfInfo) {
@@ -144,5 +148,18 @@ public class OpentpApp {
         properties.setClusterNodes(environment.getClusterNodes());
         properties.setGossipInterval(5000);
         return properties;
+    }
+
+    /**
+     * 设置接口请求上下文
+     *
+     * @param manager 登录用户
+     */
+    public void setManager(ManagerImpl manager) {
+        environment().getManagerHolder().set(manager);
+    }
+
+    public String getUsername() {
+        return Optional.ofNullable(environment().getManagerHolder().get()).map(ManagerImpl::getUsername).orElse(Strings.EMPTY);
     }
 }

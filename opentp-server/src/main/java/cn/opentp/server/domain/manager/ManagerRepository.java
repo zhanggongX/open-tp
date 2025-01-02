@@ -12,5 +12,5 @@ public interface ManagerRepository {
 
     ManagerImpl checkAndBuildManger(ManagerChangeCommand command);
 
-    ManagerImpl queryUserInfo(String username);
+    ManagerImpl queryManagerInfo(String username);
 }

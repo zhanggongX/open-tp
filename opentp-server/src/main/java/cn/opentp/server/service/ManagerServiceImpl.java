@@ -13,6 +13,6 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Override
     public ManagerImpl queryManagerInfo(String username) {
-        return managerRepository.queryUserInfo(username);
+        return managerRepository.queryManagerInfo(username);
     }
 }

@@ -1,16 +1,18 @@
 @baseUrl = http://localhost:8080
-@jwtToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ6ZyIsImlhdCI6MTczNTYyOTk1NX0.cIQH0gMaEGZFKr0x0AydVmx98KepdVFgfwpqVDdn5uA
+@jwtToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ6ZyIsImlhdCI6MTczNTgwMjc3MH0.aZwYY_6a0ykmvxYOC6rV2ZPYdG6vUUw8MnsAoMNFYjc
 
 ### GET request to example server
 POST {{baseUrl}}/auth/login
 
 {
-"userName": "zg",
+"username": "zg",
 "password": "zg1234"
 }
 
 ### GET request to example server
 POST {{baseUrl}}/api/manager/info
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
 
 {
 }
@@ -19,7 +21,7 @@ POST {{baseUrl}}/api/manager/info
 POST {{baseUrl}}/auth/register
 
 {
-"userName": "zg",
+"username": "zg",
 "password": "zg123"
 }
 
@@ -27,17 +29,20 @@ POST {{baseUrl}}/auth/register
 POST {{baseUrl}}/auth/change
 
 {
-"userName": "zg",
+"username": "zg",
 "password": "zg123",
 "newPassword": "zg1234"
 }
 
 
-
-### GET request to example server
-GET {{baseUrl}}/api/business/demo
+### 创建 app
+GET {{baseUrl}}/api/application/create
 Authorization: Bearer {{jwtToken}}
 Content-Type: application/json
 
-{}
+{
+  "appName": "demoApp",
+  "showName": "OpenTP测试使用"
+}
+
 ###

@@ -1,5 +1,7 @@
 package cn.opentp.server.domain.application;
 
+import cn.opentp.server.OpentpApp;
+import cn.opentp.server.domain.EventQueue;
 import cn.opentp.server.domain.manager.ManagerImpl;
 
 import java.util.List;
@@ -19,7 +21,7 @@ public class ApplicationImpl implements Application {
     /**
      * name 显示名称，推荐中文
      */
-    private String name;
+    private String showName;
 
     /**
      * app key - opentp 客户端配置使用
@@ -34,16 +36,18 @@ public class ApplicationImpl implements Application {
     /**
      * 该应用的负责人
      */
-    List<ManagerImpl> managers;
+    List<String> managers;
 
     /**
      * 处理注册命令
      *
-     * @param command registration command
+     * @param eventQueue 事件队列
+     * @param command    registration command
      */
     @Override
-    public void handle(ApplicationRegCommand command) {
-
+    public void handle(EventQueue eventQueue, ApplicationCreateCommand command) {
+        String username = OpentpApp.instance().getUsername();
+        eventQueue.offer(new ApplicationCreateEvent(command.getAppName(), username));
     }
 
     public String getAppName() {
@@ -54,12 +58,12 @@ public class ApplicationImpl implements Application {
         this.appName = appName;
     }
 
-    public String getName() {
-        return name;
+    public String getShowName() {
+        return showName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setShowName(String showName) {
+        this.showName = showName;
     }
 
     public String getAppKey() {
@@ -78,11 +82,11 @@ public class ApplicationImpl implements Application {
         this.appSecret = appSecret;
     }
 
-    public List<ManagerImpl> getManagers() {
+    public List<String> getManagers() {
         return managers;
     }
 
-    public void setManagers(List<ManagerImpl> managers) {
+    public void setManagers(List<String> managers) {
         this.managers = managers;
     }
 }

@@ -1,5 +1,7 @@
+server:
+  port: 9999
 opentp:
-  servers: localhost:9527
+  servers: 10.253.52.34:9527
   appKey: opentp-client-springBoot
   appSecret: 123456
   reconnect:

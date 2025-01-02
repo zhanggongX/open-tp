@@ -1,6 +1,8 @@
 package cn.opentp.server.domain.application;
 
+import cn.opentp.server.domain.EventQueue;
+
 public interface Application {
 
-    void handle(ApplicationRegCommand command);
+    void handle(EventQueue eventQueue, ApplicationCreateCommand command);
 }

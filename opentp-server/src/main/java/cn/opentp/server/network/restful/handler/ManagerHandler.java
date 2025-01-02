@@ -7,7 +7,6 @@ import cn.opentp.server.network.restful.util.ErrorHandler;
 import cn.opentp.server.service.ManagerService;
 import com.google.inject.Injector;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;

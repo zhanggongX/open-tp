@@ -3,21 +3,23 @@ package cn.opentp.server.domain.application;
 import cn.opentp.server.domain.DomainCommandHandler;
 import cn.opentp.server.domain.EventQueue;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 /**
- * application registration command handler
+ * 应用创建 command 处理
  *
  * @author zg
  */
-public class ApplicationRegCommandHandler implements DomainCommandHandler<EventQueue, ApplicationRegCommand> {
+@Singleton
+public class ApplicationCreateCommandHandler implements DomainCommandHandler<EventQueue, ApplicationCreateCommand> {
 
     @Inject
     private ApplicationRepository applicationRepository;
 
     @Override
-    public boolean handle(EventQueue eventQueue, ApplicationRegCommand command) {
+    public boolean handle(EventQueue eventQueue, ApplicationCreateCommand command) {
         Application application = applicationRepository.checkOrGenerate(command);
-        application.handle(command);
+        application.handle(eventQueue, command);
         applicationRepository.save(application);
         return true;
     }

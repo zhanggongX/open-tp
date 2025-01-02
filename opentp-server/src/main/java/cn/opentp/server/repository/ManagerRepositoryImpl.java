@@ -36,7 +36,7 @@ public class ManagerRepositoryImpl implements ManagerRepository {
     @Override
     public boolean save(Manager manager) {
         if (manager instanceof ManagerImpl managerImpl) {
-            opentpRocksDB.set(managerImpl.getUserName(), JacksonUtil.toJSONString(managerImpl));
+            opentpRocksDB.set(managerImpl.getUsername(), JacksonUtil.toJSONString(managerImpl));
         } else {
             throw new UnsupportedOperationException(manager.getClass().getName());
         }
@@ -66,11 +66,13 @@ public class ManagerRepositoryImpl implements ManagerRepository {
     }
 
     @Override
-    public ManagerImpl queryUserInfo(String username) {
+    public ManagerImpl queryManagerInfo(String username) {
         String managerInfo = opentpRocksDB.get(username);
         if (managerInfo.isEmpty()) {
             throw new DomainException("该用户未注册");
         }
-        return JacksonUtil.parseJson(managerInfo, ManagerImpl.class);
+        ManagerImpl manager = JacksonUtil.parseJson(managerInfo, ManagerImpl.class);
+        manager.setPassword(null);
+        return manager;
     }
 }

@@ -1,12 +1,14 @@
 package cn.opentp.server.repository;
 
 import cn.opentp.core.util.JacksonUtil;
+import cn.opentp.server.OpentpApp;
 import cn.opentp.server.domain.DomainException;
 import cn.opentp.server.domain.application.*;
 import cn.opentp.server.repository.rocksdb.OpentpRocksDBImpl;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import java.util.List;
 import java.util.UUID;
 
 @Singleton
@@ -17,17 +19,20 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     @Inject
     OpentpRocksDBImpl rocksDB;
 
+    private final OpentpApp opentpApp = OpentpApp.instance();
+
     @Override
-    public Application checkOrGenerate(ApplicationRegCommand command) {
+    public Application checkOrGenerate(ApplicationCreateCommand command) {
         if (checkRegistered(command)) {
             throw new DomainException("该 Application 已被注册，不能再次注册");
         }
 
         ApplicationImpl application = new ApplicationImpl();
-        application.setName(command.getName());
+        application.setShowName(command.getShowName());
         application.setAppName(command.getAppName());
         application.setAppKey(generateApplicationKey());
         application.setAppSecret(generateAppSecret());
+        application.setManagers(List.of(opentpApp.getUsername()));
 
         return application;
     }
@@ -49,7 +54,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
         }
     }
 
-    private boolean checkRegistered(ApplicationRegCommand command) {
+    private boolean checkRegistered(ApplicationCreateCommand command) {
         return rocksDB.exist(APPLICATION_KEY_PREFIX + command.getAppName());
     }
 }

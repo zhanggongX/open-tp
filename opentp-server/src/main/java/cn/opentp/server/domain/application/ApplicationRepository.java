@@ -15,7 +15,7 @@ public interface ApplicationRepository {
      * @param command 注册应用
      * @return application
      */
-    Application checkOrGenerate(ApplicationRegCommand command);
+    Application checkOrGenerate(ApplicationCreateCommand command);
 
     void save(Application application);
 }
