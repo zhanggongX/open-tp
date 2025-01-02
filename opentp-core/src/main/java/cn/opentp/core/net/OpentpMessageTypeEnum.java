@@ -9,6 +9,7 @@ public enum OpentpMessageTypeEnum {
      * 心跳
      */
     HEART_PING((byte) 0x01),
+    HEART_PONG((byte) 0x02),
     /**
      * 线程池信息上报
      */
@@ -22,7 +23,7 @@ public enum OpentpMessageTypeEnum {
      */
     AUTHENTICATION_REQ((byte) 0x20),
     /**
-     * 鉴权相应
+     * 鉴权响应
      */
     AUTHENTICATION_RES((byte) 0x21);
 

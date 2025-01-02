@@ -5,6 +5,7 @@ import cn.opentp.gossip.GossipBootstrap;
 import cn.opentp.gossip.GossipProperties;
 import cn.opentp.server.domain.GuiceDomainModule;
 import cn.opentp.server.domain.manager.ManagerImpl;
+import cn.opentp.server.infrastructure.GuiceInfraModule;
 import cn.opentp.server.infrastructure.constant.OpentpServerConstant;
 import cn.opentp.server.infrastructure.enums.DeployEnum;
 import cn.opentp.server.infrastructure.gossip.GossipSendTask;
@@ -118,7 +119,7 @@ public class OpentpApp {
      * 配置 google guice
      */
     private void configGuice() {
-        injector = Guice.createInjector(new GuiceServiceModule(), new GuiceRepositoryModule(), new GuiceDomainModule());
+        injector = Guice.createInjector(new GuiceServiceModule(), new GuiceRepositoryModule(), new GuiceDomainModule(), new GuiceInfraModule());
     }
 
     private void prepareEnvironment(ServerInfo selfInfo) {
