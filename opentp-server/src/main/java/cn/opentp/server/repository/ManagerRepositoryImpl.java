@@ -61,7 +61,7 @@ public class ManagerRepositoryImpl implements ManagerRepository {
             throw new DomainException("该用户未注册");
         }
         ManagerImpl manager = JacksonUtil.parseJson(managerInfo, ManagerImpl.class);
-        log.info("manager : {}", manager);
+//        log.info("manager : {}", manager);
         return manager;
     }
 

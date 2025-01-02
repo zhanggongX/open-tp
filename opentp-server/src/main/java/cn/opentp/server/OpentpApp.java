@@ -160,6 +160,9 @@ public class OpentpApp {
     }
 
     public String getUsername() {
-        return Optional.ofNullable(environment().getManagerHolder().get()).map(ManagerImpl::getUsername).orElse(Strings.EMPTY);
+        if (environment().getManagerHolder().get() == null) {
+            throw new UnsupportedOperationException("请先登录");
+        }
+        return Optional.ofNullable(environment().getManagerHolder().get().getUsername()).orElse(Strings.EMPTY);
     }
 }

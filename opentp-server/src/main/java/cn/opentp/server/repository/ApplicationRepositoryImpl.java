@@ -14,7 +14,8 @@ import java.util.UUID;
 @Singleton
 public class ApplicationRepositoryImpl implements ApplicationRepository {
 
-    private static final String APPLICATION_KEY_PREFIX = "application:";
+    private static final String APPLICATION_NAME_PREFIX = "application:";
+    private static final String APPLICATION_KEY_PREFIX = "applicationKey:";
 
     @Inject
     OpentpRocksDBImpl rocksDB;
@@ -47,19 +48,30 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public void save(Application application) {
-        if (application instanceof ApplicationImpl) {
-            rocksDB.set(APPLICATION_KEY_PREFIX + ((ApplicationImpl) application).getAppName(), JacksonUtil.toJSONString(application));
+        if (application instanceof ApplicationImpl applicationImpl) {
+            rocksDB.set(APPLICATION_NAME_PREFIX + applicationImpl.getAppName(), JacksonUtil.toJSONString(application));
+            rocksDB.set(APPLICATION_KEY_PREFIX + applicationImpl.getAppKey(), JacksonUtil.toJSONString(application));
         } else {
             throw new UnsupportedOperationException(application.getClass().getName());
         }
     }
 
     private boolean checkRegistered(ApplicationCreateCommand command) {
-        return rocksDB.exist(APPLICATION_KEY_PREFIX + command.getAppName());
+        return rocksDB.exist(APPLICATION_NAME_PREFIX + command.getAppName());
     }
 
     @Override
     public ApplicationImpl queryByName(String appName) {
+        String applicationInfo = rocksDB.get(APPLICATION_NAME_PREFIX + appName);
+        if (applicationInfo == null) {
+            return null;
+        }
+
+        return JacksonUtil.parseJson(applicationInfo, ApplicationImpl.class);
+    }
+
+    @Override
+    public ApplicationImpl queryByKey(String appName) {
         String applicationInfo = rocksDB.get(APPLICATION_KEY_PREFIX + appName);
         if (applicationInfo == null) {
             return null;

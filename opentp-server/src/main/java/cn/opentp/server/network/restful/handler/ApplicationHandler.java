@@ -4,7 +4,6 @@ import cn.opentp.server.OpentpApp;
 import cn.opentp.server.domain.application.ApplicationCreateCommand;
 import cn.opentp.server.domain.application.ApplicationCreateCommandHandler;
 import cn.opentp.server.domain.application.ApplicationImpl;
-import cn.opentp.server.infrastructure.secret.MD5Util;
 import cn.opentp.server.network.restful.Result;
 import cn.opentp.server.network.restful.util.ErrorHandler;
 import cn.opentp.server.service.ApplicationService;
@@ -12,7 +11,6 @@ import cn.opentp.server.service.domain.DomainCommandInvoker;
 import com.google.inject.Injector;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.auth.JWTOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 

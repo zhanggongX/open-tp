@@ -16,7 +16,7 @@ public class Example {
 
         // 设置服务端地址
         List<InetSocketAddress> inetSocketAddresses = Configuration._cfg().serverAddresses();
-        inetSocketAddresses.add(new InetSocketAddress("10.253.52.32", 9527));
+        inetSocketAddresses.add(new InetSocketAddress("10.253.52.34", 9527));
 
         // 设置断网重连重试周期，非必填
         Configuration._cfg().reconnectProps().setInitialDelay(5);
@@ -26,8 +26,8 @@ public class Example {
         Configuration._cfg().reportProps().setInitialDelay(2);
         Configuration._cfg().reportProps().setPeriod(2);
 
-        Configuration._cfg().clientInfo().setAppKey("opentp-test");
-        Configuration._cfg().clientInfo().setAppSecret("a8cc547067e0e7fbc8cbe3f2736f3e32");
+        Configuration._cfg().clientInfo().setAppKey("f82df733e639471ea8f21c4ccdbe9afb");
+        Configuration._cfg().clientInfo().setAppSecret("2395ddc7-403d-4af4-9ece-c15ec5735a22");
 
         // 记录线程池信息
         ThreadPoolExecutor tp1 = new ThreadPoolExecutor(10, 20, 60, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1024));

@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:8080
-@jwtToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTczNTgwNTgyMn0.iciK3WI6dP5Ifp3x_cZVJ8wKtcj47_trR-KuofrrxHQ
+@jwtToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTczNTgxMTYzMn0.UleX6eaHbo450n0isViZrlbSNpUxIczeQs-3026wgrE
 
 ### GET request to example server
 POST {{baseUrl}}/auth/login
@@ -35,13 +35,15 @@ POST {{baseUrl}}/auth/change
 }
 
 
+
+
 ### 创建 app
-GET {{baseUrl}}/api/application/create
+POST {{baseUrl}}/api/applications/create
 Authorization: Bearer {{jwtToken}}
 Content-Type: application/json
 
 {
-  "appName": "demoApp",
+  "appName": "demoApp1",
   "showName": "OpenTP测试使用"
 }
 

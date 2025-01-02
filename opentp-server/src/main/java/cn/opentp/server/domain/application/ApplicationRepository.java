@@ -18,4 +18,6 @@ public interface ApplicationRepository {
     void save(Application application);
 
     ApplicationImpl queryByName(String appName);
+
+    ApplicationImpl queryByKey(String appName);
 }
