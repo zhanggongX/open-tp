@@ -1,12 +1,13 @@
 package cn.opentp.server.network.restful;
 
-import cn.opentp.server.network.restful.handler.ApplicationHandler;
-import cn.opentp.server.network.restful.handler.ConnectHandler;
-import cn.opentp.server.network.restful.auth.JwtAuthHandler;
-import cn.opentp.server.network.restful.handler.ManagerHandler;
-import cn.opentp.server.network.restful.handler.ThreadPoolHandler;
+import cn.opentp.server.OpentpApp;
+import cn.opentp.server.domain.manager.ManagerImpl;
+import cn.opentp.server.network.restful.handler.*;
+import cn.opentp.server.network.restful.handler.JwtAuthHandler;
+import cn.opentp.server.service.ManagerService;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
+import io.vertx.ext.auth.User;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.*;
 import org.slf4j.Logger;
@@ -54,6 +55,17 @@ public class RestfulServer extends AbstractVerticle {
         mainRouter.route("/*").handler(StaticHandler.create("static"));
         mainRouter.route(JwtAuthHandler.AUTH_URL).subRouter(jwtAuthHandler.getRouter());
         mainRouter.route(JwtAuthHandler.PERMISSION_BASE_URL).handler(JWTAuthHandler.create(jwtAuthHandler.getJwtAuth()));
+        // 设置用户信息
+        mainRouter.route(JwtAuthHandler.PERMISSION_BASE_URL).handler(ctx -> {
+            if (OpentpApp.instance().getUsername() == null || OpentpApp.instance().getUsername().isEmpty()) {
+                User user = ctx.user();
+                if (user != null) {
+                    String username = user.principal().getString("sub");
+                    OpentpApp.instance().setManager(new ManagerImpl(username));
+                }
+            }
+            ctx.next();
+        });
         mainRouter.route(ApplicationHandler.BASE_URL).subRouter(applicationHandler.getRouter());
         mainRouter.route(ConnectHandler.BASE_URL).subRouter(connectHandler.getRouter());
         mainRouter.route(ThreadPoolHandler.BASE_URL).subRouter(threadPoolHandler.getRouter());

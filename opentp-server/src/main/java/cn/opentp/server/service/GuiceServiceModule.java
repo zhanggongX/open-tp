@@ -21,5 +21,6 @@ public class GuiceServiceModule extends AbstractModule {
         multibinder.addBinding().to(ApplicationEventListener.class);
 
         bind(ManagerService.class).to(ManagerServiceImpl.class);
+        bind(ApplicationService.class).to(ApplicationServiceImpl.class);
     }
 }

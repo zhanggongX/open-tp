@@ -57,4 +57,14 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     private boolean checkRegistered(ApplicationCreateCommand command) {
         return rocksDB.exist(APPLICATION_KEY_PREFIX + command.getAppName());
     }
+
+    @Override
+    public ApplicationImpl queryByName(String appName) {
+        String applicationInfo = rocksDB.get(APPLICATION_KEY_PREFIX + appName);
+        if (applicationInfo == null) {
+            return null;
+        }
+
+        return JacksonUtil.parseJson(applicationInfo, ApplicationImpl.class);
+    }
 }

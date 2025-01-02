@@ -71,8 +71,6 @@ public class ManagerRepositoryImpl implements ManagerRepository {
         if (managerInfo.isEmpty()) {
             throw new DomainException("该用户未注册");
         }
-        ManagerImpl manager = JacksonUtil.parseJson(managerInfo, ManagerImpl.class);
-        manager.setPassword(null);
-        return manager;
+        return JacksonUtil.parseJson(managerInfo, ManagerImpl.class);
     }
 }

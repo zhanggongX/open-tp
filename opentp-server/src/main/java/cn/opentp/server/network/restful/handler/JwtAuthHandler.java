@@ -1,11 +1,9 @@
-package cn.opentp.server.network.restful.auth;
+package cn.opentp.server.network.restful.handler;
 
-import cn.opentp.core.util.JacksonUtil;
 import cn.opentp.server.OpentpApp;
 import cn.opentp.server.domain.manager.*;
 import cn.opentp.server.infrastructure.secret.MD5Util;
 import cn.opentp.server.network.restful.Result;
-import cn.opentp.server.service.ManagerService;
 import cn.opentp.server.service.domain.DomainCommandInvoker;
 import com.google.inject.Injector;
 import io.vertx.core.Vertx;
@@ -62,6 +60,7 @@ public class JwtAuthHandler {
         ManagerLoginCommand managerLoginCommand = new ManagerLoginCommand(username, MD5Util.md5(password));
         boolean checkPassed = domainCommandInvoker.invoke(managerLoginCommand, (q, c) -> managerLoginCommandHandler.handle(q, managerLoginCommand));
         if (checkPassed) {
+            // 设置登录用户
             opentpApp.setManager(new ManagerImpl(username));
             String token = jwtAuth.generateToken(new JsonObject().put("sub", username), new JWTOptions());
             ctx.json(Result.success(new JsonObject().put("token", token)));

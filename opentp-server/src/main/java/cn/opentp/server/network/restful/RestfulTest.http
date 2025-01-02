@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:8080
-@jwtToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTczNTgwMzc3MX0.UMcUI8xxA-kVRXirOVoXCdH6plxkqUPrUp2jSiUiAj4
+@jwtToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTczNTgwNTgyMn0.iciK3WI6dP5Ifp3x_cZVJ8wKtcj47_trR-KuofrrxHQ
 
 ### GET request to example server
 POST {{baseUrl}}/auth/login
@@ -21,7 +21,7 @@ Content-Type: application/json
 POST {{baseUrl}}/auth/register
 
 {
-"username": "admin",
+"username": "admin1",
 "password": "adminP"
 }
 
@@ -29,9 +29,9 @@ POST {{baseUrl}}/auth/register
 POST {{baseUrl}}/auth/change
 
 {
-"username": "zg",
-"password": "zg123",
-"newPassword": "zg1234"
+"username": "admin",
+"password": "adminT",
+"newPassword": "adminP"
 }
 
 
@@ -44,5 +44,10 @@ Content-Type: application/json
   "appName": "demoApp",
   "showName": "OpenTP测试使用"
 }
+
+### 查询 app 列表
+GET {{baseUrl}}/api/applications/info
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
 
 ###

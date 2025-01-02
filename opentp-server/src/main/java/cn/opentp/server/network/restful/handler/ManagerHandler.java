@@ -15,7 +15,8 @@ public class ManagerHandler {
 
     private final Router router;
     public static final String BASE_URL = "/api/manager/*";
-    private final Injector injector = OpentpApp.instance().injector();
+    private final OpentpApp opentpApp = OpentpApp.instance();
+    private final Injector injector = opentpApp.injector();
 
     public ManagerHandler(Vertx vertx) {
         Router router = Router.router(vertx);
@@ -31,16 +32,15 @@ public class ManagerHandler {
      * @param ctx routing context
      */
     private void userInfo(RoutingContext ctx) {
-        User user = ctx.user();
-        if (user != null) {
-            String username = user.principal().getString("sub");
+        String username = opentpApp.getUsername();
+        if (username.isEmpty()) {
+            ctx.response().setStatusCode(401).end("Unauthorized");
+        } else {
             ManagerService managerService = injector.getInstance(ManagerService.class);
             ManagerImpl manager = managerService.queryManagerInfo(username);
             // todo
             manager.setRole("admin");
             ctx.json(Result.success(manager));
-        } else {
-            ctx.response().setStatusCode(401).end("Unauthorized");
         }
     }
 
