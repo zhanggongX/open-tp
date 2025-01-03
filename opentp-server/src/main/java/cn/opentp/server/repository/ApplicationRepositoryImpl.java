@@ -63,7 +63,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     @Override
     public ApplicationImpl queryByName(String appName) {
         String applicationInfo = rocksDB.get(APPLICATION_NAME_PREFIX + appName);
-        if (applicationInfo == null) {
+        if (applicationInfo.isEmpty()) {
             return null;
         }
 
@@ -73,7 +73,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     @Override
     public ApplicationImpl queryByKey(String appName) {
         String applicationInfo = rocksDB.get(APPLICATION_KEY_PREFIX + appName);
-        if (applicationInfo == null) {
+        if (applicationInfo.isEmpty()) {
             return null;
         }
 

@@ -1,15 +1,13 @@
 package cn.opentp.server.domain.connect;
 
 import cn.opentp.server.OpentpApp;
-import cn.opentp.server.domain.DomainCommandHandler;
-import cn.opentp.server.domain.DomainException;
 import cn.opentp.server.domain.EventQueue;
 import cn.opentp.server.domain.application.ApplicationImpl;
 import cn.opentp.server.domain.application.ApplicationRepository;
 import cn.opentp.server.network.receive.ThreadPoolReceiveService;
 import com.google.inject.Inject;
 
-public class ConnectCommandHandler implements DomainCommandHandler<EventQueue, ConnectCommand> {
+public class ConnectCommandHandler {
 
     @Inject
     private ConnectRepository connectRepository;
@@ -19,16 +17,13 @@ public class ConnectCommandHandler implements DomainCommandHandler<EventQueue, C
     private final OpentpApp opentpApp = OpentpApp.instance();
     private final ThreadPoolReceiveService threadPoolReceiveService = opentpApp.receiveService();
 
-    @Override
-    public boolean handle(EventQueue eventQueue, ConnectCommand command) {
+    public Boolean handle(EventQueue eventQueue, ConnectCommand command) {
         ApplicationImpl application = applicationRepository.queryByKey(command.getAppKey());
-        if(!application.getAppKey().equals(command.getAppKey()) || !application.getAppSecret().equals(command.getAppSecret())){
-            throw new DomainException("auth fail");
-        }
+        application.checkConnect(command.getAppKey(), command.getAppSecret());
 
         ConnectImpl connect = connectRepository.buildConnect(command);
         connect.handle(eventQueue, command);
-//        threadPoolReceiveService.
-        return false;
+        connectRepository.save(connect);
+        return true;
     }
 }

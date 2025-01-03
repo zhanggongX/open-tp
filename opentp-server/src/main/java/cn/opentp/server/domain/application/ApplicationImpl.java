@@ -1,7 +1,9 @@
 package cn.opentp.server.domain.application;
 
 import cn.opentp.server.OpentpApp;
+import cn.opentp.server.domain.DomainException;
 import cn.opentp.server.domain.EventQueue;
+import cn.opentp.server.domain.connect.ConnectCommand;
 import cn.opentp.server.domain.manager.ManagerImpl;
 
 import java.util.List;
@@ -48,6 +50,13 @@ public class ApplicationImpl implements Application {
     public void handle(EventQueue eventQueue, ApplicationCreateCommand command) {
         String username = OpentpApp.instance().getUsername();
         eventQueue.offer(new ApplicationCreateEvent(command.getAppName(), username));
+    }
+
+    @Override
+    public void checkConnect(String appKey, String appSecret) {
+        if (!this.getAppKey().equals(appKey) || !this.getAppSecret().equals(appSecret)) {
+            throw new DomainException("auth fail");
+        }
     }
 
     public String getAppName() {

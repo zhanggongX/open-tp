@@ -1,6 +1,5 @@
 package cn.opentp.server.network.restful.handler;
 
-import cn.opentp.server.network.restful.util.ErrorHandler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 

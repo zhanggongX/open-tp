@@ -1,7 +1,5 @@
 package cn.opentp.server.service.domain;
 
-import cn.opentp.server.domain.DomainCommand;
-import cn.opentp.server.domain.DomainCommandHandler;
 import cn.opentp.server.domain.EventQueue;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -17,9 +15,9 @@ public class DefaultDomainCommandInvoker implements DomainCommandInvoker {
     }
 
     @Override
-    public boolean invoke(DomainCommand domainCommand, DomainCommandHandler<EventQueue, DomainCommand> function) {
+    public <R> R invoke(CommandRunnable<R> runnable) {
         EventQueue queue = new DefaultEventQueue();
-        boolean r = function.handle(queue, domainCommand);
+        R r = runnable.run(queue);
         domainEventDispatcher.dispatch(queue);
         return r;
     }

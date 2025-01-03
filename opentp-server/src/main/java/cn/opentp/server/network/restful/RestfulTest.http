@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:8080
-@jwtToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTczNTgxMTYzMn0.UleX6eaHbo450n0isViZrlbSNpUxIczeQs-3026wgrE
+@jwtToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTczNTg4OTU4MH0.8JLleuwex98C54-f6j2t-4-FfUUX6vieufqGS7SQx7g
 
 ### GET request to example server
 POST {{baseUrl}}/auth/login

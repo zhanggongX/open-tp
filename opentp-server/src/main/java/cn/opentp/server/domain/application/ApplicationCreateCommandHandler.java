@@ -1,6 +1,5 @@
 package cn.opentp.server.domain.application;
 
-import cn.opentp.server.domain.DomainCommandHandler;
 import cn.opentp.server.domain.EventQueue;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -11,13 +10,12 @@ import com.google.inject.Singleton;
  * @author zg
  */
 @Singleton
-public class ApplicationCreateCommandHandler implements DomainCommandHandler<EventQueue, ApplicationCreateCommand> {
+public class ApplicationCreateCommandHandler {
 
     @Inject
     private ApplicationRepository applicationRepository;
 
-    @Override
-    public boolean handle(EventQueue eventQueue, ApplicationCreateCommand command) {
+    public Boolean handle(EventQueue eventQueue, ApplicationCreateCommand command) {
         Application application = applicationRepository.checkOrGenerate(command);
         application.handle(eventQueue, command);
         applicationRepository.save(application);

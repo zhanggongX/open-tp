@@ -58,7 +58,7 @@ public class JwtAuthHandler {
 
         ManagerLoginCommandHandler managerLoginCommandHandler = injector.getInstance(ManagerLoginCommandHandler.class);
         ManagerLoginCommand managerLoginCommand = new ManagerLoginCommand(username, MD5Util.md5(password));
-        boolean checkPassed = domainCommandInvoker.invoke(managerLoginCommand, (q, c) -> managerLoginCommandHandler.handle(q, managerLoginCommand));
+        boolean checkPassed = domainCommandInvoker.invoke((q) -> managerLoginCommandHandler.handle(q, managerLoginCommand));
         if (checkPassed) {
             // 设置登录用户
             opentpApp.setManager(new ManagerImpl(username));
@@ -81,7 +81,7 @@ public class JwtAuthHandler {
 
         ManagerRegCommandHandler managerRegCommandHandler = injector.getInstance(ManagerRegCommandHandler.class);
         ManagerRegCommand managerRegCommand = new ManagerRegCommand(username, MD5Util.md5(password));
-        boolean invoke = domainCommandInvoker.invoke(managerRegCommand, (q, c) -> managerRegCommandHandler.handle(q, managerRegCommand));
+        boolean invoke = domainCommandInvoker.invoke((q) -> managerRegCommandHandler.handle(q, managerRegCommand));
         ctx.json(Result.success(invoke));
     }
 
@@ -98,7 +98,7 @@ public class JwtAuthHandler {
 
         ManagerChangeCommandHandler managerChangeCommandHandler = injector.getInstance(ManagerChangeCommandHandler.class);
         ManagerChangeCommand managerChangeCommand = new ManagerChangeCommand(username, MD5Util.md5(password), MD5Util.md5(newPassword));
-        boolean invoke = domainCommandInvoker.invoke(managerChangeCommand, (q, c) -> managerChangeCommandHandler.handle(q, managerChangeCommand));
+        boolean invoke = domainCommandInvoker.invoke((q) -> managerChangeCommandHandler.handle(q, managerChangeCommand));
         ctx.json(Result.success(invoke));
     }
 

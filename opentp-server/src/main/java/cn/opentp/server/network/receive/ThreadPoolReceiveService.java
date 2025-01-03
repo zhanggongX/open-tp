@@ -1,21 +1,13 @@
 package cn.opentp.server.network.receive;
 
-import cn.opentp.core.auth.ClientInfo;
-import cn.opentp.core.constant.OpentpCoreConstant;
-import cn.opentp.core.net.OpentpMessage;
-import cn.opentp.core.net.OpentpMessageConstant;
-import cn.opentp.core.net.OpentpMessageTypeEnum;
 import cn.opentp.core.net.codec.OpentpMessageDecoder;
 import cn.opentp.core.net.codec.OpentpMessageEncoder;
-import cn.opentp.core.net.serializer.SerializerTypeEnum;
 import cn.opentp.core.thread.pool.ThreadPoolState;
-import cn.opentp.core.util.JacksonUtil;
-import cn.opentp.core.util.MessageTraceIdUtil;
-import cn.opentp.server.network.receive.message.handler.AuthMessageHandler;
-import cn.opentp.server.network.receive.message.handler.MessageHandler;
-import cn.opentp.server.network.receive.message.handler.ReceiveMessageHandler;
-import cn.opentp.server.network.receive.netty.handler.ReceiveServiceNettyHandler;
+import cn.opentp.server.domain.connect.ConnectImpl;
+import cn.opentp.server.network.receive.handler.ReceiveServiceNettyHandler;
+import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Table;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -29,35 +21,20 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class ThreadPoolReceiveService {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    // key = appId, value = 所有连接上来的客户端
-    private final Map<String, List<ClientInfo>> appKeyClientCache = new ConcurrentHashMap<>();
-
-    // key = licenseKey, value = 客户端信息
-    private final Map<String, ClientInfo> licenseClientCache = new ConcurrentHashMap<>();
-    // key = 客户端信息, value = channel
-    private final Map<ClientInfo, Channel> clientChannelCache = new ConcurrentHashMap<>();
-    // key = 客户端信息, value = <key = threadKey, value = threadPoolSate>
-    private final Map<ClientInfo, Map<String, ThreadPoolState>> clientThreadPoolStateCache = new ConcurrentHashMap<>();
-
-    private final Table<ClientInfo, String, ThreadPoolState> clientThreadPoolStateTable = HashBasedTable.create();
+    // key = appKey, value = 所有连接上来的客户端
+    private final Map<String, List<ConnectImpl>> appKeyConnectCache = new ConcurrentHashMap<>();
+    // key = 连接, value = 连接对应的 channel
+    private final BiMap<ConnectImpl, Channel> connectChannelCache = HashBiMap.create();
+    // row = 连接, col = 线程池名, value = 线程池信息
+    private final Table<ConnectImpl, String, ThreadPoolState> connectThreadPoolStateTable = HashBasedTable.create();
 
     private final NioEventLoopGroup bossGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors());
     private final NioEventLoopGroup workGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2);
-
-    /**
-     * 初始化
-     */
-    public ThreadPoolReceiveService() {
-        // 消息处理器初始化
-        MessageHandler.HANDLER_MAP.put(OpentpMessageTypeEnum.AUTHENTICATION_REQ, new AuthMessageHandler());
-        MessageHandler.HANDLER_MAP.put(OpentpMessageTypeEnum.THREAD_POOL_EXPORT, new ReceiveMessageHandler());
-    }
 
     /**
      * 服务启动
@@ -96,101 +73,70 @@ public class ThreadPoolReceiveService {
     }
 
     /**
-     * 处理 OpentpMessage
-     *
-     * @param ctx           channel 上下文
-     * @param opentpMessage 信息
-     */
-    public void handle(ChannelHandlerContext ctx, OpentpMessage opentpMessage) {
-        OpentpMessageTypeEnum opentpMessageTypeEnum = OpentpMessageTypeEnum.parse(opentpMessage.getMessageType());
-        if (opentpMessageTypeEnum == null) {
-            log.warn("未知的消息类型，不处理！");
-            return;
-        }
-
-        if (opentpMessageTypeEnum == OpentpMessageTypeEnum.HEART_PING) {
-            log.info("接收心跳信息： {} 应答: {}", opentpMessage.getData(), OpentpMessageConstant.HEARD_PONG);
-            return;
-        }
-
-        MessageHandler messageHandler = MessageHandler.HANDLER_MAP.get(opentpMessageTypeEnum);
-        if (messageHandler == null) {
-            log.warn("未知的消息类型，不处理！");
-            return;
-        }
-
-        messageHandler.handle(this, ctx, opentpMessage);
-    }
-
-    /**
      * 客户端断开
      *
      * @param channel 客户端连接
      */
     public void clientClose(Channel channel) {
-        String licenseKey = channel.attr(OpentpCoreConstant.EXPORT_CHANNEL_ATTR_KEY).get();
-        if (licenseKey == null || licenseKey.isEmpty()) return;
 
-        ClientInfo clientInfo = licenseClientCache.get(licenseKey);
-        if (clientInfo == null) return;
+        // 获取当前 channel 对应的连接
+        ConnectImpl connect = connectChannelCache.inverse().get(channel);
 
-        // 删除客户端信息
-        List<ClientInfo> clientInfoList = appKeyClientCache.get(clientInfo.getAppKey());
-        clientInfoList.remove(clientInfo);
+        log.info("connect, {} 断开连接", connect);
+
+        // 删除连接
+        List<ConnectImpl> connects = appKeyConnectCache.get(connect.getAppKey());
+        connects.remove(connect);
+        appKeyConnectCache.put(connect.getAppKey(), connects);
+
+        // 删除连接记录
+        connectChannelCache.remove(connect);
 
         // 删除线程记录
-        clientThreadPoolStateCache.remove(clientInfo);
+        connectThreadPoolStateTable.rowKeySet().remove(connect);
 
-        // 关闭连接
-        Channel cachedChannel = clientChannelCache.get(clientInfo);
-        if (!cachedChannel.equals(channel)) {
-            cachedChannel.close();
-        }
+        // 关闭线程
         channel.close();
     }
 
-    public void send(String channelKey, ThreadPoolState data) {
-
-        AtomicReference<Channel> channelRef = new AtomicReference<>();
-        clientChannelCache.forEach((key, value) -> {
-            if (key.clientInfoKey().equals(channelKey)) {
-                channelRef.set(value);
-            }
-        });
-        if (channelRef.get() == null) {
-            throw new IllegalArgumentException("客户端已断开, 更新线程信息失败!");
-        }
-
-        log.debug("线程池更新任务下发： {}", JacksonUtil.toJSONString(data));
-        OpentpMessage opentpMessage = OpentpCoreConstant.OPENTP_MSG_PROTO.clone();
-        OpentpMessage.builder()
-                .messageType(OpentpMessageTypeEnum.THREAD_POOL_UPDATE.getCode())
-                .serializerType(SerializerTypeEnum.Kryo.getType())
-                .data(data)
-                .traceId(MessageTraceIdUtil.traceId())
-                .buildTo(opentpMessage);
-
-        channelRef.get().writeAndFlush(opentpMessage);
-    }
+//    public void send(String channelKey, ThreadPoolState data) {
+//
+//        AtomicReference<Channel> channelRef = new AtomicReference<>();
+//        clientChannelCache.forEach((key, value) -> {
+//            if (key.clientInfoKey().equals(channelKey)) {
+//                channelRef.set(value);
+//            }
+//        });
+//        if (channelRef.get() == null) {
+//            throw new IllegalArgumentException("客户端已断开, 更新线程信息失败!");
+//        }
+//
+//        log.debug("线程池更新任务下发： {}", JacksonUtil.toJSONString(data));
+//        OpentpMessage opentpMessage = OpentpCoreConstant.OPENTP_MSG_PROTO.clone();
+//        OpentpMessage.builder()
+//                .messageType(OpentpMessageTypeEnum.THREAD_POOL_UPDATE.getCode())
+//                .serializerType(SerializerTypeEnum.Kryo.getType())
+//                .data(data)
+//                .traceId(MessageTraceIdUtil.traceId())
+//                .buildTo(opentpMessage);
+//
+//        channelRef.get().writeAndFlush(opentpMessage);
+//    }
 
     public void close() {
         bossGroup.shutdownGracefully();
         workGroup.shutdownGracefully();
     }
 
-    public Map<String, List<ClientInfo>> appKeyClientCache() {
-        return appKeyClientCache;
+    public Map<String, List<ConnectImpl>> appKeyConnectCache() {
+        return appKeyConnectCache;
     }
 
-    public Map<String, ClientInfo> licenseClientCache() {
-        return licenseClientCache;
+    public BiMap<ConnectImpl, Channel> connectChannelCache() {
+        return connectChannelCache;
     }
 
-    public Map<ClientInfo, Channel> clientChannelCache() {
-        return clientChannelCache;
-    }
-
-    public Map<ClientInfo, Map<String, ThreadPoolState>> clientThreadPoolStateCache() {
-        return clientThreadPoolStateCache;
+    public Table<ConnectImpl, String, ThreadPoolState> connectThreadPoolStateTable() {
+        return connectThreadPoolStateTable;
     }
 }

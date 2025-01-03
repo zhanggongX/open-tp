@@ -5,7 +5,6 @@ import cn.opentp.server.domain.application.ApplicationCreateCommand;
 import cn.opentp.server.domain.application.ApplicationCreateCommandHandler;
 import cn.opentp.server.domain.application.ApplicationImpl;
 import cn.opentp.server.network.restful.Result;
-import cn.opentp.server.network.restful.util.ErrorHandler;
 import cn.opentp.server.service.ApplicationService;
 import cn.opentp.server.service.domain.DomainCommandInvoker;
 import com.google.inject.Injector;
@@ -29,6 +28,7 @@ public class ApplicationHandler {
     private final OpentpApp opentpApp = OpentpApp.instance();
     private final Injector injector = opentpApp.injector();
     private final DomainCommandInvoker domainCommandInvoker = injector.getInstance(DomainCommandInvoker.class);
+    private final ApplicationCreateCommandHandler applicationCreateCommandHandler = injector.getInstance(ApplicationCreateCommandHandler.class);
     private final ApplicationService applicationService = injector.getInstance(ApplicationService.class);
 
     public ApplicationHandler(Vertx vertx) {
@@ -61,9 +61,8 @@ public class ApplicationHandler {
         String appName = body.getString("appName");
         String showName = body.getString("showName");
 
-        ApplicationCreateCommandHandler applicationCreateCommandHandler = injector.getInstance(ApplicationCreateCommandHandler.class);
         ApplicationCreateCommand applicationCreateCommand = new ApplicationCreateCommand(appName, showName);
-        boolean created = domainCommandInvoker.invoke(applicationCreateCommand, (q, c) -> applicationCreateCommandHandler.handle(q, applicationCreateCommand));
+        Boolean created = domainCommandInvoker.invoke((q) -> applicationCreateCommandHandler.handle(q, applicationCreateCommand));
         if (created) {
             ctx.json(Result.success());
         } else {

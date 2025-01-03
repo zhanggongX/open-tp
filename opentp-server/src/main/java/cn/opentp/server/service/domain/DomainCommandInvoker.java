@@ -1,7 +1,5 @@
 package cn.opentp.server.service.domain;
 
-import cn.opentp.server.domain.DomainCommand;
-import cn.opentp.server.domain.DomainCommandHandler;
 import cn.opentp.server.domain.EventQueue;
 
 /**
@@ -9,6 +7,10 @@ import cn.opentp.server.domain.EventQueue;
  */
 public interface DomainCommandInvoker {
 
-    boolean invoke(DomainCommand domainCommand, DomainCommandHandler<EventQueue, DomainCommand> function);
+    <R> R invoke(CommandRunnable<R> runnable);
 
+    @FunctionalInterface
+    interface CommandRunnable<R> {
+        R run(EventQueue eventQueue);
+    }
 }

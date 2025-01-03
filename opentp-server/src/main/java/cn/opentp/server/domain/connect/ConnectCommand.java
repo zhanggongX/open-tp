@@ -12,6 +12,16 @@ public class ConnectCommand implements DomainCommand {
     private String appKey;
     private String appSecret;
 
+    public ConnectCommand() {
+    }
+
+    public ConnectCommand(String host, String pid, String appKey, String appSecret) {
+        this.host = host;
+        this.pid = pid;
+        this.appKey = appKey;
+        this.appSecret = appSecret;
+    }
+
     public String getHost() {
         return host;
     }
