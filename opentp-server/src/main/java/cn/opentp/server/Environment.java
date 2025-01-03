@@ -51,7 +51,7 @@ public class Environment {
 
     private ServerInfo serverInfo;
 
-    private final ThreadLocal<ManagerImpl> managerHolder = new ThreadLocal<>();
+    private final ThreadLocal<String> managerHolder = new ThreadLocal<>();
 
     /**
      * 配置，设置默认值
@@ -168,7 +168,7 @@ public class Environment {
         return serverInfo;
     }
 
-    public ThreadLocal<ManagerImpl> getManagerHolder() {
+    public ThreadLocal<String> getManagerHolder() {
         return managerHolder;
     }
 }

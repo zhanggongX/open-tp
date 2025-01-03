@@ -7,11 +7,9 @@ public class Result<T> {
     private static final String SUCCESS_MESSAGE = "success";
     private static final String FAIL_MESSAGE = "操作失败";
 
-    int code;
-
-    String message;
-
-    T data;
+    private int code;
+    private String message;
+    private T data;
 
     public static <T> Result<T> success() {
         return new Result<>(SUCCESS_CODE, SUCCESS_MESSAGE, null);

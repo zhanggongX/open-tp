@@ -61,7 +61,7 @@ public class JwtAuthHandler {
         boolean checkPassed = domainCommandInvoker.invoke((q) -> managerLoginCommandHandler.handle(q, managerLoginCommand));
         if (checkPassed) {
             // 设置登录用户
-            opentpApp.setManager(new ManagerImpl(username));
+            opentpApp.setManagerUsername(username);
             String token = jwtAuth.generateToken(new JsonObject().put("sub", username), new JWTOptions());
             ctx.json(Result.success(new JsonObject().put("token", token)));
         } else {

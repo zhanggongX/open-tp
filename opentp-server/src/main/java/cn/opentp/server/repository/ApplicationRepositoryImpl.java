@@ -33,7 +33,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
         application.setAppName(command.getAppName());
         application.setAppKey(generateApplicationKey());
         application.setAppSecret(generateAppSecret());
-        application.setManagers(List.of(opentpApp.getUsername()));
+        application.setManagers(List.of(opentpApp.getManagerUsername()));
 
         return application;
     }

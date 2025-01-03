@@ -57,11 +57,13 @@ public class RestfulServer extends AbstractVerticle {
         mainRouter.route(JwtAuthHandler.PERMISSION_BASE_URL).handler(JWTAuthHandler.create(jwtAuthHandler.getJwtAuth()));
         // 设置用户信息
         mainRouter.route(JwtAuthHandler.PERMISSION_BASE_URL).handler(ctx -> {
-            if (OpentpApp.instance().getUsername() == null || OpentpApp.instance().getUsername().isEmpty()) {
+            if (OpentpApp.instance().getManagerUsername() == null || OpentpApp.instance().getManagerUsername().isEmpty()) {
                 User user = ctx.user();
                 if (user != null) {
                     String username = user.principal().getString("sub");
-                    OpentpApp.instance().setManager(new ManagerImpl(username));
+                    OpentpApp.instance().setManagerUsername(username);
+                }else{
+                    throw new UnsupportedOperationException("请先登录");
                 }
             }
             ctx.next();

@@ -154,16 +154,13 @@ public class OpentpApp {
     /**
      * 设置接口请求上下文
      *
-     * @param manager 登录用户
+     * @param managerUsername 登录用户
      */
-    public void setManager(ManagerImpl manager) {
-        environment().getManagerHolder().set(manager);
+    public void setManagerUsername(String managerUsername) {
+        environment().getManagerHolder().set(managerUsername);
     }
 
-    public String getUsername() {
-        if (environment().getManagerHolder().get() == null) {
-            throw new UnsupportedOperationException("请先登录");
-        }
-        return Optional.ofNullable(environment().getManagerHolder().get().getUsername()).orElse(Strings.EMPTY);
+    public String getManagerUsername() {
+        return Optional.ofNullable(environment().getManagerHolder().get()).orElse(Strings.EMPTY);
     }
 }

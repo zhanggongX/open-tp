@@ -30,7 +30,7 @@ public class ManagerHandler {
      * @param ctx routing context
      */
     private void userInfo(RoutingContext ctx) {
-        String username = opentpApp.getUsername();
+        String username = opentpApp.getManagerUsername();
         if (username.isEmpty()) {
             ctx.response().setStatusCode(401).end("Unauthorized");
         } else {

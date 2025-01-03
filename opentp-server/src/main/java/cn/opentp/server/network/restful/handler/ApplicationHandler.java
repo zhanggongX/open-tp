@@ -4,6 +4,7 @@ import cn.opentp.server.OpentpApp;
 import cn.opentp.server.domain.application.ApplicationCreateCommand;
 import cn.opentp.server.domain.application.ApplicationCreateCommandHandler;
 import cn.opentp.server.domain.application.ApplicationImpl;
+import cn.opentp.server.network.restful.PageResult;
 import cn.opentp.server.network.restful.Result;
 import cn.opentp.server.service.ApplicationService;
 import cn.opentp.server.service.domain.DomainCommandInvoker;
@@ -46,9 +47,9 @@ public class ApplicationHandler {
      * @param ctx routing context
      */
     private void applications(RoutingContext ctx) {
-        String username = opentpApp.getUsername();
+        String username = opentpApp.getManagerUsername();
         List<ApplicationImpl> applications = applicationService.applications(username);
-        ctx.json(applications);
+        ctx.json(Result.success(new PageResult<>(applications)));
     }
 
     /**

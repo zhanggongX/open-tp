@@ -48,7 +48,7 @@ public class ApplicationImpl implements Application {
      */
     @Override
     public void handle(EventQueue eventQueue, ApplicationCreateCommand command) {
-        String username = OpentpApp.instance().getUsername();
+        String username = OpentpApp.instance().getManagerUsername();
         eventQueue.offer(new ApplicationCreateEvent(command.getAppName(), username));
     }
 
