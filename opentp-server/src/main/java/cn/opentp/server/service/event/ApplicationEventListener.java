@@ -3,6 +3,8 @@ package cn.opentp.server.service.event;
 import cn.opentp.server.domain.DomainEvent;
 import cn.opentp.server.domain.DomainEventListener;
 import cn.opentp.server.domain.application.ApplicationCreateEvent;
+import cn.opentp.server.domain.application.ApplicationDeleteCommand;
+import cn.opentp.server.domain.application.ApplicationDeleteEvent;
 import cn.opentp.server.domain.manager.ManagerImpl;
 import cn.opentp.server.domain.manager.ManagerRepository;
 import com.google.inject.Inject;
@@ -31,6 +33,16 @@ public class ApplicationEventListener implements DomainEventListener {
             }
             manager.getApplications().add(applicationCreateEvent.getAppName());
             managerRepository.save(manager);
+        } else if (event instanceof ApplicationDeleteEvent applicationDeleteEvent) {
+            if (applicationDeleteEvent.getManagers() == null && !applicationDeleteEvent.getManagers().isEmpty()) {
+                for (String manger : applicationDeleteEvent.getManagers()) {
+                    ManagerImpl manager = managerRepository.queryManagerInfo(manger);
+                    if (manager.getApplications() != null) {
+                        manager.getApplications().remove(applicationDeleteEvent.getAppName());
+                    }
+                    managerRepository.save(manager);
+                }
+            }
         }
     }
 }

@@ -3,8 +3,8 @@ package cn.opentp.server.domain.application;
 import cn.opentp.server.OpentpApp;
 import cn.opentp.server.domain.DomainException;
 import cn.opentp.server.domain.EventQueue;
-import cn.opentp.server.domain.connect.ConnectCommand;
-import cn.opentp.server.domain.manager.ManagerImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -14,6 +14,8 @@ import java.util.List;
  * @author zg
  */
 public class ApplicationImpl implements Application {
+
+    private final Logger log = LoggerFactory.getLogger(ApplicationImpl.class);
 
     /**
      * appName 推荐英文
@@ -57,6 +59,12 @@ public class ApplicationImpl implements Application {
         if (!this.getAppKey().equals(appKey) || !this.getAppSecret().equals(appSecret)) {
             throw new DomainException("auth fail");
         }
+    }
+
+    @Override
+    public void handle(EventQueue eventQueue, ApplicationDeleteCommand command) {
+        log.info("delete application: {}, appKey: {}", this.getAppName(), command.getAppKey());
+        eventQueue.offer(new ApplicationDeleteEvent(command.getAppKey(), this.getAppName(), this.managers));
     }
 
     public String getAppName() {

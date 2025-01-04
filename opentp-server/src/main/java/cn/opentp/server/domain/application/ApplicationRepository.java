@@ -20,4 +20,8 @@ public interface ApplicationRepository {
     ApplicationImpl queryByName(String appName);
 
     ApplicationImpl queryByKey(String appName);
+
+    ApplicationImpl findOrError(ApplicationDeleteCommand command);
+
+    void delete(Application application);
 }

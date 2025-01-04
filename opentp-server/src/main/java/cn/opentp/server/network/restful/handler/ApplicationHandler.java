@@ -2,9 +2,7 @@ package cn.opentp.server.network.restful.handler;
 
 import cn.opentp.server.OpentpApp;
 import cn.opentp.server.domain.DomainException;
-import cn.opentp.server.domain.application.ApplicationCreateCommand;
-import cn.opentp.server.domain.application.ApplicationCreateCommandHandler;
-import cn.opentp.server.domain.application.ApplicationImpl;
+import cn.opentp.server.domain.application.*;
 import cn.opentp.server.infrastructure.util.PageUtil;
 import cn.opentp.server.network.restful.PageResult;
 import cn.opentp.server.network.restful.Result;
@@ -35,6 +33,7 @@ public class ApplicationHandler {
     private final Injector injector = opentpApp.injector();
     private final DomainCommandInvoker domainCommandInvoker = injector.getInstance(DomainCommandInvoker.class);
     private final ApplicationCreateCommandHandler applicationCreateCommandHandler = injector.getInstance(ApplicationCreateCommandHandler.class);
+    private final ApplicationDeleteCommandHandler applicationDeleteCommandHandler = injector.getInstance(ApplicationDeleteCommandHandler.class);
     private final ApplicationService applicationService = injector.getInstance(ApplicationService.class);
 
     public ApplicationHandler(Vertx vertx) {
@@ -42,12 +41,22 @@ public class ApplicationHandler {
 
         router.post("/").handler(this::create);
         router.get("/").handler(this::applications);
+        router.delete("/:appKey").handler(this::delete);
 
         router.errorHandler(500, ErrorHandler::handleError);
     }
 
+    private void delete(RoutingContext ctx) {
+        String appKey = ctx.pathParam("appKey");
+        if (appKey == null || appKey.isEmpty()) {
+            throw new UnsupportedOperationException("the appKey is empty");
+        }
+        ApplicationDeleteCommand applicationDeleteCommand = new ApplicationDeleteCommand(appKey);
+        domainCommandInvoker.invoke((q) -> applicationDeleteCommandHandler.handle(q, applicationDeleteCommand));
+    }
+
     /**
-     * 查询所有的应用
+     * query all applications
      *
      * @param ctx routing context
      */
@@ -71,7 +80,7 @@ public class ApplicationHandler {
     }
 
     /**
-     * 创建应用
+     * create application
      *
      * @param ctx routing context
      */
@@ -79,8 +88,8 @@ public class ApplicationHandler {
         JsonObject body = ctx.body().asJsonObject();
         String appName = body.getString("appName");
         String showName = body.getString("showName");
-        if (appName == null || showName == null) {
-            throw new DomainException("参数不能为空");
+        if (appName == null || showName == null || appName.isEmpty() || showName.isEmpty()) {
+            throw new DomainException("the params are empty");
         }
 
         ApplicationCreateCommand applicationCreateCommand = new ApplicationCreateCommand(appName, showName);

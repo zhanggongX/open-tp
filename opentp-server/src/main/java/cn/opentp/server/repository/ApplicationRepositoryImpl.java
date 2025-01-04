@@ -79,4 +79,22 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
         return JacksonUtil.parseJson(applicationInfo, ApplicationImpl.class);
     }
+
+    @Override
+    public ApplicationImpl findOrError(ApplicationDeleteCommand command) {
+        String applicationInfo = rocksDB.get(APPLICATION_KEY_PREFIX + command.getAppKey());
+        if (applicationInfo.isEmpty()) {
+            throw new DomainException("appKey " + command.getAppKey() + " 不存在");
+        }
+
+        return JacksonUtil.parseJson(applicationInfo, ApplicationImpl.class);
+    }
+
+    @Override
+    public void delete(Application application) {
+        if (application instanceof ApplicationImpl applicationImpl) {
+            rocksDB.delete(APPLICATION_NAME_PREFIX + applicationImpl.getAppName());
+            rocksDB.delete(APPLICATION_KEY_PREFIX + applicationImpl.getAppKey());
+        }
+    }
 }
