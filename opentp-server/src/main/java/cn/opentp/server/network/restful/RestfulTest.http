@@ -43,12 +43,12 @@ Authorization: Bearer {{jwtToken}}
 Content-Type: application/json
 
 {
-  "appName": "demoApp1",
+  "appName": "demoApp2",
   "showName": "OpenTP测试使用"
 }
 
 ### 查询 app 列表
-GET {{baseUrl}}/api/applications/info
+GET {{baseUrl}}/api/applications/
 Authorization: Bearer {{jwtToken}}
 Content-Type: application/json
 

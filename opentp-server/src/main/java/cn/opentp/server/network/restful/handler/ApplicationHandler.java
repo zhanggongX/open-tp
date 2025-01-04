@@ -35,8 +35,8 @@ public class ApplicationHandler {
     public ApplicationHandler(Vertx vertx) {
         this.router = Router.router(vertx);
 
-        router.post("/create").handler(this::create);
-        router.get("/info").handler(this::applications);
+        router.post("/").handler(this::create);
+        router.get("/").handler(this::applications);
 
         router.errorHandler(500, ErrorHandler::handleError);
     }
