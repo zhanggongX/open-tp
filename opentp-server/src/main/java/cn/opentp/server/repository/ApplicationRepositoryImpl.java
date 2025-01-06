@@ -95,11 +95,4 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
             rocksDB.delete(APPLICATION_KEY_PREFIX + applicationImpl.getAppKey());
         }
     }
-
-    @Override
-    public void update(Application application, String showName, String appName) {
-        if (application instanceof ApplicationImpl applicationImpl) {
-            rocksDB.set(APPLICATION_KEY_PREFIX + applicationImpl.getAppKey(), JacksonUtil.toJSONString(applicationImpl));
-        }
-    }
 }

@@ -13,7 +13,7 @@ public class ApplicationUpdateCommandHandler {
     public Boolean handle(EventQueue eventQueue, ApplicationUpdateCommand applicationUpdateCommand) {
         ApplicationImpl application = applicationRepository.findOrError(applicationUpdateCommand);
         application.handle(eventQueue, applicationUpdateCommand);
-        applicationRepository.update(application, applicationUpdateCommand.getShowName(), applicationUpdateCommand.getAppName());
+        applicationRepository.save(application);
         return true;
     }
 }

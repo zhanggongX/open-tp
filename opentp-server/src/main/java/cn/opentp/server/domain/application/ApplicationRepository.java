@@ -24,6 +24,4 @@ public interface ApplicationRepository {
     ApplicationImpl findOrError(DomainCommand command);
 
     void delete(Application application);
-
-    void update(Application application, String showName, String appName);
 }
