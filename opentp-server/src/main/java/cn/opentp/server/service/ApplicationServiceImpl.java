@@ -27,8 +27,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
 
         List<ApplicationImpl> applications = new ArrayList<>();
-        for (String appName : manager.getApplications()) {
-            ApplicationImpl application = applicationRepository.queryByName(appName);
+        for (String appKey : manager.getApplications()) {
+            ApplicationImpl application = applicationRepository.queryByKey(appKey);
             if (application != null) {
                 applications.add(application);
             }

@@ -1,5 +1,7 @@
 package cn.opentp.server.domain.application;
 
+import cn.opentp.server.domain.DomainCommand;
+
 /**
  * 应用存储层接口，领域层只提供接口，持久层提供实现。
  *
@@ -17,11 +19,11 @@ public interface ApplicationRepository {
 
     void save(Application application);
 
-    ApplicationImpl queryByName(String appName);
-
     ApplicationImpl queryByKey(String appName);
 
-    ApplicationImpl findOrError(ApplicationDeleteCommand command);
+    ApplicationImpl findOrError(DomainCommand command);
 
     void delete(Application application);
+
+    void update(Application application, String showName, String appName);
 }

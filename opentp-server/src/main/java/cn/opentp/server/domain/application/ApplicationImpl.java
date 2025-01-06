@@ -51,7 +51,7 @@ public class ApplicationImpl implements Application {
     @Override
     public void handle(EventQueue eventQueue, ApplicationCreateCommand command) {
         String username = OpentpApp.instance().getManagerUsername();
-        eventQueue.offer(new ApplicationCreateEvent(command.getAppName(), username));
+        eventQueue.offer(new ApplicationCreateEvent(this.appKey, username));
     }
 
     @Override
@@ -64,7 +64,14 @@ public class ApplicationImpl implements Application {
     @Override
     public void handle(EventQueue eventQueue, ApplicationDeleteCommand command) {
         log.info("delete application: {}, appKey: {}", this.getAppName(), command.getAppKey());
-        eventQueue.offer(new ApplicationDeleteEvent(command.getAppKey(), this.getAppName(), this.managers));
+        eventQueue.offer(new ApplicationDeleteEvent(command.getAppKey(), this.managers));
+    }
+
+    @Override
+    public void handle(EventQueue eventQueue, ApplicationUpdateCommand applicationUpdateCommand) {
+        this.showName = applicationUpdateCommand.getShowName();
+        this.appName = applicationUpdateCommand.getAppName();
+        log.info("update application: {}, appKey: {}", this.getAppName(), applicationUpdateCommand.getAppKey());
     }
 
     public String getAppName() {

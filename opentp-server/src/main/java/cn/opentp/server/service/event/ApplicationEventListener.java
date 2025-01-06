@@ -31,14 +31,14 @@ public class ApplicationEventListener implements DomainEventListener {
             if (manager.getApplications() == null) {
                 manager.setApplications(new ArrayList<>());
             }
-            manager.getApplications().add(applicationCreateEvent.getAppName());
+            manager.getApplications().add(applicationCreateEvent.getAppKey());
             managerRepository.save(manager);
         } else if (event instanceof ApplicationDeleteEvent applicationDeleteEvent) {
             if (applicationDeleteEvent.getManagers() == null && !applicationDeleteEvent.getManagers().isEmpty()) {
                 for (String manger : applicationDeleteEvent.getManagers()) {
                     ManagerImpl manager = managerRepository.queryManagerInfo(manger);
                     if (manager.getApplications() != null) {
-                        manager.getApplications().remove(applicationDeleteEvent.getAppName());
+                        manager.getApplications().remove(applicationDeleteEvent.getAppKey());
                     }
                     managerRepository.save(manager);
                 }

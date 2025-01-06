@@ -2,11 +2,13 @@ package cn.opentp.server.repository;
 
 import cn.opentp.core.util.JacksonUtil;
 import cn.opentp.server.OpentpApp;
+import cn.opentp.server.domain.DomainCommand;
 import cn.opentp.server.domain.DomainException;
 import cn.opentp.server.domain.application.*;
 import cn.opentp.server.repository.rocksdb.OpentpRocksDBImpl;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import org.apache.logging.log4j.util.Strings;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,7 +16,6 @@ import java.util.UUID;
 @Singleton
 public class ApplicationRepositoryImpl implements ApplicationRepository {
 
-    private static final String APPLICATION_NAME_PREFIX = "application:";
     private static final String APPLICATION_KEY_PREFIX = "applicationKey:";
 
     @Inject
@@ -49,25 +50,14 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     @Override
     public void save(Application application) {
         if (application instanceof ApplicationImpl applicationImpl) {
-            rocksDB.set(APPLICATION_NAME_PREFIX + applicationImpl.getAppName(), JacksonUtil.toJSONString(application));
-            rocksDB.set(APPLICATION_KEY_PREFIX + applicationImpl.getAppKey(), JacksonUtil.toJSONString(application));
+            rocksDB.set(APPLICATION_KEY_PREFIX + applicationImpl.getAppKey(), JacksonUtil.toJSONString(applicationImpl));
         } else {
             throw new UnsupportedOperationException(application.getClass().getName());
         }
     }
 
     private boolean checkRegistered(ApplicationCreateCommand command) {
-        return rocksDB.exist(APPLICATION_NAME_PREFIX + command.getAppName());
-    }
-
-    @Override
-    public ApplicationImpl queryByName(String appName) {
-        String applicationInfo = rocksDB.get(APPLICATION_NAME_PREFIX + appName);
-        if (applicationInfo.isEmpty()) {
-            return null;
-        }
-
-        return JacksonUtil.parseJson(applicationInfo, ApplicationImpl.class);
+        return rocksDB.exist(APPLICATION_KEY_PREFIX + command.getAppName());
     }
 
     @Override
@@ -81,20 +71,35 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     }
 
     @Override
-    public ApplicationImpl findOrError(ApplicationDeleteCommand command) {
-        String applicationInfo = rocksDB.get(APPLICATION_KEY_PREFIX + command.getAppKey());
-        if (applicationInfo.isEmpty()) {
-            throw new DomainException("appKey " + command.getAppKey() + " 不存在");
+    public ApplicationImpl findOrError(DomainCommand command) {
+        String applicationInfo = Strings.EMPTY;
+        String appKey = Strings.EMPTY;
+
+        if (command instanceof ApplicationDeleteCommand applicationDeleteCommand) {
+            applicationInfo = rocksDB.get(APPLICATION_KEY_PREFIX + applicationDeleteCommand.getAppKey());
+            appKey = applicationDeleteCommand.getAppKey();
+        } else if (command instanceof ApplicationUpdateCommand applicationUpdateCommand) {
+            applicationInfo = rocksDB.get(APPLICATION_KEY_PREFIX + applicationUpdateCommand.getAppKey());
+            appKey = applicationUpdateCommand.getAppKey();
         }
 
+        if (applicationInfo.isEmpty()) {
+            throw new DomainException("appKey[ " + appKey + "]不存在");
+        }
         return JacksonUtil.parseJson(applicationInfo, ApplicationImpl.class);
     }
 
     @Override
     public void delete(Application application) {
         if (application instanceof ApplicationImpl applicationImpl) {
-            rocksDB.delete(APPLICATION_NAME_PREFIX + applicationImpl.getAppName());
             rocksDB.delete(APPLICATION_KEY_PREFIX + applicationImpl.getAppKey());
+        }
+    }
+
+    @Override
+    public void update(Application application, String showName, String appName) {
+        if (application instanceof ApplicationImpl applicationImpl) {
+            rocksDB.set(APPLICATION_KEY_PREFIX + applicationImpl.getAppKey(), JacksonUtil.toJSONString(applicationImpl));
         }
     }
 }

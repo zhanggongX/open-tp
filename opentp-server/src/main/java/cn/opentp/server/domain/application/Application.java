@@ -10,4 +10,6 @@ public interface Application {
     void checkConnect(String appKey, String appSecret);
 
     void handle(EventQueue eventQueue, ApplicationDeleteCommand command);
+
+    void handle(EventQueue eventQueue, ApplicationUpdateCommand command);
 }

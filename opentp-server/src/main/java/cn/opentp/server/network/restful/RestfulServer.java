@@ -1,10 +1,9 @@
 package cn.opentp.server.network.restful;
 
 import cn.opentp.server.OpentpApp;
-import cn.opentp.server.domain.manager.ManagerImpl;
+import cn.opentp.server.network.restful.handler.ApplicationHandler;
 import cn.opentp.server.network.restful.handler.*;
 import cn.opentp.server.network.restful.handler.JwtAuthHandler;
-import cn.opentp.server.service.ManagerService;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;

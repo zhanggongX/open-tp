@@ -34,6 +34,7 @@ public class ApplicationHandler {
     private final DomainCommandInvoker domainCommandInvoker = injector.getInstance(DomainCommandInvoker.class);
     private final ApplicationCreateCommandHandler applicationCreateCommandHandler = injector.getInstance(ApplicationCreateCommandHandler.class);
     private final ApplicationDeleteCommandHandler applicationDeleteCommandHandler = injector.getInstance(ApplicationDeleteCommandHandler.class);
+    private final ApplicationUpdateCommandHandler applicationUpdateCommandHandler = injector.getInstance(ApplicationUpdateCommandHandler.class);
     private final ApplicationService applicationService = injector.getInstance(ApplicationService.class);
 
     public ApplicationHandler(Vertx vertx) {
@@ -41,9 +42,21 @@ public class ApplicationHandler {
 
         router.post("/").handler(this::create);
         router.get("/").handler(this::applications);
+        router.put("/:appKey").handler(this::update);
         router.delete("/:appKey").handler(this::delete);
 
         router.errorHandler(500, ErrorHandler::handleError);
+    }
+
+    private void update(RoutingContext ctx) {
+        String appKey = ctx.pathParam("appKey");
+        JsonObject body = ctx.body().asJsonObject();
+        String showName = body.getString("showName");
+        String appName = body.getString("appName");
+
+        ApplicationUpdateCommand applicationUpdateCommand = new ApplicationUpdateCommand(showName, appName, appKey);
+        domainCommandInvoker.invoke((q) -> applicationUpdateCommandHandler.handle(q, applicationUpdateCommand));
+        ctx.json(Result.success());
     }
 
     private void delete(RoutingContext ctx) {
@@ -53,6 +66,7 @@ public class ApplicationHandler {
         }
         ApplicationDeleteCommand applicationDeleteCommand = new ApplicationDeleteCommand(appKey);
         domainCommandInvoker.invoke((q) -> applicationDeleteCommandHandler.handle(q, applicationDeleteCommand));
+        ctx.json(Result.success());
     }
 
     /**
