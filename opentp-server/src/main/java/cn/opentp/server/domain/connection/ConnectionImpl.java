@@ -1,10 +1,10 @@
-package cn.opentp.server.domain.connect;
+package cn.opentp.server.domain.connection;
 
 import cn.opentp.server.domain.EventQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConnectImpl implements Connect {
+public class ConnectionImpl implements Connection {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -13,10 +13,10 @@ public class ConnectImpl implements Connect {
     private String appKey;
     private String appSecret;
 
-    public ConnectImpl() {
+    public ConnectionImpl() {
     }
 
-    public ConnectImpl(String host, String pid, String appKey, String appSecret) {
+    public ConnectionImpl(String host, String pid, String appKey, String appSecret) {
         this.host = host;
         this.pid = pid;
         this.appKey = appKey;

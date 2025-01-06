@@ -44,7 +44,7 @@ public class RestfulServer extends AbstractVerticle {
 
         // handlers
         ApplicationHandler applicationHandler = new ApplicationHandler(vertx);
-        ConnectHandler connectHandler = new ConnectHandler(vertx);
+        ConnectionHandler connectionHandler = new ConnectionHandler(vertx);
         ThreadPoolHandler threadPoolHandler = new ThreadPoolHandler(vertx);
         ManagerHandler managerHandler = new ManagerHandler(vertx);
         JwtAuthHandler jwtAuthHandler = new JwtAuthHandler(vertx);
@@ -75,7 +75,7 @@ public class RestfulServer extends AbstractVerticle {
             ctx.next();
         });
         mainRouter.route(ApplicationHandler.BASE_URL).subRouter(applicationHandler.getRouter());
-        mainRouter.route(ConnectHandler.BASE_URL).subRouter(connectHandler.getRouter());
+        mainRouter.route(ConnectionHandler.BASE_URL).subRouter(connectionHandler.getRouter());
         mainRouter.route(ThreadPoolHandler.BASE_URL).subRouter(threadPoolHandler.getRouter());
         mainRouter.route(ManagerHandler.BASE_URL).subRouter(managerHandler.getRouter());
 

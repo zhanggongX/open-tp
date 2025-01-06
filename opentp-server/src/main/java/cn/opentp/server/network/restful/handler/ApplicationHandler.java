@@ -77,8 +77,10 @@ public class ApplicationHandler {
     private void applications(RoutingContext ctx) {
         String appName = ctx.request().getParam("appName");
         String appKey = ctx.request().getParam("appKey");
-        int current = Integer.parseInt(ctx.request().getParam("current"));
-        int pageSize = Integer.parseInt(ctx.request().getParam("pageSize"));
+        String current = ctx.request().getParam("current");
+        String pageSize = ctx.request().getParam("pageSize");
+        int currentVal = Integer.parseInt(current == null ? "1" : current);
+        int pageSizeVal = Integer.parseInt(pageSize == null ? "20" : pageSize);
 
         String username = opentpApp.getManagerUsername();
         List<ApplicationImpl> applications = applicationService.applications(username);
@@ -89,7 +91,7 @@ public class ApplicationHandler {
             applications = applications.stream().filter(app -> appKey.equals(app.getAppKey())).toList();
         }
         // 分页
-        applications = PageUtil.page(applications, current, pageSize);
+        applications = PageUtil.page(applications, currentVal, pageSizeVal);
         ctx.json(Result.success(new PageResult<>(applications)));
     }
 

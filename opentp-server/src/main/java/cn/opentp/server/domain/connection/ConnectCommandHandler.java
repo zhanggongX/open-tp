@@ -1,4 +1,4 @@
-package cn.opentp.server.domain.connect;
+package cn.opentp.server.domain.connection;
 
 import cn.opentp.server.OpentpApp;
 import cn.opentp.server.domain.EventQueue;
@@ -10,7 +10,7 @@ import com.google.inject.Inject;
 public class ConnectCommandHandler {
 
     @Inject
-    private ConnectRepository connectRepository;
+    private ConnectionRepository connectionRepository;
     @Inject
     private ApplicationRepository applicationRepository;
 
@@ -21,9 +21,9 @@ public class ConnectCommandHandler {
         ApplicationImpl application = applicationRepository.queryByKey(command.getAppKey());
         application.checkConnect(command.getAppKey(), command.getAppSecret());
 
-        ConnectImpl connect = connectRepository.buildConnect(command);
+        ConnectionImpl connect = connectionRepository.buildConnect(command);
         connect.handle(eventQueue, command);
-        connectRepository.save(connect);
+        connectionRepository.save(connect);
         return true;
     }
 }

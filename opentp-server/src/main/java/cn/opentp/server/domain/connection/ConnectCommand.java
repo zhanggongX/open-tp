@@ -1,4 +1,4 @@
-package cn.opentp.server.domain.connect;
+package cn.opentp.server.domain.connection;
 
 import cn.opentp.server.domain.DomainCommand;
 

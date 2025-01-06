@@ -3,7 +3,7 @@ package cn.opentp.server.domain.threadpool;
 import cn.opentp.core.thread.pool.ThreadPoolState;
 import cn.opentp.server.OpentpApp;
 import cn.opentp.server.domain.EventQueue;
-import cn.opentp.server.domain.connect.ConnectImpl;
+import cn.opentp.server.domain.connection.ConnectionImpl;
 import cn.opentp.server.network.receive.ThreadPoolReceiveService;
 import com.google.common.collect.Table;
 import com.google.inject.Singleton;
@@ -18,10 +18,10 @@ public class ThreadPoolReportCommandHandler {
     public Boolean handle(EventQueue eventQueue, ThreadPoolReportCommand threadPoolReportCommand) {
         ThreadPoolReceiveService threadPoolReceiveService = OpentpApp.instance().receiveService();
 
-        ConnectImpl connect = threadPoolReceiveService.connectChannelCache().inverse().get(threadPoolReportCommand.getChannel());
+        ConnectionImpl connect = threadPoolReceiveService.connectChannelCache().inverse().get(threadPoolReportCommand.getChannel());
 
         // 刷新线程池信息
-        Table<ConnectImpl, String, ThreadPoolState> connectStringThreadPoolStateTable = threadPoolReceiveService.connectThreadPoolStateTable();
+        Table<ConnectionImpl, String, ThreadPoolState> connectStringThreadPoolStateTable = threadPoolReceiveService.connectThreadPoolStateTable();
         for (ThreadPoolState reportThreadPoolState : threadPoolReportCommand.getThreadPoolStates()) {
 
             ThreadPoolState threadPoolState = connectStringThreadPoolStateTable.get(connect, reportThreadPoolState.getThreadPoolName());

@@ -3,7 +3,7 @@ package cn.opentp.server.network.receive;
 import cn.opentp.core.net.codec.OpentpMessageDecoder;
 import cn.opentp.core.net.codec.OpentpMessageEncoder;
 import cn.opentp.core.thread.pool.ThreadPoolState;
-import cn.opentp.server.domain.connect.ConnectImpl;
+import cn.opentp.server.domain.connection.ConnectionImpl;
 import cn.opentp.server.network.receive.handler.ReceiveServiceNettyHandler;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBasedTable;
@@ -27,11 +27,11 @@ public class ThreadPoolReceiveService {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     // key = appKey, value = 所有连接上来的客户端
-    private final Map<String, List<ConnectImpl>> appKeyConnectCache = new ConcurrentHashMap<>();
+    private final Map<String, List<ConnectionImpl>> appKeyConnectCache = new ConcurrentHashMap<>();
     // key = 连接, value = 连接对应的 channel
-    private final BiMap<ConnectImpl, Channel> connectChannelCache = HashBiMap.create();
+    private final BiMap<ConnectionImpl, Channel> connectChannelCache = HashBiMap.create();
     // row = 连接, col = 线程池名, value = 线程池信息
-    private final Table<ConnectImpl, String, ThreadPoolState> connectThreadPoolStateTable = HashBasedTable.create();
+    private final Table<ConnectionImpl, String, ThreadPoolState> connectThreadPoolStateTable = HashBasedTable.create();
 
     private final NioEventLoopGroup bossGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors());
     private final NioEventLoopGroup workGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2);
@@ -80,12 +80,12 @@ public class ThreadPoolReceiveService {
     public void clientClose(Channel channel) {
 
         // 获取当前 channel 对应的连接
-        ConnectImpl connect = connectChannelCache.inverse().get(channel);
+        ConnectionImpl connect = connectChannelCache.inverse().get(channel);
 
         log.info("connect, {} 断开连接", connect);
 
         // 删除连接
-        List<ConnectImpl> connects = appKeyConnectCache.get(connect.getAppKey());
+        List<ConnectionImpl> connects = appKeyConnectCache.get(connect.getAppKey());
         connects.remove(connect);
         appKeyConnectCache.put(connect.getAppKey(), connects);
 
@@ -128,15 +128,15 @@ public class ThreadPoolReceiveService {
         workGroup.shutdownGracefully();
     }
 
-    public Map<String, List<ConnectImpl>> appKeyConnectCache() {
+    public Map<String, List<ConnectionImpl>> appKeyConnectCache() {
         return appKeyConnectCache;
     }
 
-    public BiMap<ConnectImpl, Channel> connectChannelCache() {
+    public BiMap<ConnectionImpl, Channel> connectChannelCache() {
         return connectChannelCache;
     }
 
-    public Table<ConnectImpl, String, ThreadPoolState> connectThreadPoolStateTable() {
+    public Table<ConnectionImpl, String, ThreadPoolState> connectThreadPoolStateTable() {
         return connectThreadPoolStateTable;
     }
 }

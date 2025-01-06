@@ -26,8 +26,8 @@ public class Example {
         Configuration._cfg().reportProps().setInitialDelay(2);
         Configuration._cfg().reportProps().setPeriod(2);
 
-        Configuration._cfg().clientInfo().setAppKey("f82df733e639471ea8f21c4ccdbe9afb");
-        Configuration._cfg().clientInfo().setAppSecret("2395ddc7-403d-4af4-9ece-c15ec5735a22");
+        Configuration._cfg().clientInfo().setAppKey("5eadfdc9bb22437f8cd3b49d9777d35a");
+        Configuration._cfg().clientInfo().setAppSecret("b7d54462-c055-4669-bcd4-956d0c844a2b");
 
         // 记录线程池信息
         ThreadPoolExecutor tp1 = new ThreadPoolExecutor(10, 20, 60, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1024));

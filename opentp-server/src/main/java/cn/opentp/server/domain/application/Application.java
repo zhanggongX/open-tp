@@ -1,7 +1,6 @@
 package cn.opentp.server.domain.application;
 
 import cn.opentp.server.domain.EventQueue;
-import cn.opentp.server.domain.connect.ConnectCommand;
 
 public interface Application {
 

@@ -1,8 +1,8 @@
-package cn.opentp.server.domain.connect;
+package cn.opentp.server.domain.connection;
 
 import cn.opentp.server.domain.EventQueue;
 
-public interface Connect {
+public interface Connection {
 
     /**
      * 处理连接命令

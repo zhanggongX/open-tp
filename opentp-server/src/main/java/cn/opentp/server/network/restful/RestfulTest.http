@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:8080
-@jwtToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTczNTg4OTU4MH0.8JLleuwex98C54-f6j2t-4-FfUUX6vieufqGS7SQx7g
+@jwtToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTczNjE1MzYyN30.ufrkgjzKtW12GXBp-IA3T89fGcyVQ3O_2Nl8tMH_04Y
 
 ### GET request to example server
 POST {{baseUrl}}/auth/login
@@ -51,5 +51,14 @@ Content-Type: application/json
 GET {{baseUrl}}/api/applications/
 Authorization: Bearer {{jwtToken}}
 Content-Type: application/json
+
+###
+GET {{baseUrl}}/api/connections/
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+{
+  "appKey": "5eadfdc9bb22437f8cd3b49d9777d35a"
+}
 
 ###
