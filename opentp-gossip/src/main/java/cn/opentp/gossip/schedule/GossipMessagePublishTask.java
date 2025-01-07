@@ -17,30 +17,30 @@ public class GossipMessagePublishTask extends AbstractGossipTask implements Runn
 
     @Override
     public void run() {
-        GossipEnvironment environment = GossipEnvironment.instance();
-        GossipMessageHolder messageHolder = environment.gossipMessageHolder();
-        if (messageHolder.isEmpty()) {
-            return;
-        }
-
-        try {
-            Set<String> messageIds = messageHolder.list();
-            for (String messageId : messageIds) {
-                GossipMessage message = messageHolder.acquire(messageId);
-                int forwardCount = message.getForwardCount();
-                int maxTry = GossipUtil.fanOut();
-                if (forwardCount < maxTry) {
-                    ByteBuf byteBuf = GossipMessageCodec.codec().encodeGossipMessage(message);
-                    sendBuf(byteBuf);
-                    message.setForwardCount(forwardCount + 1);
-                }
-                // 如果过了有效时间，还没有向 fan-out 的节点发送出去，则不再发送。
-                if ((System.currentTimeMillis() - message.getCreateTime()) >= message.getEffectTime()) {
-                    messageHolder.remove(messageId);
-                }
-            }
-        } catch (Exception e) {
-            log.error("发送流言信息出现异常: ", e);
-        }
+//        GossipEnvironment environment = GossipEnvironment.instance();
+//        GossipMessageHolder messageHolder = environment.gossipMessageHolder();
+//        if (messageHolder.isEmpty()) {
+//            return;
+//        }
+//
+//        try {
+//            Set<String> messageIds = messageHolder.list();
+//            for (String messageId : messageIds) {
+//                GossipMessage message = messageHolder.acquire(messageId);
+//                int forwardCount = message.getForwardCount();
+//                int maxTry = GossipUtil.fanOut();
+//                if (forwardCount < maxTry) {
+//                    ByteBuf byteBuf = GossipMessageCodec.codec().encodeGossipMessage(message);
+//                    sendBuf(byteBuf);
+//                    message.setForwardCount(forwardCount + 1);
+//                }
+//                // 如果过了有效时间，还没有向 fan-out 的节点发送出去，则不再发送。
+//                if ((System.currentTimeMillis() - message.getCreateTime()) >= message.getEffectTime()) {
+//                    messageHolder.remove(messageId);
+//                }
+//            }
+//        } catch (Exception e) {
+//            log.error("发送流言信息出现异常: ", e);
+//        }
     }
 }

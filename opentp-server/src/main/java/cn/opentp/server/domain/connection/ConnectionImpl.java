@@ -1,8 +1,11 @@
 package cn.opentp.server.domain.connection;
 
 import cn.opentp.server.domain.EventQueue;
+import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
 
 public class ConnectionImpl implements Connection {
 
@@ -12,15 +15,22 @@ public class ConnectionImpl implements Connection {
     private String pid;
     private String appKey;
     private String appSecret;
+    private Channel channel;
 
     public ConnectionImpl() {
     }
 
-    public ConnectionImpl(String host, String pid, String appKey, String appSecret) {
+    public ConnectionImpl(String host, String pid) {
+        this.host = host;
+        this.pid = pid;
+    }
+
+    public ConnectionImpl(String host, String pid, String appKey, String appSecret, Channel channel) {
         this.host = host;
         this.pid = pid;
         this.appKey = appKey;
         this.appSecret = appSecret;
+        this.channel = channel;
     }
 
     public String getAppKey() {
@@ -55,10 +65,31 @@ public class ConnectionImpl implements Connection {
         this.pid = pid;
     }
 
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public void setChannel(Channel channel) {
+        this.channel = channel;
+    }
+
     @Override
     public boolean handle(EventQueue eventQueue, ConnectCommand command) {
         log.debug("new connect host: {}, instance: {}, appKey: {}, appSecret: {}", command.getHost(), command.getPid(), command.getAppKey(), "...");
         return true;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ConnectionImpl that = (ConnectionImpl) o;
+        return Objects.equals(host, that.host) && Objects.equals(pid, that.pid);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(host, pid);
     }
 
     @Override

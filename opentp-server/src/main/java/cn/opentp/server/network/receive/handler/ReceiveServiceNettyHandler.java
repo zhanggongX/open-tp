@@ -80,7 +80,7 @@ public class ReceiveServiceNettyHandler extends ChannelInboundHandlerAdapter {
                         ClientInfo clientInfo = (ClientInfo) opentpMessage.getData();
 //                        clientInfo.setServerInfo(OpentpApp.instance().selfInfo());
 
-                        ConnectCommand connectCommand = new ConnectCommand(clientInfo.getHost(), clientInfo.getInstance(), clientInfo.getAppKey(), clientInfo.getAppSecret());
+                        ConnectCommand connectCommand = new ConnectCommand(clientInfo.getHost(), clientInfo.getInstance(), clientInfo.getAppKey(), clientInfo.getAppSecret(), ctx.channel());
                         ConnectCommandHandler connectCommandHandler = injector.getInstance(ConnectCommandHandler.class);
                         try {
                             domainCommandInvoker.invoke((q) -> connectCommandHandler.handle(q, connectCommand));

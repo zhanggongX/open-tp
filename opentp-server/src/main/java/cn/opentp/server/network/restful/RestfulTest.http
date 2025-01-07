@@ -62,3 +62,10 @@ Content-Type: application/json
 }
 
 ###
+GET {{baseUrl}}/api/thread-pools/
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+{
+  "ipAndPid": "127.0.0.1-29786"
+}

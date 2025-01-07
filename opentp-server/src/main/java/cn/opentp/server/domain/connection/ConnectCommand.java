@@ -1,6 +1,7 @@
 package cn.opentp.server.domain.connection;
 
 import cn.opentp.server.domain.DomainCommand;
+import io.netty.channel.Channel;
 
 /**
  * 连接命令
@@ -11,15 +12,22 @@ public class ConnectCommand implements DomainCommand {
     private String pid;
     private String appKey;
     private String appSecret;
+    private Channel channel;
 
     public ConnectCommand() {
     }
 
-    public ConnectCommand(String host, String pid, String appKey, String appSecret) {
+    public ConnectCommand(String host, String pid) {
+        this.host = host;
+        this.pid = pid;
+    }
+
+    public ConnectCommand(String host, String pid, String appKey, String appSecret, Channel channel) {
         this.host = host;
         this.pid = pid;
         this.appKey = appKey;
         this.appSecret = appSecret;
+        this.channel = channel;
     }
 
     public String getHost() {
@@ -52,5 +60,13 @@ public class ConnectCommand implements DomainCommand {
 
     public void setAppSecret(String appSecret) {
         this.appSecret = appSecret;
+    }
+
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public void setChannel(Channel channel) {
+        this.channel = channel;
     }
 }

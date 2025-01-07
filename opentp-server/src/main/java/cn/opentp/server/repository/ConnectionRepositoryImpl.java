@@ -18,7 +18,7 @@ public class ConnectionRepositoryImpl implements ConnectionRepository {
 
     @Override
     public ConnectionImpl buildConnect(ConnectCommand command) {
-        return new ConnectionImpl(command.getHost(), command.getPid(), command.getAppKey(), command.getAppSecret());
+        return new ConnectionImpl(command.getHost(), command.getPid(), command.getAppKey(), command.getAppSecret(), command.getChannel());
     }
 
     @Override
@@ -28,6 +28,8 @@ public class ConnectionRepositoryImpl implements ConnectionRepository {
         // 记录 appKey <-> 客户端信息
         threadPoolReceiveService.appKeyConnectCache().putIfAbsent(connect.getAppKey(), new ArrayList<>());
         threadPoolReceiveService.appKeyConnectCache().get(connect.getAppKey()).add(connect);
+
+        threadPoolReceiveService.connectChannelCache().put(connect, connect.getChannel());
 
         // 记录 licenseKey <-> 客户端信息
 //        threadPoolReceiveService.licenseClientCache().put(newLicenseKey, clientInfo);

@@ -3,6 +3,7 @@ package cn.opentp.server.network.restful.handler;
 import cn.opentp.server.OpentpApp;
 import cn.opentp.server.domain.connection.ConnectionImpl;
 import cn.opentp.server.domain.connection.ConnectionRepository;
+import cn.opentp.server.network.restful.Result;
 import com.google.inject.Injector;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -27,11 +28,11 @@ public class ConnectionHandler {
     }
 
     private void connections(RoutingContext ctx) {
-        JsonObject body = ctx.body().asJsonObject();
-        String appKey = body.getString("appKey");
+        String appKey = ctx.request().params().get("appKey");
+
         ConnectionRepository connectionRepository = injector.getInstance(ConnectionRepository.class);
         List<ConnectionImpl> connections = connectionRepository.findByAppKey(appKey);
-        ctx.json(connections);
+        ctx.json(Result.success(connections));
     }
 
     public Router getRouter() {
