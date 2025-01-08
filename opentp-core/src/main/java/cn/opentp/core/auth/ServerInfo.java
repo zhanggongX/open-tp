@@ -17,7 +17,8 @@ public class ServerInfo {
     private final String pid;
 
     public ServerInfo() {
-        this.host = getLocalHostIp();
+//        this.host = getLocalHostIp();
+        this.host = "127.0.0.1";
         // 本机实例，客户端的 pid
         RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
         this.pid = runtimeMXBean.getName().split("@")[0];
