@@ -22,5 +22,6 @@ public class GuiceServiceModule extends AbstractModule {
 
         bind(ManagerService.class).to(ManagerServiceImpl.class);
         bind(ApplicationService.class).to(ApplicationServiceImpl.class);
+        bind(ThreadPoolService.class).to(ThreadPoolServiceImpl.class);
     }
 }

@@ -53,19 +53,20 @@ Authorization: Bearer {{jwtToken}}
 Content-Type: application/json
 
 ###
-GET {{baseUrl}}/api/connections/
+GET {{baseUrl}}/api/connections/?appKey=5eadfdc9bb22437f8cd3b49d9777d35a
 Authorization: Bearer {{jwtToken}}
 Content-Type: application/json
-
-{
-  "appKey": "5eadfdc9bb22437f8cd3b49d9777d35a"
-}
 
 ###
-GET {{baseUrl}}/api/thread-pools/
+GET {{baseUrl}}/api/thread-pools/?ipAndPid=127.0.0.1-52692
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+###
+GET {{baseUrl}}/api/thread-pools/tp1
 Authorization: Bearer {{jwtToken}}
 Content-Type: application/json
 
 {
-  "ipAndPid": "127.0.0.1-29786"
+  "ipAndPid": "127.0.0.1-52692"
 }

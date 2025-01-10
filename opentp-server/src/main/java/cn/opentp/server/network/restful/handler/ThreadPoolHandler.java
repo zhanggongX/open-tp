@@ -1,10 +1,12 @@
 package cn.opentp.server.network.restful.handler;
 
+import cn.opentp.core.thread.pool.ThreadPoolState;
 import cn.opentp.server.OpentpApp;
 import cn.opentp.server.domain.connection.ConnectionImpl;
 import cn.opentp.server.domain.connection.ConnectionRepository;
 import cn.opentp.server.domain.threadpool.ThreadPoolRepository;
 import cn.opentp.server.network.restful.Result;
+import cn.opentp.server.service.ThreadPoolService;
 import com.google.inject.Injector;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -24,15 +26,27 @@ public class ThreadPoolHandler {
         this.router = Router.router(vertx);
 
         router.get("/").handler(this::threadPools);
+        router.get("/:tpName").handler(this::threadPoolInfo);
 
         router.errorHandler(500, ErrorHandler::handleError);
+    }
+
+    private void threadPoolInfo(RoutingContext ctx) {
+        String tpName = ctx.pathParam("tpName");
+        JsonObject body = ctx.body().asJsonObject();
+
+        String ipAndPid = body.getString("ipAndPid");
+
+        ThreadPoolService threadPoolService = injector.getInstance(ThreadPoolService.class);
+        ThreadPoolState threadPoolState = threadPoolService.info(ipAndPid, tpName);
+        ctx.json(Result.success(threadPoolState));
     }
 
     private void threadPools(RoutingContext ctx) {
         String ipAndPid = ctx.request().params().get("ipAndPid");
 
-        ThreadPoolRepository threadPoolRepository = injector.getInstance(ThreadPoolRepository.class);
-        List<String> tpNames = threadPoolRepository.findByIpAndPid(ipAndPid);
+        ThreadPoolService threadPoolService = injector.getInstance(ThreadPoolService.class);
+        List<String> tpNames = threadPoolService.findByIpAndPid(ipAndPid);
         ctx.json(Result.success(tpNames));
     }
 

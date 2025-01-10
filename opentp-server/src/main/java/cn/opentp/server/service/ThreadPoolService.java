@@ -1,10 +1,10 @@
-package cn.opentp.server.domain.threadpool;
+package cn.opentp.server.service;
 
 import cn.opentp.core.thread.pool.ThreadPoolState;
 
 import java.util.List;
 
-public interface ThreadPoolRepository {
+public interface ThreadPoolService {
 
     List<String> findByIpAndPid(String ipAndPid);
 

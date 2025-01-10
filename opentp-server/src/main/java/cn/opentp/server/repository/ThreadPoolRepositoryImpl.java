@@ -28,4 +28,14 @@ public class ThreadPoolRepositoryImpl implements ThreadPoolRepository {
         Map<String, ThreadPoolState> row = connectThreadPoolStateTable.row(connection);
         return new ArrayList<>(row.keySet());
     }
+
+    @Override
+    public ThreadPoolState info(String ipAndPid, String tpName) {
+        ThreadPoolReceiveService threadPoolReceiveService = opentpApp.receiveService();
+        Table<ConnectionImpl, String, ThreadPoolState> connectThreadPoolStateTable = threadPoolReceiveService.connectThreadPoolStateTable();
+
+        String[] ipAndPidVal = ipAndPid.split("-");
+        ConnectionImpl connection = new ConnectionImpl(ipAndPidVal[0], ipAndPidVal[1]);
+        return connectThreadPoolStateTable.get(connection, tpName);
+    }
 }
