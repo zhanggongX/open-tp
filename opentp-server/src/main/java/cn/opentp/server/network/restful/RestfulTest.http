@@ -58,7 +58,7 @@ Authorization: Bearer {{jwtToken}}
 Content-Type: application/json
 
 ###
-GET {{baseUrl}}/api/thread-pools/?ipAndPid=127.0.0.1-52692
+GET {{baseUrl}}/api/thread-pools/?ipAndPid=127.0.0.1-73671
 Authorization: Bearer {{jwtToken}}
 Content-Type: application/json
 
@@ -68,5 +68,5 @@ Authorization: Bearer {{jwtToken}}
 Content-Type: application/json
 
 {
-  "ipAndPid": "127.0.0.1-52692"
+  "ipAndPid": "127.0.0.1-73671"
 }

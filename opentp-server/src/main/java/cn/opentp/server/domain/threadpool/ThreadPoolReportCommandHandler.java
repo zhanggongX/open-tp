@@ -33,6 +33,7 @@ public class ThreadPoolReportCommandHandler {
             }
 
             threadPoolState.flushState(reportThreadPoolState);
+
             connectStringThreadPoolStateTable.put(connect, reportThreadPoolState.getThreadPoolName(), threadPoolState);
 
             log.debug("上报线程池信息 : {}", threadPoolState);

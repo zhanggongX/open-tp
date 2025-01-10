@@ -4,6 +4,8 @@ package cn.opentp.core.thread.pool;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class ThreadPoolState implements Serializable {
 
@@ -44,6 +46,8 @@ public class ThreadPoolState implements Serializable {
      */
     private String threadPoolName;
 
+    private String reportTime;
+
     public void flushDefault() {
         this.coreSize = -1;
         this.maxSize = -1;
@@ -53,6 +57,7 @@ public class ThreadPoolState implements Serializable {
         this.queueSize = -1;
         this.queueLength = -1;
         this.largestPoolSize = -1;
+        this.reportTime = null;
     }
 
     public void flushDefault(String threadPoolName) {
@@ -70,17 +75,7 @@ public class ThreadPoolState implements Serializable {
         this.queueLength = threadPoolState.getQueueLength();
         this.largestPoolSize = threadPoolState.getLargestPoolSize();
         this.threadPoolName = threadPoolState.getThreadPoolName();
-    }
-
-    public void flushRequest(JsonNode httpRequestJsonNode) {
-        this.coreSize = httpRequestJsonNode.get("coreSize") != null ? httpRequestJsonNode.get("coreSize").asInt() : -1;
-        this.maxSize = httpRequestJsonNode.get("maxSize") != null ? httpRequestJsonNode.get("maxSize").asInt() : -1;
-        this.poolSize = -1;
-        this.activeCount = -1;
-        this.completedCount = -1;
-        this.queueSize = -1;
-        this.queueLength = -1;
-        this.largestPoolSize = -1;
+        this.reportTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     }
 
     public int getCoreSize() {
@@ -155,6 +150,14 @@ public class ThreadPoolState implements Serializable {
         this.threadPoolName = threadPoolName;
     }
 
+    public String getReportTime() {
+        return reportTime;
+    }
+
+    public void setReportTime(String reportTime) {
+        this.reportTime = reportTime;
+    }
+
     @Override
     public String toString() {
         return "ThreadPoolState{" +
@@ -167,6 +170,7 @@ public class ThreadPoolState implements Serializable {
                 ", queueLength=" + queueLength +
                 ", largestPoolSize=" + largestPoolSize +
                 ", threadPoolName='" + threadPoolName + '\'' +
+                ", reportTime='" + reportTime + '\'' +
                 '}';
     }
 }

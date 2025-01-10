@@ -33,9 +33,7 @@ public class ThreadPoolHandler {
 
     private void threadPoolInfo(RoutingContext ctx) {
         String tpName = ctx.pathParam("tpName");
-        JsonObject body = ctx.body().asJsonObject();
-
-        String ipAndPid = body.getString("ipAndPid");
+        String ipAndPid = ctx.request().params().get("ipAndPid");
 
         ThreadPoolService threadPoolService = injector.getInstance(ThreadPoolService.class);
         ThreadPoolState threadPoolState = threadPoolService.info(ipAndPid, tpName);
