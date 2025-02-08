@@ -33,7 +33,7 @@ public class Example {
         ThreadPoolExecutor tp1 = new ThreadPoolExecutor(10, 20, 60, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1024));
         Configuration._cfg().threadPoolContextCache().put("tp1", new ThreadPoolWrapper(tp1));
 
-        ThreadPoolExecutor tp2 = new ThreadPoolExecutor(10, 20, 60, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1024));
+        ThreadPoolExecutor tp2 = new ThreadPoolExecutor(10, 30, 60, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1024));
         Configuration._cfg().threadPoolContextCache().put("tp2", new ThreadPoolWrapper(tp2));
 
         // 开启服务
